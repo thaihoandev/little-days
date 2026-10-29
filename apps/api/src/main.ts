@@ -66,6 +66,7 @@ import { JobRepository } from './jobs.js';
 import { ResourcePolicy } from './resource-policy.js';
 import { MaintenanceService } from './maintenance.js';
 import { Observability, logEvent } from './observability.js';
+import { OpsMonitor } from './ops-monitor.js';
 import { videoDurationFrames } from '../../../packages/domain/video.js';
 import { createMediaStore, ObjectNotFoundError } from './storage.js';
 
@@ -78,6 +79,7 @@ const resources = new ResourcePolicy(repository, store, dataDir);
 const observability = new Observability();
 const maintenance = new MaintenanceService(repository, resources, dataDir);
 const mailer = createMailer(dataDir);
+const opsMonitor = new OpsMonitor(repository, mailer);
 const deletion = new AccountDeletion(repository, jobs, store, dataDir);
 const security = new AccountSecurity(
   repository,
@@ -982,7 +984,9 @@ const queue = new RenderQueue(repository, jobs, store, dataDir, {
 if (process.env.RENDER_WORKER_MODE === 'inline' && process.env.DISABLE_RENDER_WORKER !== 'true')
   await queue.start();
 maintenance.start();
+await opsMonitor.init();
 await app.listen(Number(process.env.PORT || 3001), process.env.HOST || '127.0.0.1');
+opsMonitor.start();
 console.log(`Scrapbook API: http://${process.env.HOST || '127.0.0.1'}:${process.env.PORT || 3001}`);
 let shuttingDown = false;
 for (const signal of ['SIGTERM', 'SIGINT'] as const)
@@ -994,6 +998,7 @@ for (const signal of ['SIGTERM', 'SIGINT'] as const)
       .then(() => queue.stop())
       .then(() => deletion.stop())
       .then(() => maintenance.stop())
+      .then(() => opsMonitor.stop())
       .then(() => repository.close())
       .then(() => {
         store.close();

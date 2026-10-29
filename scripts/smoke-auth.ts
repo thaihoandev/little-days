@@ -23,6 +23,7 @@ async function start() {
     {
       env: {
         ...process.env,
+        OPS_ALERT_ENABLED: 'false',
         STORAGE_DRIVER: 'local',
         DATABASE_URL: '',
         DATA_DIR: root,

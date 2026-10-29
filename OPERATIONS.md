@@ -54,7 +54,34 @@ Số đo render là wall time, CPU của tiến trình Node, RSS lấy cuối t�
 
 `deploy/prometheus.yml` và `deploy/alerts.yml` có bảy cảnh báo: API không scrape được, worker mất heartbeat, queue chờ lâu, HTTP 5xx, xóa tài khoản retry, tài khoản gần quota và nhiều render lỗi. Caddy chặn operator API từ domain công khai; Prometheus truy cập qua mạng nội bộ. Prometheus UI chỉ bind localhost.
 
-Rules hiển thị trạng thái firing trong Prometheus. Để gửi thông báo ra ngoài cần cấu hình Alertmanager/receiver của môi trường triển khai; repository chưa chứa địa chỉ người nhận và không tự gửi tin nhắn/email cảnh báo thật. Có thể bắt đầu bằng `ops:check` trong hệ thống giám sát sẵn có.
+Rules hiển thị trạng thái firing trong Prometheus. Có thể dùng Alertmanager riêng, hoặc bật bộ cảnh báo email tích hợp dưới đây. Không cần cài thêm dịch vụ cho cách tích hợp.
+
+### Cảnh báo email với Brevo hiện có
+
+Trên **Render → little-days-api → Environment**, thêm đúng hai biến, sau khi deploy bản mã mới:
+
+```dotenv
+OPS_ALERT_ENABLED=true
+OPS_ALERT_EMAIL=email-cua-ban@example.com
+```
+
+Thay địa chỉ mẫu bằng email nhận cảnh báo của người vận hành. Giữ nguyên `MAIL_DRIVER=brevo`, `BREVO_API_KEY`, `MAIL_FROM` đã hoạt động. Không thêm file `.env`, không đặt email vận hành vào frontend. Khi chưa cấu hình, tính năng mặc định tắt và không gửi mail.
+
+API kiểm tra mỗi phút. Một tập cảnh báo phải ổn định ít nhất hai phút mới gửi; tối đa một lần thử gửi mỗi giờ cho một địa chỉ nhận. Chỉ gửi khi tập cảnh báo thay đổi, có thông báo phục hồi khi các điều kiện hết lỗi. Bao gồm queue chờ trên 10 phút, cleanup retry, tài khoản vượt 90% quota và ít nhất ba render lỗi/24h. Worker không heartbeat chỉ tạo cảnh báo khi có video queued/running, phù hợp worker local được bật khi cần.
+
+`ops_notifications` lưu trạng thái/lease trên database chung để các tiến trình không gửi cùng cảnh báo và restart không gửi lại. Địa chỉ người nhận chỉ ở biến môi trường; khóa dòng là SHA-256 của địa chỉ. Nội dung thư/log không gồm email khách hàng, ảnh, chữ scrapbook, owner hoặc job ID. Trạng thái thông báo mới nhất có trong `/api/ops/status` dưới `notifications` và chỉ đọc được bằng operator token.
+
+```powershell
+# Kiểm tra một lần với cùng database/mail cấu hình; gửi nếu đủ điều kiện:
+npm run ops:monitor
+
+# Chỉ dùng khi đã kiểm tra provider; có thể gửi trùng nếu lần trước thực tế đã nhận:
+npm run ops:monitor -- --retry-uncertain
+```
+
+Lần thử được ghi trước khi gọi provider. Nếu bị từ chối xác định, trạng thái là `failed`; timeout/mất kết nối hoặc tiến trình dừng giữa lúc gửi là `unknown`. Không tự gửi lại cùng tập cảnh báo. Sau khi sửa cấu hình, lệnh retry chủ động vẫn tuân thủ grace/cooldown. `accepted` nghĩa provider nhận yêu cầu, chưa xác nhận vào inbox. Việc kiểm thử tự động chỉ dùng mailer giả hoặc hộp thư local, không gửi email thật.
+
+Bộ tích hợp chạy cùng API nên ngừng kiểm tra khi API dừng hoặc ngủ. Nó không phát hiện được chính API đang mất kết nối; nếu cần giám sát uptime độc lập phải cấu hình hệ thống bên ngoài. Không có worker cloud hoặc cơ chế giữ Render thức được thêm ở bước này. Cảnh báo chỉ lưu trạng thái vận hành, không thay thế backup dữ liệu.
 
 Tham chiếu cấu hình: [Prometheus configuration](https://prometheus.io/docs/prometheus/latest/configuration/configuration/), [alerting rules](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/).
 

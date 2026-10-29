@@ -69,7 +69,24 @@ export class Observability {
         )
       )[0].bytes,
     );
+    const notification = (await db.hasTable('ops_notifications'))
+      ? (
+          await db.query(
+            'SELECT checked_at,attempted_at,delivery,lease_until FROM ops_notifications ORDER BY checked_at DESC LIMIT 1',
+          )
+        )[0]
+      : undefined;
     return {
+      notifications: notification
+        ? {
+            lastCheck: Number(notification.checked_at),
+            lastAttempt: Number(notification.attempted_at),
+            delivery:
+              notification.delivery === 'sending' && Number(notification.lease_until) <= now
+                ? 'unknown'
+                : String(notification.delivery),
+          }
+        : null,
       workers: workers.filter((w) => now - w.lastSeen < 15000).length,
       jobs: states,
       oldestQueuedSeconds: queued ? Math.floor((now - Number(queued.oldest)) / 1000) : 0,

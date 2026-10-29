@@ -4,7 +4,7 @@ Ngày cập nhật: **29/10/2026**.
 
 ## Kết quả hiện tại
 
-Bản local đã có luồng thực tế từ tạo album, upload ảnh, chỉnh layout và lưu server đến preview và xuất MP4. Đây là bản MVP để chạy thử, chưa phải toàn bộ hệ thống production trong `IMPLEMENTATION_PLAN.md`.
+App đã chạy công khai trên Render tại https://little-days-api.onrender.com, dùng PostgreSQL Neon và Cloudinary; người dùng xác nhận Brevo HTTPS đã gửi email thật thành công. Worker xuất video hiện vẫn chạy theo cấu hình cũ; phương án worker Northflank đã được người dùng hủy. Đây là bản MVP để chạy thử, chưa phải toàn bộ hệ thống production trong `IMPLEMENTATION_PLAN.md`.
 
 **Bản 0.2** tách render worker khỏi API, thêm hàng đợi SQL có lease/heartbeat và adapter media local/S3. Đã kiểm chứng hai worker qua S3 fixture; PostgreSQL 17 và container production cũng đã chạy thật trong QA.
 
@@ -37,7 +37,7 @@ Bản local đã có luồng thực tế từ tạo album, upload ảnh, chỉnh
 | Production build | NestJS phục vụ frontend build và API cùng origin |
 | Công cụ | Dockerfile, Compose PostgreSQL và workflow CI được chuẩn bị |
 | Vận hành | Quota bytes/lượt/giây video, retention 30 ngày, cleanup có lease và CLI dry-run, fingerprint đích storage |
-| Giám sát | RequestId/log JSON, operator status/metrics có khóa riêng, bảy Prometheus rules |
+| Giám sát | RequestId/log JSON, operator status/metrics có khóa riêng, bảy Prometheus rules; email opt-in qua mailer hiện có, lease/dedup bền vững, grace/cooldown và thông báo phục hồi |
 | Staging | Caddy HTTPS, PostgreSQL/app/worker/Prometheus, cấu hình riêng, lịch backup và hướng dẫn rollback/pilot |
 | Project skills | Ba SKILL.md riêng cho editor, backend và video trong `skills/` |
 
@@ -60,10 +60,11 @@ Trong lúc ảnh đang upload/lưu, editor tạm khóa tương tác để respon
 
 ## Kiểm chứng đã chạy
 
-- `npm test`: **63 tests qua**, gồm HTTPS mail contracts/lỗi/timeout/thu hồi token, quota, retention, cleanup/junction, backup, cấu hình Vercel, auth/domain/queue/storage.
+- `npm test`: **68 tests qua**, gồm năm kiểm thử cảnh báo email mới: ngưỡng, grace/cooldown, restart, claim đồng thời, lỗi gửi không retry mù và cấu hình opt-in; cùng các kiểm thử HTTPS mail/quota/retention/cleanup/backup/auth/domain/queue/storage trước đó.
 - `npm run typecheck`: qua.
 - `npm run build`: qua, có frontend production và JavaScript backend biên dịch.
 - `npm run format:check`: qua.
+- `npm run test:ops`: API biên dịch, bật giám sát opt-in, operator status có khóa, ghi thư vào hộp local, restart và CLI không gửi trùng; không gửi email thật. Năm unit test giám sát cũng qua trên PostgreSQL 17 trong database/container QA riêng.
 - `npm run test:api`: qua với local storage và với `SMOKE_STORAGE=s3`; kiểm tra ownership, đăng ký/đăng nhập, CAS, xử lý ảnh thật, media riêng tư, thu hồi share, idempotency, cancel và xóa.
 - `npm run test:s3`: qua HTTP fixture local, gồm SDK ký request, kiểm tra bucket, put buffer/stream, bounded read, get, prefix và delete.
 - `npm run test:cloudinary`: qua HTTP fixture local, gồm SDK ký upload, authenticated assets, chunked video trên 6 MB, private download, bounded read và xóa.
@@ -108,16 +109,16 @@ Kết quả screenshot và video nằm trong `test-results/` và không đưa v�
 | Server checkpoint/migration | Lịch sử 50 revision, checkpoint có tên, xem trước và restore trong UI; trigger nguyên tử | Migration schema document khi lên phiên bản mới |
 | Editor nâng cao | Multi-select, nhóm, căn/chia đều, snap guides, lớp, mẫu cá nhân và cảnh báo chữ tràn | Nhóm lồng nhau và gesture trên canvas |
 | Audio cá nhân | Nhạc gốc/tắt/upload, waveform/trim kéo, loop/volume/fade; lưu cấu hình, Cloudinary/S3/local | Thư viện nhạc tuyển chọn |
-| Triển khai cloud | Build/container local; backup/restore CLI đã kiểm chứng SQLite + Cloudinary fixture | Staging, domain, HTTPS, secrets, lịch backup và restore drill trên hạ tầng thật |
+| Triển khai cloud | Render công khai, Neon/Cloudinary, Brevo thật đã được người dùng xác nhận; backup/restore CLI đã kiểm chứng qua fixture | Bật receiver cảnh báo, lịch backup và restore drill trên hạ tầng thật; worker cloud đã hủy |
 
-Docker Desktop đã khởi động được; đã build image và chạy container/PostgreSQL 17 thật. CI có job PostgreSQL/container trong `.github/workflows/checks.yml`; kiểm tra kết quả GitHub Actions sau khi push. Kiểm thử cloud tự động dùng fixture, không thay thế domain/SMTP/provider staging thật. Chưa triển khai máy chủ công khai.
+Docker Desktop đã khởi động được; đã build image và chạy container/PostgreSQL 17 thật. CI có job PostgreSQL/container trong `.github/workflows/checks.yml`; kiểm tra kết quả GitHub Actions sau khi push. Kiểm thử cloud tự động dùng fixture; xác nhận email thật đến từ người dùng. Cảnh báo vận hành thật chưa được bật khi chưa có địa chỉ nhận cấu hình trên Render.
 
 ## Ưu tiên tiếp theo
 
 Đã bổ sung xóa tài khoản vĩnh viễn: xác nhận mật khẩu/câu xác nhận trong UI, thu hồi session/share/auth token, hủy export, hàng đợi dọn dữ liệu và media có lease/retry qua restart. Có sổ object trước upload, chặn ghi muộn, dọn thư local, trạng thái theo dõi sau reload và CLI vận hành. API Cloudinary fixture và UI desktop/mobile đã qua; dữ liệu tài khoản khác được giữ. Backup/restore chặn khi còn yêu cầu xóa. Xem `ACCOUNT_DELETION.md` về backup cũ và media mồ côi trước khi có sổ object.
 
 1. Dùng thử album với ảnh thật và lấy phản hồi về thao tác editor/thiết kế template.
-2. Điền domain/credentials staging, triển khai máy chủ và xác minh HTTPS/SMTP thật.
+2. Bật và xác minh receiver cảnh báo trên Render bằng hai biến trong OPERATIONS.md; giữ Brevo hiện có.
 3. Bật timer backup trên server và restore drill; cấu hình receiver cảnh báo ngoài nếu cần.
 4. Đo tải/CPU/RAM toàn container và chi phí trên hạ tầng đích, hiệu chỉnh quota.
 5. Pilot 3–5 người theo PILOT.md; thư viện nhạc tuyển chọn, gesture và nhóm lồng nhau là mở rộng sau pilot.

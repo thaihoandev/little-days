@@ -12,6 +12,7 @@ const fixture = await startCloudinaryFixture(),
   base = 'http://127.0.0.1:4360/api';
 const env = {
   ...process.env,
+  OPS_ALERT_ENABLED: 'false',
   ...fixture.env,
   DATABASE_URL: '',
   DATA_DIR: root,

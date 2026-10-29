@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "ops:monitor": "node --env-file-if-exists=.env --import tsx scripts/monitor-ops.ts",
+    "test:ops": "tsx scripts/smoke-ops.ts",
     "setup:env": "node scripts/setup-env.mjs",
     "dev": "concurrently -k -n api,worker,web \"npm:dev:api\" \"npm:dev:worker\" \"npm:dev:web\"",
     "dev:web": "vite --config apps/web/vite.config.ts",

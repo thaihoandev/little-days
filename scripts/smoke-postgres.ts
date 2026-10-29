@@ -40,6 +40,7 @@ try {
       'tests/auth.test.ts',
       'tests/account-deletion.test.ts',
       'tests/resource-policy.test.ts',
+      'tests/ops-monitor.test.ts',
     ]),
   );
   results.push(await run('api', ['scripts/smoke-api.ts']));

@@ -25,6 +25,8 @@ Thứ tự thực hiện:
 
 Máy bạn tắt thì web cloud vẫn dùng được, còn video chờ worker. Để bật email xác minh/quên mật khẩu, dùng Brevo HTTPS theo [AUTH_EMAIL.md](AUTH_EMAIL.md): chỉ thêm ba biến trên Render, không thêm file `.env`.
 
+**Trạng thái 29/10/2026:** người dùng đã xác nhận email thật hoạt động. Phương án worker Northflank đã hủy; giữ worker hiện tại. Bước vận hành tiếp theo là cảnh báo email: thêm `OPS_ALERT_ENABLED=true` và `OPS_ALERT_EMAIL` trong Render Environment theo [OPERATIONS.md](OPERATIONS.md). Không tạo thêm file env hoặc tài nguyên cloud.
+
 ## Phương án đã chuẩn bị
 
 | Thành phần | Chạy ở đâu |

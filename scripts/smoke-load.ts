@@ -15,6 +15,7 @@ const origin = 'http://127.0.0.1:4371',
   token = randomBytes(32).toString('hex');
 const env = {
   ...process.env,
+  OPS_ALERT_ENABLED: 'false',
   ...fixture.env,
   DATABASE_URL: process.env.TEST_DATABASE_URL || '',
   DATA_DIR: root,

@@ -143,6 +143,7 @@ try {
     env: {
       ...process.env,
       ...fixture.env,
+      OPS_ALERT_ENABLED: 'false',
       DATABASE_URL: targetUrl,
       DATA_DIR: target,
       PORT: '4357',

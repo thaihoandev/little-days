@@ -34,6 +34,7 @@ jobs:
         env:
           SMOKE_STORAGE: s3
       - run: npm run build
+      - run: npm run test:ops
       - run: npm run test:production
       - run: npm run video:browser
       - name: API and two workers render through S3 fixture

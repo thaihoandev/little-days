@@ -6,6 +6,7 @@ let logs = '';
 const server = spawn(process.execPath, ['build/apps/api/src/main.js'], {
   env: {
     ...process.env,
+    OPS_ALERT_ENABLED: 'false',
     NODE_ENV: 'production',
     PORT: String(port),
     DATA_DIR: path.resolve('test-results/production-db'),

@@ -13,6 +13,7 @@ let logs = '';
 const server = spawn(process.execPath, ['--import', 'tsx', 'apps/api/src/main.ts'], {
   env: {
     ...process.env,
+    OPS_ALERT_ENABLED: 'false',
     DATABASE_URL: process.env.TEST_DATABASE_URL || '',
     STORAGE_DRIVER: 'local',
     ...fixture?.env,

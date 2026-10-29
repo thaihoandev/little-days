@@ -11,8 +11,10 @@ Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → st
 - [x] Cảnh báo chữ tràn, waveform/trim kéo thả, kiểm tra mobile.
 - [x] Checklist pilot, tài liệu và giới hạn kiểm chứng.
 - [x] Bổ sung phương án free theo yêu cầu: Render Blueprint, mẫu worker cloud riêng, generator Vercel và hướng dẫn.
-- [ ] Triển khai máy chủ/domain thật, xác minh SMTP và receiver cảnh báo.
+- [x] App công khai trên Render, PostgreSQL Neon và Cloudinary; người dùng xác nhận Brevo HTTPS gửi email thật thành công.
+- [x] Mã cảnh báo email opt-in, lưu trạng thái chống gửi trùng qua restart, grace/cooldown và CLI kiểm tra.
+- [ ] Bật receiver cảnh báo trên Render bằng email của người vận hành; xác nhận nhận mail cảnh báo thật.
 - [ ] Bật lịch backup, restore drill và đo công suất trên hạ tầng đích.
 - [ ] Pilot 3–5 người thật; đối chiếu license và nghiệm thu phát hành.
 
-Docker đã hoạt động và PostgreSQL/container thật đã qua QA. Các bước hạ tầng/pilot thật cần domain, máy chủ và người thử; không thay thế bằng fixture. Chi tiết: OPERATIONS.md, STAGING.md và PILOT.md.
+Worker cloud đã được người dùng hủy; giữ worker hiện tại và không tạo tài nguyên Northflank hoặc dịch vụ tính phí. App đã chạy tại https://little-days-api.onrender.com. Email thật hoàn tất theo xác nhận của người dùng; giám sát/backup/pilot thật vẫn cần kết quả riêng. Chi tiết: OPERATIONS.md, STAGING.md và PILOT.md.
