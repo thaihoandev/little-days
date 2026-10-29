@@ -25,7 +25,7 @@ Bản local đã có luồng thực tế từ tạo album, upload ảnh, chỉnh
 | Kỉ niệm | Sự kiện có ngày, text, ảnh, đánh dấu nổi bật; đưa lời nhắn lên scrapbook |
 | Ngày động | Số ngày bên nhau, countdown hằng năm, mốc số ngày tùy chỉnh; múi giờ album và 29/2 |
 | Tài khoản | Phiên khách; đăng ký/đăng nhập, scrypt async, cookie HttpOnly; xác minh email, quên/reset/đổi mật khẩu; thu hồi phiên cũ và rate-limit bền vững |
-| Email | Hộp thư development local, SMTP bắt buộc TLS, link một lần 24h/15 phút; không trả token qua HTTP |
+| Email | Hộp thư local, SMTP/TLS, Brevo và Resend HTTPS; timeout, chặn redirect, log không chứa secret; link một lần 24h/15 phút |
 | Quyền | Album/ảnh/export theo chủ sở hữu; link chia sẻ chỉ đọc và thu hồi |
 | Database | SQLite mặc định; PostgreSQL 17 thật qua auth/history/lease/quota/cleanup, API, video và backup/restore |
 | Video | Preset 15/30/60 giây hoặc cảnh 1–60 giây, tổng ≤180 giây; lưu tùy chọn theo album; preview và MP4 dùng cùng timeline |
@@ -60,7 +60,7 @@ Trong lúc ảnh đang upload/lưu, editor tạm khóa tương tác để respon
 
 ## Kiểm chứng đã chạy
 
-- `npm test`: **57 tests qua**, gồm quota đồng thời, export budget, retention, cleanup/junction, prune backup, cấu hình Vercel, xóa tài khoản và các kiểm tra auth/domain/queue/storage.
+- `npm test`: **63 tests qua**, gồm HTTPS mail contracts/lỗi/timeout/thu hồi token, quota, retention, cleanup/junction, backup, cấu hình Vercel, auth/domain/queue/storage.
 - `npm run typecheck`: qua.
 - `npm run build`: qua, có frontend production và JavaScript backend biên dịch.
 - `npm run format:check`: qua.
@@ -76,6 +76,7 @@ Trong lúc ảnh đang upload/lưu, editor tạm khóa tương tác để respon
 - `npm run test:history-ui`: tạo mốc, reload, preview, restore/quay lại, reset undo, desktop/mobile và chặn restore với revision cũ.
 - `npm run test:auth`: đăng ký giữ album khách, xác minh/reset một lần, response quên mật khẩu chung, đổi mật khẩu, vô hiệu hóa phiên và persistence qua restart.
 - `npm run test:smtp`: SMTP/TLS fixture localhost xác minh handshake, authentication và nhận thư; unit test từ chối AUTH/gửi mail nếu không có TLS. Không gửi email thật.
+- `npm run test:mail`: toàn bộ auth API với Brevo và Resend qua HTTP fixture localhost; xác minh/reset một lần, thu hồi phiên, giữ album và persistence qua restart. Khóa giả, địa chỉ `.test`, không gọi provider hoặc gửi mail thật.
 - `npm run test:auth-ui`: desktop/mobile, gửi lại/xác minh, đổi/quên/reset, đăng nhập lại giữ album, xóa token khỏi URL và từ chối link đã dùng.
 - `npm run test:deletion`: Cloudinary HTTP fixture, xác nhận mật khẩu, thu hồi phiên/share, hủy export, dọn ảnh/nhạc/video/file chưa hoàn tất và giữ dữ liệu tài khoản khác.
 - `npm run test:deletion-ui`: xác nhận rõ ràng, sai mật khẩu, đăng xuất, trạng thái sau reload, dọn đúng bản nháp và desktop/mobile.

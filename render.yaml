@@ -38,7 +38,9 @@ services:
       - key: TRUST_PROXY_HOPS
         value: '1'
       - key: MAIL_DRIVER
-        value: disabled
+        # Start with disabled; change to brevo after configuring MAIL_FROM/BREVO_API_KEY.
+        # sync:false preserves the value set manually in Render on later Blueprint syncs.
+        sync: false
       - key: QUOTA_STORAGE_MB
         value: '256'
       - key: QUOTA_EXPORTS_PER_DAY

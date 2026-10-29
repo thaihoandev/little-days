@@ -9,7 +9,50 @@ Xóa tài khoản vĩnh viễn đã có trong **Tài khoản → Xóa tài kho�
 - **Tài khoản → Đổi mật khẩu** yêu cầu mật khẩu hiện tại và xác nhận mật khẩu mới. Phiên đang thao tác được cấp cookie mới; các phiên khác phải đăng nhập lại.
 - **Đăng nhập → Quên mật khẩu?** gửi liên kết đặt lại. Mở email, nhập/xác nhận mật khẩu mới, sau đó đăng nhập lại. Album vẫn thuộc tài khoản cũ, không chuyển sang phiên khách khác.
 
-Mật khẩu dài 10–200 ký tự. Xác minh email hiện là trạng thái tài khoản; chưa khóa chức năng album hoặc đăng nhập đối với email chưa xác minh, để các tài khoản đã có tiếp tục dùng được. Chưa có đăng nhập magic link, thay đổi email hay xóa tài khoản trong phần triển khai này.
+Mật khẩu dài 10–200 ký tự. Xác minh email hiện là trạng thái tài khoản; chưa khóa chức năng album hoặc đăng nhập đối với email chưa xác minh, để các tài khoản đã có tiếp tục dùng được. Chưa có magic link hoặc đổi email; xóa tài khoản đã có trong hướng dẫn riêng.
+
+## Bật mail trên Render Free: dùng Brevo HTTPS
+
+Chỉ cập nhật **Render → service API → Environment**. Không cần tạo thêm file `.env`; không cần cấu hình mail cho worker hoặc Vercel frontend.
+
+1. Tạo tài khoản tại [Brevo](https://www.brevo.com/), xác nhận email tài khoản và hoàn tất bước kích hoạt transactional email nếu được yêu cầu.
+2. Trong phần **Senders, Domains & Dedicated IPs → Senders**, thêm địa chỉ gửi bạn sở hữu và xác minh bằng mã gửi tới hộp thư. Tên hiển thị có thể là **Little Days**. `MAIL_FROM` phải dùng sender đã được Brevo chấp nhận. Xem [hướng dẫn sender](https://help.brevo.com/hc/en-us/articles/208836149-Create-a-new-sender-From-name-and-From-email).
+3. Trong phần **SMTP & API → API Keys**, tạo API key. Dùng **API key**, không dùng SMTP key. Không gửi khóa vào chat/Git hoặc biến `VITE_*`.
+4. Thêm/sửa ba biến sau trên Render, thay phần ví dụ bằng thông tin thật:
+
+```dotenv
+MAIL_DRIVER=brevo
+BREVO_API_KEY=your-api-key
+MAIL_FROM=Little Days <your-verified-sender@example.com>
+```
+
+Giữ `APP_ORIGIN` bằng URL HTTPS frontend bạn đang dùng (Render hoặc Vercel), không thêm dấu `/` hoặc path phía sau. Lưu biến và redeploy API sau khi mã nguồn mới đã được cập nhật. Blueprint không ép ghi đè `MAIL_DRIVER` về disabled ở các lần sync sau.
+
+5. Trên web, mở **Tài khoản → Gửi lại email xác minh**, kiểm tra Inbox/Spam, mở liên kết rồi bấm xác minh. Sau đó dùng **Đăng nhập → Quên mật khẩu?** và thử đặt mật khẩu mới trên tài khoản thử. Người sở hữu chủ động thực hiện các thao tác này để kiểm chứng gửi thật; agent chỉ gửi tới fixture localhost trong kiểm thử.
+
+Brevo gửi transactional email qua `https://api.brevo.com/v3/smtp/email`; không cần SMTP port. [API chính thức](https://developers.brevo.com/docs/send-a-transactional-email). Gói Free có giới hạn gửi/ngày, dùng chung với các loại email khác trong tài khoản; xem [giới hạn Brevo Free](https://help.brevo.com/hc/en-us/articles/208589409-About-Brevo-s-pricing-plans).
+
+Nếu chưa có domain riêng, làm theo yêu cầu xác minh sender hiện tại của Brevo. Địa chỉ Gmail/Yahoo không thể xác thực domain như domain của chính bạn; Brevo có thể thay phần domain gửi thành `brevosend.com`. Không thể cấu hình domain `onrender.com`/`vercel.app` làm domain email của bạn. [Giải thích của Brevo](https://help.brevo.com/hc/en-us/articles/16045394674066-Troubleshooting-Domain-authentication).
+
+### Khi chưa nhận được thư
+
+API chấp nhận thư chưa đồng nghĩa thư đã vào Inbox. Kiểm tra Transactional Logs của Brevo để xem delivered/bounced/blocked và trạng thái sender/account. Không thêm chức năng public để đọc log thư hoặc trả token reset.
+
+Log Render có event `mail_delivery_accepted` hoặc `mail_delivery_failed`, chỉ chứa provider/mã lỗi, không ghi email, nội dung, token hoặc API key:
+
+| Reason/status | Cần kiểm tra |
+| --- | --- |
+| `unauthorized`, 401 | API key đúng loại, còn hiệu lực và đã được đặt trên API Render |
+| `sender_or_permission`, 403 | Sender đã xác minh, quyền API và tài khoản transactional đã được kích hoạt |
+| `rate_limited`, 429 | Hạn mức/tốc độ gửi của provider |
+| `provider_error`, 400/5xx | Cấu hình sender/tài khoản hoặc trạng thái dịch vụ; xem dashboard provider |
+| `unavailable_or_invalid_response` | Kết nối/timeout/phản hồi provider; thử gửi lại từ UI sau khi kiểm tra |
+
+Gửi HTTP có timeout 15 giây, không theo redirect và không tự gửi lại khi kết quả chưa rõ để tránh thư trùng. Nếu thất bại, token của lần đó được thu hồi. Yêu cầu quên mật khẩu vẫn trả thông báo chung cho tài khoản có/không tồn tại; xem log vận hành để biết gửi bị lỗi. Rate-limit của app vẫn áp dụng.
+
+### Nếu đã có Resend
+
+Có adapter HTTPS tùy chọn `MAIL_DRIVER=resend`, `RESEND_API_KEY` và cùng `MAIL_FROM`. Cần sender/domain hợp lệ theo [hướng dẫn Resend](https://resend.com/docs/api-reference/emails/send-email). Chọn một driver; không tự fallback sang dịch vụ khác nếu gửi lỗi. Phương án đang hướng dẫn cho chủ dự án là Brevo.
 
 ## Chạy thử không cần SMTP
 
@@ -28,6 +71,8 @@ Lệnh đầu liệt kê metadata; `--latest` in nội dung thư mới nhất, g
 Không gửi được email xác minh không làm mất tài khoản vừa tạo: giao diện thông báo và cho gửi lại trong Tài khoản.
 
 ## Cấu hình email thật
+
+Phần SMTP bên dưới dành cho máy chủ cho phép các cổng đó. Render Free chặn 25/465/587; dùng Brevo HTTPS ở trên cho triển khai hiện tại.
 
 Thêm hoặc cập nhật các biến trong `.env` theo dịch vụ SMTP bạn sử dụng; các tên biến cũng có trong `.env.example`. Không đưa chúng vào biến có tiền tố `VITE_`.
 
@@ -48,7 +93,7 @@ APP_ORIGIN=https://your-app.example
 
 Khởi động lại API sau khi đổi biến môi trường. Credentials Cloudinary không thay đổi và không liên quan cấu hình email.
 
-Trong production, nếu không cấu hình `MAIL_DRIVER`, email mặc định là `disabled`: ứng dụng vẫn chạy, nhưng yêu cầu gửi email báo chưa khả dụng. Đặt rõ `MAIL_DRIVER=smtp` để gửi thật. `MAIL_DRIVER=local` bị từ chối trong production. Nếu dùng file `.env` tạo mới từ example, cần đổi giá trị `local` trước khi bật `NODE_ENV=production`.
+Trong production, nếu không cấu hình `MAIL_DRIVER`, email mặc định là `disabled`: ứng dụng vẫn chạy nhưng yêu cầu gửi mail báo chưa khả dụng. Đặt rõ `brevo`, `resend` hoặc `smtp` theo provider. `MAIL_DRIVER=local` bị từ chối trong production. Nếu dùng file `.env` tạo từ example, đổi giá trị `local` trước khi bật `NODE_ENV=production`.
 
 ## Liên kết, phiên và giới hạn gửi
 
@@ -69,6 +114,7 @@ Hộp thư local và token/rate-limit tạm không được backup. Khi restore 
 npm test
 npm run test:auth
 npm run test:smtp
+npm run test:mail
 
 # Web/API development với MAIL_DRIVER=local và DATA_DIR=test-results/auth-ui-data:
 npm run test:auth-ui
@@ -78,4 +124,4 @@ npm run test:auth-ui
 
 `test:auth-ui` dùng Chromium và đọc hộp thư local, không kết nối SMTP. Có thể đổi URL bằng `SMOKE_UI_ORIGIN` và thư mục dữ liệu bằng `AUTH_UI_DATA_DIR`. Đã kiểm tra desktop/mobile, link fragment được xóa, xác minh, đổi/quên/reset, đăng nhập lại và từ chối dùng lại link.
 
-Các kiểm thử cục bộ xác minh SQLite và SMTP/TLS fixture. PostgreSQL có nhánh triển khai và workflow CI riêng; cần kiểm chứng trên database và nhà cung cấp SMTP của môi trường triển khai trước khi phát hành rộng.
+`test:mail` chạy toàn bộ auth API với Brevo và Resend qua HTTP fixture localhost, key giả và địa chỉ `.test`, không gửi thư thật. Unit test có timeout/abort, lỗi provider/response, chặn redirect, kiểm tra cấu hình và thu hồi token khi gửi lỗi. PostgreSQL đã được kiểm chứng ở bộ QA riêng; tài khoản mail/sender thật vẫn cần được người sở hữu cấu hình và kiểm tra nhận thư trên Render.

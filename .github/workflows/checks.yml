@@ -19,6 +19,7 @@ jobs:
       - run: npm run test:auth
       - run: npm run test:deletion
       - run: npm run test:smtp
+      - run: npm run test:mail
       - run: npm run test:s3
       - run: npm run test:cloudinary
       - run: npm run test:backup

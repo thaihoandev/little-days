@@ -60,6 +60,8 @@ Mở **Tài khoản** để xem trạng thái xác minh email, gửi lại liên
 
 Development mặc định dùng hộp thư local: `npm run mail:outbox -- --latest` để xem thư và mở liên kết. Gửi thật qua SMTP bằng các biến mới trong `.env.example`; `.env` đang có và credentials Cloudinary được giữ nguyên. Xem [hướng dẫn tài khoản/email](AUTH_EMAIL.md).
 
+**Mail trên Render Free:** đã có Brevo HTTPS, chỉ cấu hình `MAIL_DRIVER=brevo`, `BREVO_API_KEY`, `MAIL_FROM` trên Render API sau khi xác minh sender. Không cần thêm file `.env` hoặc cấu hình mail cho worker. Có adapter Resend HTTPS nếu đã dùng provider đó. Xem [các bước bật Brevo](AUTH_EMAIL.md#bật-mail-trên-render-free-dùng-brevo-https).
+
 **Tài khoản → Xóa tài khoản** yêu cầu mật khẩu, câu xác nhận và đồng ý xóa vĩnh viễn. Hệ thống thu hồi phiên/link chia sẻ ngay, hủy xuất video và dọn dữ liệu/media nền với retry qua restart. Không cần biến môi trường mới. Xem [hướng dẫn xóa tài khoản](ACCOUNT_DELETION.md).
 
 ## Lịch sử và khôi phục

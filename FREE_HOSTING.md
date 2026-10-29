@@ -23,7 +23,7 @@ Thứ tự thực hiện:
 5. Ở thư mục dự án chạy `npm run build`, rồi `npm run worker:cloud`. Giữ terminal mở khi cần xuất video. Không cần chạy `npm run dev` để sử dụng web đã deploy.
 6. Mở URL Render, tạo album mới và thử xuất một clip ngắn. Album cũ trong SQLite local chưa được chuyển tự động sang Neon.
 
-Máy bạn tắt thì web cloud vẫn dùng được, còn video chờ worker. Cấu hình demo mặc định tắt gửi email; đăng ký/đăng nhập vẫn có, xác minh/quên mật khẩu qua email cần cấu hình thêm provider.
+Máy bạn tắt thì web cloud vẫn dùng được, còn video chờ worker. Để bật email xác minh/quên mật khẩu, dùng Brevo HTTPS theo [AUTH_EMAIL.md](AUTH_EMAIL.md): chỉ thêm ba biến trên Render, không thêm file `.env`.
 
 ## Phương án đã chuẩn bị
 
@@ -62,7 +62,7 @@ Dockerfile build frontend lẫn backend; không cần Vercel để có giao di�
 
 Free API mặc định 256 MB media/tài khoản, 5 lượt/300 giây video trong 24 giờ và retention 7 ngày. Đây là quota ứng dụng, không thay thế hạn mức tổng Cloudinary/Neon/Render. Tài khoản khách vẫn tạo album và đăng ký được.
 
-`MAIL_DRIVER=disabled` cho phép dựng demo trước mà không gửi email thật. **Xác minh/quên mật khẩu qua email chưa hoạt động ở cấu hình này.** Khi bổ sung provider, cấu hình mail trên API. Render Free chặn SMTP ports 25/465/587; không chỉ copy cấu hình SMTP 587 từ local và coi là đã chạy được. Cần provider hỗ trợ cổng TLS được phép hoặc bổ sung adapter email HTTPS. [Giới hạn outbound](https://render.com/docs/free#other-limitations).
+Khi Blueprint hỏi `MAIL_DRIVER`, chọn `disabled` để dựng demo trước hoặc `brevo` sau khi đã cấu hình sender/API key. Bật gửi thật bằng `MAIL_DRIVER=brevo`, `BREVO_API_KEY` và `MAIL_FROM` trên Render; xem [AUTH_EMAIL.md](AUTH_EMAIL.md). Render Free chặn SMTP ports 25/465/587; adapter Brevo dùng HTTPS nên không dùng các cổng này. [Giới hạn outbound](https://render.com/docs/free#other-limitations).
 
 ## 3. Bật worker ở máy bạn
 

@@ -38,6 +38,7 @@
     "test:auth": "tsx scripts/smoke-auth.ts",
     "test:auth-ui": "tsx scripts/smoke-auth-ui.ts",
     "test:smtp": "tsx scripts/smoke-smtp.ts",
+    "test:mail": "tsx scripts/smoke-http-mail.ts",
     "cleanup:accounts": "node --env-file-if-exists=.env --import tsx scripts/cleanup-accounts.ts",
     "test:deletion": "tsx scripts/smoke-deletion.ts",
     "test:deletion-ui": "tsx scripts/smoke-deletion-ui.ts",

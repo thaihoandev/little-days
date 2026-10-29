@@ -2,27 +2,45 @@ import assert from 'node:assert/strict';
 import { spawn, type ChildProcess } from 'node:child_process';
 import { readFile, readdir } from 'node:fs/promises';
 import path from 'node:path';
+import { startHttpMailFixture } from './http-mail-fixture.js';
 
 const root = path.resolve('test-results/auth-api', crypto.randomUUID()),
   base = 'http://127.0.0.1:4359/api';
+const driver = process.env.SMOKE_MAIL_DRIVER;
+if (driver && !['brevo', 'resend'].includes(driver)) throw new Error('Invalid test mail driver');
+const fixture = driver ? await startHttpMailFixture(root, driver as 'brevo' | 'resend') : undefined;
 let server: ChildProcess,
   logs = '';
 async function start() {
-  server = spawn(process.execPath, ['--import', 'tsx', 'apps/api/src/main.ts'], {
-    env: {
-      ...process.env,
-      STORAGE_DRIVER: 'local',
-      DATABASE_URL: '',
-      DATA_DIR: root,
-      PORT: '4359',
-      APP_ORIGIN: 'http://127.0.0.1:5359',
-      DISABLE_RENDER_WORKER: 'true',
-      MAIL_DRIVER: 'local',
-      AUTH_RATE_LIMIT_PER_MINUTE: '200',
+  server = spawn(
+    process.execPath,
+    [
+      '--import',
+      'tsx',
+      ...(fixture ? ['--import', './scripts/http-mail-preload.mjs'] : []),
+      'apps/api/src/main.ts',
+    ],
+    {
+      env: {
+        ...process.env,
+        STORAGE_DRIVER: 'local',
+        DATABASE_URL: '',
+        DATA_DIR: root,
+        PORT: '4359',
+        APP_ORIGIN: 'http://127.0.0.1:5359',
+        DISABLE_RENDER_WORKER: 'true',
+        NODE_ENV: 'development',
+        MAIL_DRIVER: driver || 'local',
+        MAIL_FROM: 'Little Days <sender@example.test>',
+        BREVO_API_KEY: 'fixture-brevo-api-key',
+        RESEND_API_KEY: 'fixture-resend-api-key',
+        MAIL_FIXTURE_ORIGIN: fixture?.origin || '',
+        AUTH_RATE_LIMIT_PER_MINUTE: '200',
+      },
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
     },
-    stdio: ['ignore', 'pipe', 'pipe'],
-    windowsHide: true,
-  });
+  );
   server.stdout!.on('data', (chunk) => (logs += String(chunk)));
   server.stderr!.on('data', (chunk) => (logs += String(chunk)));
   for (let i = 0; i < 80; i++) {
@@ -185,11 +203,15 @@ try {
   );
   assert.equal((await final('/albums/' + album.id)).status, 200);
   console.log(
-    'PASS auth API: guest ownership preserved, local mail links, verification/reset single use, generic recovery response, changed credentials, session revocation, durable tokens/rate limit across restart.',
+    'PASS auth API (' +
+      (driver || 'local mail') +
+      '): guest ownership preserved, verification/reset single use, generic recovery response, changed credentials, session revocation, durable tokens/rate limit across restart.',
   );
+  if (fixture) assert.ok(fixture.accepted >= 4);
 } catch (error) {
   console.error(logs);
   throw error;
 } finally {
   await stop();
+  await fixture?.close();
 }

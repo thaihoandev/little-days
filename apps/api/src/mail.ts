@@ -2,6 +2,8 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import nodemailer from 'nodemailer';
+import { httpMailer, type MailHttpOptions } from './http-mail.js';
+export { MailDeliveryError } from './http-mail.js';
 
 export type Mail = { to: string; subject: string; text: string };
 export interface Mailer {
@@ -9,8 +11,13 @@ export interface Mailer {
   send(mail: Mail): Promise<void>;
   close(): void;
 }
-export function createMailer(dataDir: string, env: NodeJS.ProcessEnv = process.env): Mailer {
+export function createMailer(
+  dataDir: string,
+  env: NodeJS.ProcessEnv = process.env,
+  http: MailHttpOptions = {},
+): Mailer {
   const driver = env.MAIL_DRIVER || (env.NODE_ENV === 'production' ? 'disabled' : 'local');
+  if (driver === 'brevo' || driver === 'resend') return httpMailer(driver, env, http);
   if (driver === 'disabled')
     return {
       kind: driver,
@@ -22,7 +29,7 @@ export function createMailer(dataDir: string, env: NodeJS.ProcessEnv = process.e
   if (driver === 'local') {
     if (env.NODE_ENV === 'production')
       throw new Error(
-        'MAIL_DRIVER=local chỉ dành cho phát triển. Dùng smtp hoặc disabled trong production.',
+        'MAIL_DRIVER=local chỉ dành cho phát triển. Dùng brevo, resend, smtp hoặc disabled trong production.',
       );
     const root = path.resolve(dataDir, 'mail');
     return {
@@ -39,7 +46,8 @@ export function createMailer(dataDir: string, env: NodeJS.ProcessEnv = process.e
       close() {},
     };
   }
-  if (driver !== 'smtp') throw new Error('MAIL_DRIVER phải là local, smtp hoặc disabled.');
+  if (driver !== 'smtp')
+    throw new Error('MAIL_DRIVER phải là local, smtp, brevo, resend hoặc disabled.');
   const port = Number(env.SMTP_PORT || 587),
     from = env.MAIL_FROM || '';
   if (

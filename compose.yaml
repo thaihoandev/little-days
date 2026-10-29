@@ -22,6 +22,8 @@ x-app-environment: &app-environment
   S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-false}
   S3_PREFIX: ${S3_PREFIX:-little-days}
   MAIL_DRIVER: ${MAIL_DRIVER:-disabled}
+  BREVO_API_KEY: ${BREVO_API_KEY:-}
+  RESEND_API_KEY: ${RESEND_API_KEY:-}
   MAIL_FROM: ${MAIL_FROM:-Little Days <noreply@example.test>}
   SMTP_HOST: ${SMTP_HOST:-}
   SMTP_PORT: ${SMTP_PORT:-587}

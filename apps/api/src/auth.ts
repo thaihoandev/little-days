@@ -1,6 +1,7 @@
 import { createHash, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
 import { Repository } from './database.js';
-import type { Mailer } from './mail.js';
+import { MailDeliveryError, type Mailer } from './mail.js';
+import { logEvent } from './observability.js';
 
 export const authHash = (value: string) => createHash('sha256').update(value).digest('hex');
 export type Account = {
@@ -159,7 +160,13 @@ export class AccountSecurity {
             link +
             '\n\nNếu không yêu cầu thao tác này, bạn có thể bỏ qua email.',
         });
-      } catch {
+        logEvent('mail_delivery_accepted', { provider: this.mail.kind, purpose });
+      } catch (error) {
+        logEvent('mail_delivery_failed', {
+          provider: this.mail.kind,
+          reason: error instanceof MailDeliveryError ? error.reason : 'transport_error',
+          ...(error instanceof MailDeliveryError && error.status ? { status: error.status } : {}),
+        });
         await this.db.query('DELETE FROM auth_tokens WHERE token_hash=? RETURNING token_hash', [
           tokenHash,
         ]);
