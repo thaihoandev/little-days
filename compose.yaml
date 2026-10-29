@@ -1,0 +1,91 @@
+x-app-environment: &app-environment
+  NODE_ENV: production
+  HOST: 0.0.0.0
+  PORT: 3001
+  APP_ORIGIN: ${APP_ORIGIN:-http://127.0.0.1:3001}
+  DATABASE_URL: postgresql://scrapbook:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@postgres:5432/scrapbook
+  DATA_DIR: /app/data
+  COOKIE_SECURE: ${COOKIE_SECURE:-false}
+  RENDER_WORKER_MODE: external
+  RENDER_LEASE_MS: ${RENDER_LEASE_MS:-30000}
+  RENDER_TIMEOUT_MS: ${RENDER_TIMEOUT_MS:-900000}
+  STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+  CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+  CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+  CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
+  CLOUDINARY_FOLDER: ${CLOUDINARY_FOLDER:-little-days}
+  S3_ENDPOINT: ${S3_ENDPOINT:-}
+  S3_BUCKET: ${S3_BUCKET:-}
+  S3_REGION: ${S3_REGION:-us-east-1}
+  S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+  S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+  S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-false}
+  S3_PREFIX: ${S3_PREFIX:-little-days}
+  MAIL_DRIVER: ${MAIL_DRIVER:-disabled}
+  MAIL_FROM: ${MAIL_FROM:-Little Days <noreply@example.test>}
+  SMTP_HOST: ${SMTP_HOST:-}
+  SMTP_PORT: ${SMTP_PORT:-587}
+  SMTP_SECURE: ${SMTP_SECURE:-false}
+  SMTP_USER: ${SMTP_USER:-}
+  SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+  AUTH_RATE_LIMIT_PER_MINUTE: ${AUTH_RATE_LIMIT_PER_MINUTE:-30}
+  TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-0}
+  QUOTA_STORAGE_MB: ${QUOTA_STORAGE_MB:-512}
+  QUOTA_EXPORTS_PER_DAY: ${QUOTA_EXPORTS_PER_DAY:-10}
+  QUOTA_VIDEO_SECONDS_PER_DAY: ${QUOTA_VIDEO_SECONDS_PER_DAY:-600}
+  QUOTA_QUEUE_SIZE: ${QUOTA_QUEUE_SIZE:-20}
+  VIDEO_RETENTION_DAYS: ${VIDEO_RETENTION_DAYS:-30}
+  ORPHAN_GRACE_HOURS: ${ORPHAN_GRACE_HOURS:-24}
+  MAINTENANCE_ENABLED: ${MAINTENANCE_ENABLED:-true}
+services:
+  app:
+    build: .
+    image: little-days:local
+    ports:
+      - '127.0.0.1:3001:3001'
+    environment: *app-environment
+    volumes:
+      - media:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    init: true
+    restart: unless-stopped
+    shm_size: 1gb
+  worker:
+    image: little-days:local
+    build: .
+    command: ['npm', 'run', 'worker']
+    environment: *app-environment
+    volumes:
+      - media:/app/data
+    depends_on:
+      app:
+        condition: service_healthy
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 60s
+    shm_size: 1gb
+    healthcheck:
+      test: ['CMD', 'node', 'build/apps/worker/src/health.js']
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: scrapbook
+      POSTGRES_DB: scrapbook
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U scrapbook -d scrapbook']
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    restart: unless-stopped
+volumes:
+  media:
+  postgres:

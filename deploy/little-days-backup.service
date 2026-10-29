@@ -1,0 +1,12 @@
+[Unit]
+Description=Little Days verified backup in maintenance window
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/little-days
+Environment=BACKUP_ROOT=/var/backups/little-days
+Environment=BACKUP_RETENTION_DAYS=14
+ExecStart=/bin/sh /opt/little-days/deploy/backup.sh
+TimeoutStartSec=1h

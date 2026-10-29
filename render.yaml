@@ -1,0 +1,53 @@
+services:
+  - type: web
+    name: little-days-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health/ready
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: '3001'
+      - key: DATA_DIR
+        value: /app/data
+      - key: RENDER_WORKER_MODE
+        value: external
+      - key: DISABLE_RENDER_WORKER
+        value: 'true'
+      - key: STORAGE_DRIVER
+        value: cloudinary
+      - key: DATABASE_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CLOUDINARY_FOLDER
+        value: little-days-cloud
+      - key: APP_ORIGIN
+        sync: false
+      - key: COOKIE_SECURE
+        value: 'true'
+      - key: TRUST_PROXY_HOPS
+        value: '1'
+      - key: MAIL_DRIVER
+        value: disabled
+      - key: QUOTA_STORAGE_MB
+        value: '256'
+      - key: QUOTA_EXPORTS_PER_DAY
+        value: '5'
+      - key: QUOTA_VIDEO_SECONDS_PER_DAY
+        value: '300'
+      - key: QUOTA_QUEUE_SIZE
+        value: '10'
+      - key: VIDEO_RETENTION_DAYS
+        value: '7'
+      - key: ORPHAN_GRACE_HOURS
+        value: '24'

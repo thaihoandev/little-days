@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_PASSWORD: qa-fixture-only
+      POSTGRES_DB: scrapbook
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d scrapbook']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+  app:
+    image: ${QA_IMAGE:?Set QA_IMAGE}
+    environment: &qa-env
+      QA_FIXTURE: 'true'
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: '3001'
+      DATABASE_URL: postgresql://postgres:qa-fixture-only@postgres:5432/scrapbook
+      DATA_DIR: /app/data
+      STORAGE_DRIVER: local
+      MAIL_DRIVER: disabled
+      MAINTENANCE_ENABLED: 'false'
+      RENDER_WORKER_MODE: external
+      APP_ORIGIN: http://127.0.0.1:4379
+    ports: ['127.0.0.1:4379:3001']
+    volumes: ['media:/app/data']
+    depends_on:
+      postgres: { condition: service_healthy }
+    init: true
+  worker:
+    image: ${QA_IMAGE:?Set QA_IMAGE}
+    environment: *qa-env
+    command: ['npm', 'run', 'worker']
+    volumes: ['media:/app/data']
+    depends_on:
+      app: { condition: service_healthy }
+    healthcheck:
+      test: ['CMD', 'node', 'build/apps/worker/src/health.js']
+      interval: 5s
+      timeout: 10s
+      retries: 20
+    shm_size: 1gb
+    init: true
+volumes:
+  media:

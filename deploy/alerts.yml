@@ -1,0 +1,38 @@
+groups:
+  - name: little-days
+    rules:
+      - alert: ScrapbookApiUnavailable
+        expr: up{job="little-days"} == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations: { summary: 'API metrics unavailable; check API and operator token' }
+      - alert: ScrapbookWorkerUnavailable
+        expr: scrapbook_workers_live == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations: { summary: 'No live render worker' }
+      - alert: ScrapbookQueueDelayed
+        expr: scrapbook_queue_oldest_seconds > 600
+        for: 5m
+        labels: { severity: warning }
+        annotations: { summary: 'Video queue has waited over ten minutes' }
+      - alert: ScrapbookApiErrors
+        expr: sum(rate(scrapbook_http_requests_total{status=~"5.."}[5m])) > 0.05
+        for: 5m
+        labels: { severity: warning }
+        annotations: { summary: 'API server error rate increased' }
+      - alert: ScrapbookAccountCleanupRetry
+        expr: scrapbook_account_cleanup_retries > 0
+        for: 30m
+        labels: { severity: warning }
+        annotations: { summary: 'Account cleanup needs operator attention' }
+      - alert: ScrapbookStorageNearQuota
+        expr: scrapbook_storage_max_owner_ratio > 0.9
+        for: 30m
+        labels: { severity: warning }
+        annotations: { summary: 'An account is using over ninety percent of media quota' }
+      - alert: ScrapbookRenderFailures
+        expr: scrapbook_render_failures_24h >= 3
+        for: 10m
+        labels: { severity: warning }
+        annotations: { summary: 'At least three recent render jobs failed' }

@@ -1,0 +1,12 @@
+# Public localhost-only SMTP test certificate configuration.
+[req]
+distinguished_name = req_dn
+x509_extensions = v3
+prompt = no
+[req_dn]
+CN = localhost
+[v3]
+basicConstraints = critical,CA:TRUE
+keyUsage = critical,digitalSignature,keyEncipherment,keyCertSign
+extendedKeyUsage = serverAuth
+subjectAltName = DNS:localhost,IP:127.0.0.1

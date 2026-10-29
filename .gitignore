@@ -1,0 +1,16 @@
+node_modules/
+dist/
+build/
+data/
+.env*
+!.env.example
+*.log
+.DS_Store
+.cache/
+test-results/
+
+backups/
+.secrets/
+!.env.staging.example
+!.env.cloud.example
+data-cloud-worker/
