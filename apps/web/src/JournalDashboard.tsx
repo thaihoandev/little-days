@@ -307,7 +307,13 @@ export default function JournalDashboard({
             </div>
             <div className="calendar-grid">
               {days.map((day) => {
-                const count = all.filter((e) => occursOn(e, day)).length;
+                const events = all.filter((e) => occursOn(e, day)),
+                  count = events.length;
+                const photos = [
+                  ...new Map(
+                    events.flatMap((e) => e.assets.slice(0, 1)).map((a) => [a.id, a]),
+                  ).values(),
+                ];
                 return (
                   <button
                     key={day}
@@ -325,7 +331,28 @@ export default function JournalDashboard({
                     }}
                   >
                     <span>{Number(day.slice(-2))}</span>
-                    <i className={count ? 'has-events' : ''} aria-hidden="true" />
+                    {photos.length ? (
+                      <span
+                        className={'calendar-photos' + (photos.length > 1 ? ' multiple' : '')}
+                        aria-hidden="true"
+                      >
+                        {photos.slice(0, 2).map((a) => (
+                          <img
+                            key={a.id}
+                            src={a.url}
+                            alt=""
+                            loading="lazy"
+                            decoding="async"
+                            onError={(e) => {
+                              e.currentTarget.style.visibility = 'hidden';
+                            }}
+                          />
+                        ))}
+                        {photos.length > 2 && <b>+{photos.length - 2}</b>}
+                      </span>
+                    ) : (
+                      <i className={count ? 'has-events' : ''} aria-hidden="true" />
+                    )}
                   </button>
                 );
               })}

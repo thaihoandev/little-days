@@ -4,6 +4,8 @@ Ngày cập nhật: **30/10/2026**.
 
 ## Kết quả hiện tại
 
+Bổ sung logo cuốn sổ/trái tim, favicon SVG/PNG và Apple touch icon; ô lịch hiển thị thumbnail đại diện của sự kiện dưới số ngày. Đã bỏ giao diện sửa tiêu đề/mô tả timeline, vẫn hiển thị nội dung riêng đã lưu. Không đổi database hoặc biến môi trường.
+
 Frontend đã được người dùng deploy lên https://little-days-memories.vercel.app; kiểm tra HTTP và proxy healthcheck thành công. API chạy trên Render tại https://little-days-api.onrender.com, dùng PostgreSQL Neon và Cloudinary; người dùng xác nhận Brevo HTTPS đã gửi email thật thành công. Worker xuất video hiện vẫn chạy theo cấu hình cũ; phương án worker Northflank đã được người dùng hủy. Đây là bản MVP để chạy thử, chưa phải toàn bộ hệ thống production trong `IMPLEMENTATION_PLAN.md`.
 
 Ngày 30/10/2026, người dùng xác nhận đã bật backup theo lịch và hoàn tất phục hồi thử. Chưa ghi URL run/report kiểm chứng production vào hồ sơ; kết quả này được ghi nhận theo xác nhận của người dùng. Người dùng đã yêu cầu bỏ qua pilot thật và tiếp tục triển khai; tài liệu pilot giữ làm tham khảo, không là bước chặn.

@@ -34,15 +34,20 @@ try {
         return read();
       };
       await page.goto(origin);
+      const headingResponse = await context.request.patch(origin + '/api/timeline-heading', {
+        data: {
+          expectedRevision: -1,
+          content: {
+            title: 'Chuyện nhiều màu của mình',
+            description: 'Những ngày thương được giữ lại.',
+          },
+        },
+      });
+      assert.equal(headingResponse.status(), 200);
       await page.getByRole('button', { name: 'Dòng thời gian', exact: true }).click();
-      await page.getByRole('button', { name: 'Sửa tiêu đề và mô tả', exact: true }).click();
-      await page
-        .getByLabel('Tiêu đề dòng thời gian', { exact: true })
-        .fill('Chuyện nhiều màu của mình');
-      await page
-        .getByLabel('Mô tả dòng thời gian', { exact: true })
-        .fill('Những ngày thương được giữ lại.');
-      await page.getByRole('button', { name: 'Lưu tiêu đề timeline', exact: true }).click();
+      await expect(
+        page.getByRole('button', { name: 'Sửa tiêu đề và mô tả', exact: true }),
+      ).toHaveCount(0);
       await expect(
         page.getByRole('heading', { name: 'Chuyện nhiều màu của mình', exact: true }),
       ).toBeVisible();

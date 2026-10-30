@@ -105,6 +105,47 @@ try {
       const entries = await (await context.request.get(origin + '/api/journal')).json();
       const entry = entries.find((e: { title: string }) => e.title === title);
       assert.ok(entry.assets[0].url.startsWith('/api/journal/'));
+      const dayCell = page.locator('.calendar-grid button[aria-pressed="true"]');
+      await expect(dayCell.locator('.calendar-photos img')).toHaveCount(1);
+      await expect
+        .poll(() =>
+          dayCell
+            .locator('.calendar-photos img')
+            .evaluate(
+              (img) =>
+                (img as HTMLImageElement).complete && (img as HTMLImageElement).naturalWidth > 0,
+            ),
+        )
+        .toBe(true);
+      const extraDay = await context.request.post(origin + '/api/journal', {
+        data: {
+          title: 'Một kỉ niệm khác trong ngày',
+          date: entry.date,
+          note: '',
+          kind: 'memory',
+          annual: false,
+        },
+      });
+      const extra = await extraDay.json();
+      assert.equal(
+        (
+          await context.request.post(origin + '/api/journal/' + extra.id + '/assets', {
+            multipart: {
+              file: { name: 'other-event.png', mimeType: 'image/png', buffer: photoBytes },
+            },
+          })
+        ).status(),
+        201,
+      );
+      await page.reload();
+      await expect(dayCell.locator('.calendar-photos img')).toHaveCount(2);
+      for (const href of ['/logo.svg', '/favicon-32.png', '/apple-touch-icon.png'])
+        assert.equal((await context.request.get(origin + href)).status(), 200);
+      await expect(page.locator('link[rel="icon"]')).toHaveCount(2);
+      await page.screenshot({
+        path: 'test-results/calendar-thumbnails-' + device + '.png',
+        fullPage: true,
+      });
       const other = await browser.newContext();
       await other.request.get(origin + '/api/session');
       assert.equal((await other.request.get(origin + entry.assets[0].url)).status(), 404);
@@ -161,6 +202,9 @@ try {
       }
       await page.reload();
       await page.getByRole('button', { name: 'Dòng thời gian', exact: true }).click();
+      await expect(
+        page.getByRole('button', { name: 'Sửa tiêu đề và mô tả', exact: true }),
+      ).toHaveCount(0);
       await page.getByLabel('Tìm dấu mốc').fill(title);
       const searchLayout = await page.locator('.journal-search').evaluate((label) => {
         const icon = label.querySelector('svg')!.getBoundingClientRect(),

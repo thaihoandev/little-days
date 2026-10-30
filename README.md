@@ -4,6 +4,8 @@
 
 ## Chạy local
 
+Logo cuốn sổ/trái tim nằm tại `apps/web/public/logo.svg`, dùng chung cho wordmark và favicon. `node scripts/generate-brand.mjs` tạo lại PNG 32px và Apple touch icon 180px từ SVG nguồn.
+
 App cloud hiện dùng Render/Neon/Cloudinary. Backup tự động qua GitHub Actions, không cần thêm host, được hướng dẫn tại [SCHEDULED_BACKUP.md](SCHEDULED_BACKUP.md); lịch mặc định chưa bật đến khi điền secrets/variables.
 
 Yêu cầu Node.js **22.14 trở lên** và npm. File `.env` đã được tạo và chọn Cloudinary cho media; database mặc định là SQLite, không cần Docker.

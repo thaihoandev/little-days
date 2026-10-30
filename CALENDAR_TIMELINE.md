@@ -9,7 +9,8 @@ Cập nhật 30/10/2026. Trang **Hôm nay** mở mặc định: lịch tháng, n
 - Mỗi dấu mốc có tối đa **6 ảnh**, JPEG/PNG/WebP, **20 MB/ảnh**, tối đa 40 megapixel. Backend xoay ảnh đúng chiều, chuẩn hóa cạnh dài tối đa **1600px**, không phóng ảnh nhỏ, bỏ metadata và lưu JPEG. Ảnh album dùng WebP với cùng quy trình chuẩn hóa.
 - Bấm **Lưu dấu mốc** để lưu trên backend. Ghi chú tối đa 5.000 ký tự; tối đa 500 dấu mốc/ghi chú mỗi tài khoản. Đóng biểu mẫu trước khi lưu sẽ bỏ phần đang nhập.
 - **Dòng thời gian** có tìm theo tên/nội dung và lọc loại. **Lịch của mình** xem từng ngày; **Sắp đến những ngày đẹp** hiển thị bốn mốc gần nhất và số ngày còn lại.
-- **Sửa tiêu đề và mô tả** ở đầu timeline đổi nội dung giới thiệu riêng của tài khoản. Lưu trên backend và giữ sau reload/đổi thiết bị; xung đột giữ nội dung đang nhập, yêu cầu tải lại. Tiêu đề tối đa 160 ký tự, mô tả 600 ký tự.
+- Timeline hiển thị tiêu đề và mô tả đã lưu của tài khoản; nút/form chỉnh sửa ở đầu trang đã được bỏ theo yêu cầu.
+- Ô lịch có sự kiện kèm ảnh hiển thị tối đa hai thumbnail ngay dưới số ngày; mỗi sự kiện lấy một ảnh đại diện. Nhiều sự kiện có ảnh hơn sẽ hiện số còn lại. Ngày có ghi chú nhưng không có ảnh vẫn dùng chấm đánh dấu. Ảnh dùng URL riêng tư hiện có, áp dụng cả mốc lặp hằng năm và mốc liên kết từ album.
 - Ảnh trên thẻ timeline dùng cụm nhỏ: một ảnh có chiều cao tối đa 165px trên desktop/145px trên mobile; nhiều ảnh xếp mosaic, chỉ hiện ba thumbnail và số ảnh còn lại. Popup vẫn xem đủ toàn bộ ảnh.
 - Ngày bắt đầu và kỉ niệm đã có trong album cũng xuất hiện. Bấm **Xem album** để sửa các mục này trong album nguồn.
 - Timeline có mốc tháng, đường nối hành trình, thẻ giấy và ảnh lớn; desktop xếp xen kẽ, mobile chuyển về một cột. Các con số ở đầu trang tính từ dữ liệu thật của tài khoản.

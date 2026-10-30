@@ -231,11 +231,28 @@ label > span {
   white-space: nowrap;
 }
 .wordmark > span {
+  display: none;
   font-family: 'Patrick Hand';
   color: #a36b54;
   font-size: 34px;
   margin-left: 5px;
   transform: rotate(-15deg);
+}
+.wordmark::before {
+  content: '';
+  display: block;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  margin-right: 7px;
+  background: url('/logo.svg') center / contain no-repeat;
+}
+@media (max-width: 600px) {
+  .wordmark::before {
+    width: 24px;
+    height: 24px;
+    margin-right: 5px;
+  }
 }
 .app-shell {
   display: flex;
