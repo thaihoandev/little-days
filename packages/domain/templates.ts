@@ -1,4 +1,5 @@
 import { createPage, element, type Page, type Theme } from './index.js';
+import { decoration, type DecorationId } from './decorations.js';
 export const builtInTemplates = [
   {
     id: 'polaroid',
@@ -68,12 +69,119 @@ export type BuiltInTemplateId = (typeof builtInTemplates)[number]['id'];
 export function templatePage(id: string, assets: string[] = []): Page {
   const spec = builtInTemplates.find((t) => t.id === id);
   if (!spec) throw new Error('Unknown template.');
-  if (['polaroid', 'letter', 'timeline'].includes(id)) return createPage(id as Theme, assets);
+  const decor = (
+    id: DecorationId,
+    x: number,
+    y: number,
+    width: number,
+    rotation = 0,
+    locked = false,
+  ) => {
+    const art = decoration(id)!;
+    return element('sticker', {
+      decorationId: id,
+      text: art.name,
+      x,
+      y,
+      width,
+      height: (width * art.height) / art.width,
+      rotation,
+      locked,
+    });
+  };
+  if (['polaroid', 'letter', 'timeline'].includes(id)) {
+    if (id === 'timeline')
+      return {
+        id: crypto.randomUUID(),
+        title: spec.name,
+        background: spec.color,
+        elements: [
+          decor('paper-grid', 55, 95, 600, 0, true),
+          element('text', {
+            text: 'Những ngày thành câu chuyện',
+            font: 'serif',
+            fontSize: 35,
+            x: 70,
+            y: 50,
+            width: 580,
+            height: 90,
+          }),
+          ...[0, 1, 2].flatMap((i) => [
+            element('image', {
+              assetId: assets.length ? assets[i % assets.length] : `demo-${i + 1}`,
+              text: ['lần đầu', 'cùng nhau', 'về sau'][i],
+              x: 90,
+              y: 175 + i * 185,
+              width: 275,
+              height: 180,
+              rotation: i % 2 ? 3 : -3,
+            }),
+            element('text', {
+              text: [
+                '01 / Một lần gặp gỡ',
+                '02 / Những ngày rong chơi',
+                '03 / Một lời hẹn dài lâu',
+              ][i],
+              font: 'hand',
+              fontSize: 29,
+              color: '#677952',
+              x: 395,
+              y: 215 + i * 185,
+              width: 235,
+              height: 105,
+            }),
+          ]),
+          element('anniversary', {
+            text: 'ngày bên nhau',
+            font: 'sans',
+            fontSize: 22,
+            color: '#677952',
+            x: 100,
+            y: 790,
+            width: 400,
+            height: 65,
+          }),
+          decor('leaf-sage', 25, 570, 80, -4),
+          decor('ticket', 490, 780, 150, 4),
+          decor('tape-rose', 150, 150, 170, -3),
+        ],
+      };
+    const page = createPage(
+      id as Theme,
+      assets.length ? Array.from({ length: 4 }, (_, i) => assets[i % assets.length]) : [],
+    );
+    const backgrounds =
+      id === 'letter'
+        ? [decor('paper-cream', 50, 40, 620, 0, true)]
+        : [
+            decor('paper-grid', 45, 170, 305, -3, true),
+            decor('paper-rose', 380, 340, 280, 4, true),
+          ];
+    const accents =
+      id === 'letter'
+        ? [decor('postage', 555, 170, 105, 4), decor('wax-seal', 540, 735, 100, -7)]
+        : [
+            decor('leaf-sage', 535, 640, 120, 5),
+            decor('daisy', 36, 435, 100, -8),
+            decor('ticket', 410, 650, 205, -5),
+          ];
+    if (id === 'letter' || id === 'polaroid') {
+      const footer = page.elements.find((e) => e.type === 'text' && e.y === 770);
+      if (footer) {
+        footer.width = id === 'letter' ? 400 : 430;
+        footer.fontSize = 26;
+      }
+    }
+    return {
+      ...page,
+      elements: [...backgrounds, ...page.elements.filter((e) => e.type !== 'sticker'), ...accents],
+    };
+  }
   const text = (value: string, x: number, y: number, width: number, height: number, size = 32) =>
     element('text', { text: value, x, y, width, height, fontSize: size });
   const photo = (i: number, x: number, y: number, width: number, height: number, rotation = 0) =>
     element('image', {
-      assetId: assets[i] ?? `demo-${(i % 3) + 1}`,
+      assetId: assets.length ? assets[i % assets.length] : `demo-${(i % 3) + 1}`,
       text: 'một ngày để nhớ',
       x,
       y,
@@ -159,5 +267,74 @@ export function templatePage(id: string, assets: string[] = []): Page {
         text('những điều bé xíu làm nên chúng mình', 65, 825, 590, 45, 22),
       ];
   }
-  return { id: crypto.randomUUID(), title: spec.name, background: spec.color, elements };
+  const backgrounds =
+    id === 'bloom'
+      ? [decor('paper-rose', 130, 190, 440, -3, true)]
+      : id === 'celebration'
+        ? [decor('confetti', 35, 180, 650, 0, true), decor('paper-cream', 145, 215, 420, 0, true)]
+        : id === 'minimal'
+          ? [decor('paper-cream', 145, 180, 430, 0, true)]
+          : [decor('paper-grid', 38, 130, 620, 0, true)];
+  const accents =
+    id === 'postcard'
+      ? [
+          decor('postage', 565, 45, 100, 5),
+          decor('postmark', 470, 770, 180, -8),
+          decor('tape-sand', 245, 153, 210, -4),
+        ]
+      : id === 'filmstrip'
+        ? [
+            decor('tape-sage', 245, 132, 190, -3),
+            decor('leaf-olive', 25, 500, 95, -9),
+            decor('ticket', 480, 780, 170, 4),
+          ]
+        : id === 'bloom'
+          ? [
+              decor('leaf-olive', 35, 520, 125, -8),
+              decor('leaf-sage', 535, 160, 120, 8),
+              decor('daisy', 520, 710, 95),
+              decor('flower-rose', 50, 180, 90, 7),
+            ]
+          : id === 'celebration'
+            ? [
+                decor('ribbon', 295, 155, 140),
+                decor('stars-gold', 540, 260, 120, 5),
+                decor('wax-seal', 565, 690, 95, -5),
+              ]
+            : id === 'minimal'
+              ? [
+                  decor('leaf-sage', 500, 480, 110, 9),
+                  decor('tape-sand', 250, 218, 190, -3),
+                  decor('daisy', 135, 185, 75),
+                ]
+              : [
+                  decor('tape-rose', 110, 155, 180, -8),
+                  decor('tape-sage', 420, 485, 160, 7),
+                  decor('leaf-olive', 565, 660, 105, 6),
+                  decor('heart-pink', 315, 400, 90, -9),
+                ];
+  if (id === 'postcard') elements[0] = { ...elements[0], width: 475, fontSize: 38 };
+  if (id === 'filmstrip')
+    elements[elements.length - 1] = { ...elements[elements.length - 1], width: 390, fontSize: 22 };
+  if (id === 'bloom')
+    elements[elements.length - 1] = {
+      ...elements[elements.length - 1],
+      x: 90,
+      y: 765,
+      width: 420,
+      height: 75,
+      fontSize: 28,
+    };
+  if (id === 'celebration') {
+    const caption = elements.find((e) => e.type === 'text' && e.y === 705);
+    if (caption) caption.width = 465;
+  }
+  if (id === 'collage')
+    elements[elements.length - 1] = { ...elements[elements.length - 1], width: 500, fontSize: 21 };
+  return {
+    id: crypto.randomUUID(),
+    title: spec.name,
+    background: spec.color,
+    elements: [...backgrounds, ...elements.filter((e) => e.type !== 'sticker'), ...accents],
+  };
 }

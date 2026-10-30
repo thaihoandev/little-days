@@ -30,15 +30,24 @@ Chín mẫu nằm trong hộp tạo album và **Trang sổ → Mẫu có sẵn**
 
 Mỗi mẫu có ảnh xem trước và layout chỉnh sửa được bằng editor hiện có. Khi thêm trang, mẫu nhận ảnh của album đích; không sao chép ảnh riêng của người khác. Mẫu cá nhân vẫn lưu riêng theo tài khoản. Chín thiết kế dùng ba theme nền hiện tại và cùng renderer cho editor/viewer/video.
 
+Các mẫu đã được làm lại bằng giấy xé, washi tape, hoa lá, tem, dấu sáp và khung ảnh. Mẫu **Những ngày bên nhau** có ba cột mốc riêng; các mẫu khác có bố cục bưu thiếp, filmstrip, vườn hoa, sinh nhật, tối giản và collage. Gallery hiển thị hình xem trước; **Thêm trang trống** dành cho thiết kế từ đầu. Mẫu mới áp dụng khi tạo album hoặc thêm trang, không sửa layout đã lưu của người dùng.
+
+**Trang trí** có 18 hình vector trong 5 bộ: Giấy & washi, Khu vườn, Lời thương, Chuyến đi và Ngày đặc biệt; giữ lại 6 ký hiệu cũ. Chọn bộ, bấm hình để thêm, rồi kéo/xoay/resize/đổi độ trong và thứ tự lớp. Giấy nền trong mẫu được khóa để tránh kéo nhầm; mở khóa tại **Lớp** khi cần. SVG do mã nguồn tạo, tự chứa toàn bộ đường nét, không tải ảnh từ dịch vụ khác. Chúng được lưu bằng `decorationId` trong phần tử sticker và dùng chung trong canvas/viewer/Remotion; album cũ không có trường này vẫn mở được.
+
 ## Thao tác thiết kế nhanh
 
 - Mỗi thumbnail trong **Trang sổ** có icon nhân bản và thùng rác. Xóa cần xác nhận; **Hoàn tác** phục hồi trang. Trang cuối cùng không thể xóa. Xóa trang khác vẫn giữ trang đang xem; xóa trang đang xem chuyển sang trang bên cạnh.
+- Xác nhận xóa trang dùng popup trong ứng dụng, mặc định focus **Giữ lại**, có Escape để hủy; không dùng confirm của trình duyệt cho thao tác này.
 - Thanh phía trên canvas thêm nhanh chữ, khung ảnh, sticker và tải ảnh. Khung ảnh dùng ảnh đầu tiên đã tải; có thể đổi ảnh trong thuộc tính. Khi chưa có ảnh, tạo khung trống để điền sau.
 - Chọn một hoặc nhiều phần tử rồi bấm **Nhân bản**, hoặc **Ctrl/⌘ D**. Bản sao có ID/nhóm mới và lệch 20 đơn vị để dễ nhận ra; tài nguyên ảnh dùng lại cùng album. Giới hạn 50 phần tử/trang vẫn áp dụng.
 - **Căn giữa** đặt lựa chọn vào giữa trang; phần tử khóa được bảo vệ. Mỗi thao tác là một bước undo/redo và được autosave như chỉnh sửa thông thường. Phím tắt không chạy khi đang nhập trong form.
 - Dropdown có popup màu giấy, bo góc, trạng thái chọn/hover và vùng bấm lớn trên trình duyệt hỗ trợ `appearance: base-select`; trình duyệt khác giữ menu native. Bàn phím và label của select được giữ nguyên.
 
-Kiểm tra riêng editor: `npm run test:design`. Runner dùng dữ liệu giả để kiểm tra Ctrl+D, thêm ảnh/chữ/sticker, căn giữa/undo, xóa trang/giữ trang hiện tại, bảo vệ trang cuối, reload và bố cục mobile. `npm run test:pilot` hiện bao gồm 10 luồng QA tự động; pilot người thật vẫn được bỏ qua theo yêu cầu.
+**Xem album** tự tính kích thước trang từ cả chiều rộng và chiều cao còn lại, giữ nút chuyển trang trong một màn hình, kể cả màn hình ngang thấp. Có phím mũi tên chuyển trang và Escape để đóng; nền phía sau được khóa tương tác/cuộn khi xem. Thanh cuộn ở các khu vực cần cuộn dùng tông sage, mảnh và bo tròn.
+
+Ảnh trong timeline và **Ảnh đã lưu** mở bằng popup ngay trên trang. Có tên ảnh, số thứ tự, nút trước/sau, phím mũi tên và Escape; không mở tab mới. Ảnh vẫn đọc từ API riêng tư, không tạo URL chia sẻ công khai.
+
+Kiểm tra riêng editor: `npm run test:design`; kiểm tra và chụp cả 9 mẫu: `npm run test:templates`. Runner dùng dữ liệu giả để kiểm tra Ctrl+D, thêm ảnh/chữ/sticker/vector, căn giữa/undo, popup xóa trang, viewer desktop/mobile/landscape, reload và bố cục mobile. `npm run test:pilot` hiện bao gồm 11 luồng QA tự động; pilot người thật vẫn được bỏ qua theo yêu cầu.
 
 ## Thư viện nhạc
 
@@ -66,6 +75,8 @@ Backup toàn bộ bao gồm bản ghi journal và bytes ảnh, có checksum và 
 ## Cập nhật hệ thống đang chạy
 
 Không đổi `.env` và không tạo worker cloud. Cần cập nhật **cả API lẫn worker hiện có** vì cleanup/backup cũng cần hiểu ảnh journal và catalog nhạc mới. Không vận hành lâu dài với API/worker khác phiên bản.
+
+Bản trang trí vector cũng cần API/worker cùng commit: API phải lưu trường `decorationId`, worker phải có catalog SVG và renderer tương ứng. Không cần biến môi trường hay migration database mới.
 
 1. Dừng worker cũ và các lệnh cleanup/backup offline trong lúc cập nhật.
 2. Deploy API trên Render từ commit mới; giữ nguyên Neon, Cloudinary và cấu hình mail. Nếu frontend ở Vercel riêng, deploy frontend cùng commit.

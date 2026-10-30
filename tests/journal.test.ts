@@ -19,6 +19,7 @@ import {
 } from '../packages/domain/journal.js';
 import { builtInTemplates, templatePage } from '../packages/domain/templates.js';
 import { musicCatalog } from '../packages/domain/music.js';
+import { decorationCatalog } from '../packages/domain/decorations.js';
 import { pageSchema, videoConfigSchema } from '../packages/domain/index.js';
 import { readFile } from 'node:fs/promises';
 
@@ -63,12 +64,28 @@ test('built-in designs validate, clone fresh IDs and bind only supplied album ph
       second = templatePage(template.id);
     assert.ok(pageSchema.safeParse(page).success, template.id);
     assert.notEqual(page.id, second.id);
+    assert.ok(
+      page.elements.filter((e) => e.decorationId).length >= 3,
+      template.id + ' has illustrated layout',
+    );
     assert.ok(page.elements.every((e) => e.x + e.width <= 720 && e.y + e.height <= 900));
     assert.ok(
       page.elements.filter((e) => e.type === 'image').every((e) => e.assetId?.startsWith('photo-')),
     );
   }
   assert.throws(() => templatePage('../private'));
+});
+test('decoration catalog contains valid self-contained vector assets and persists through layout schema', async () => {
+  assert.equal(new Set(decorationCatalog.map((d) => d.id)).size, decorationCatalog.length);
+  assert.ok(new Set(decorationCatalog.map((d) => d.collection)).size >= 5);
+  for (const art of decorationCatalog) {
+    const svg = decodeURIComponent(art.src.split(',')[1]);
+    assert.ok(!/<script|<foreignObject|https?:\/\/(?!www.w3.org\/2000\/svg)/i.test(svg));
+    const metadata = await sharp(Buffer.from(svg)).metadata();
+    assert.equal(metadata.width, art.width);
+    assert.equal(metadata.height, art.height);
+    await sharp(Buffer.from(svg)).png().toBuffer();
+  }
 });
 test('music catalog uses distinct bundled PCM tracks accepted by saved video configuration', async () => {
   const hashes = new Set<string>();

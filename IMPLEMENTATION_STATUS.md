@@ -18,6 +18,8 @@ Ngày 30/10/2026, người dùng xác nhận đã bật backup theo lịch và h
 
 **Cải thiện thiết kế tiếp theo:** timeline có đường nối hành trình, phân tháng, thẻ giấy và ảnh lớn; thống kê từ dữ liệu thật. Popup select có theme riêng trên trình duyệt hỗ trợ, fallback native. Danh sách trang có icon xóa với xác nhận/undo/bảo vệ trang cuối. Thanh trên canvas thêm nhanh chữ/khung ảnh/sticker, tải ảnh, nhân bản Ctrl/⌘ D và căn giữa; không thay đổi schema hay file env. Chi tiết và phím tắt trong `CALENDAR_TIMELINE.md`.
 
+**Hoàn thiện xem album và mỹ thuật:** scrollbar sage đồng bộ; viewer co theo cả hai chiều trong một màn hình và khóa nền; popup xem ảnh giữ người dùng trong trang; xóa trang dùng dialog riêng. Có 18 trang trí SVG trong 5 bộ và 9 mẫu có minh họa giấy/hoa/tem/washi; mẫu timeline có ba cột mốc riêng. Trường sticker `decorationId` là bổ sung tùy chọn, không cần migration hay env; cần cập nhật API và worker cùng commit để lưu/render đúng. Mẫu đã lưu của người dùng được giữ nguyên; gallery mới áp dụng khi thêm trang/tạo album.
+
 | Hạng mục | Kết quả |
 | --- | --- |
 | Workspace | React/TypeScript/Vite, NestJS, domain schemas và Remotion composition |
@@ -70,7 +72,7 @@ Autosave nhận diện `503 BACKUP_IN_PROGRESS`, giữ bản nháp/chỉnh sửa
 
 ## Kiểm chứng đã chạy
 
-- `npm test`: **75 tests qua**, gồm calendar/lặp hằng năm, chín template, catalog/file nhạc, journal ownership/CAS/media/quota/backup và các kiểm thử bảo mật/vận hành trước đó. Chạy ngoài sandbox để kiểm thử directory symlink trên Windows.
+- `npm test`: **76 tests qua**, gồm calendar/lặp hằng năm, chín template, 18 SVG tự chứa được giải mã bằng Sharp, catalog/file nhạc, journal ownership/CAS/media/quota/backup và các kiểm thử bảo mật/vận hành trước đó. Chạy ngoài sandbox để kiểm thử directory symlink trên Windows. Sau chỉnh bố cục cuối, 5 tests domain/journal được chạy lại thành công.
 - `npm run typecheck`: qua.
 - `npm run build`: qua, có frontend production và JavaScript backend biên dịch.
 - `npm run format:check`: qua.
@@ -79,6 +81,7 @@ Autosave nhận diện `503 BACKUP_IN_PROGRESS`, giữ bản nháp/chỉnh sửa
 - `npm run test:pilot`: **9 luồng cô lập qua**: journal, editor, save-recovery, gestures, auth, history, video, deletion, layout-render. Report ngày 30/10 tại `test-results/pilot/be85e2b5-0c2f-49f1-a3a2-c38f4709ac7e/report.json`; ảnh/log nằm trong test-results (gitignored). Đây là QA tự động, không phải pilot người thật. CI chạy cùng runner.
 - `npm run test:journal`: kiểm tra trang chủ lịch, tạo/sửa/xóa mốc và ghi chú, ảnh riêng tư/404 tài khoản khác, reload, tìm timeline, lịch mobile không tràn, tạo album từ mẫu mới và lưu lựa chọn nhạc.
 - Lượt QA sau cải thiện thiết kế: `npm run test:pilot` **10 luồng qua**, gồm suite `design` mới và các luồng ở trên; report `test-results/pilot/42329bbf-3765-46a6-a4ec-dbeb81135ac6/report.json`. Xác minh thêm icon xóa trang hiện tại/trang khác, hủy/xác nhận/undo, bảo vệ trang cuối, Ctrl+D, căn giữa, tải/thêm ảnh và lưu sau reload trên desktop/mobile. Timeline/popup dropdown mở thật được kiểm tra ở 1440px, 390px và 320px. Build/typecheck và format đều qua; MP4 layout vẫn xuất thành công 1.360.658 byte. Chưa kiểm chứng popup trên Safari/Firefox thật; trình duyệt thiếu hỗ trợ dùng native.
+- Lượt QA hoàn thiện viewer/trang trí: **11 luồng qua**, report `test-results/pilot/66060f6e-d367-4a2b-97a1-884f6070fbdf/report.json`. Popup xóa trang thay native confirm; lightbox không mở tab; viewer vừa desktop/mobile và landscape 640×360, có Escape và khóa/nhả cuộn nền. Suite `templates` mở 9 mẫu qua API, kiểm tra SVG/ảnh đã giải mã và chụp contact sheet. Chọn/lưu/reload trang trí SVG trên canvas; MP4 thực có Cúc nhỏ, **1.388.860 byte**. Build/typecheck và format qua. QA dùng fixture riêng, không phải xác nhận deploy production.
 - API qua Cloudinary fixture và backup/restore đã chạy lại với journal: phục hồi được ghi chú và bytes ảnh JPEG; API/ảnh vẫn kiểm tra chủ sở hữu.
 - `SMOKE_STORAGE=cloudinary SMOKE_MUSIC_ID=warm-piano npm run test:workers`: MP4 15 giây **1.769.585 byte**, hai worker nhận đúng một lần, snapshot bất biến. ffprobe/ffmpeg xác nhận H.264 1080×1920/30 fps, AAC và đối chiếu nhạc nguồn tại ba vị trí bằng `scripts/verify-library-video.ts`.
 - `npm run test:postgres`: chạy lại trên PostgreSQL 17 Docker QA riêng, gồm journal; 33 unit qua/1 SQLite-only bỏ qua, API, ba video đồng thời và backup/restore qua Cloudinary fixture. Container QA được dọn sau kiểm thử.

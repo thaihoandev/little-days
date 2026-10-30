@@ -47,7 +47,6 @@ import {
   type ScrapElement,
   type Theme,
   assetUrl,
-  createPage,
   createAlbumContent,
   daysTogether,
   element,
@@ -69,6 +68,8 @@ import AccountDeletionStatus, { readDeletionReceipt } from './AccountDeletionSta
 import { readAuthLink } from './auth-link.js';
 import { TextOverflowWarning } from './TextOverflowWarning.js';
 import JournalDashboard from './JournalDashboard.js';
+import { ConfirmDialog, PhotoLightbox } from './Overlays.js';
+import { decorationCatalog } from '../../../packages/domain/decorations.js';
 import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 import type { PublicUser } from './AccountSettings.js';
 const AccountSettings = lazy(() => import('./AccountSettings.js'));
@@ -158,6 +159,10 @@ export default function App() {
     'home',
   );
   const [shared, setShared] = useState<Album | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<{
+    photos: Album['assets'];
+    index: number;
+  } | null>(null);
   const token = new URLSearchParams(location.search).get('share');
   const notify = (message: string) => setToast(message);
   const load = async () => {
@@ -490,7 +495,15 @@ export default function App() {
               <div className="photo-grid">
                 {albums.flatMap((a) =>
                   a.assets.map((asset) => (
-                    <button key={asset.id} onClick={() => setActive(a)}>
+                    <button
+                      key={asset.id}
+                      onClick={() =>
+                        setPhotoPreview({
+                          photos: a.assets,
+                          index: a.assets.findIndex((p) => p.id === asset.id),
+                        })
+                      }
+                    >
                       <img src={asset.url} alt={asset.name} />
                       <span>{asset.name}</span>
                     </button>
@@ -511,6 +524,13 @@ export default function App() {
           ) : null}
         </main>
       </div>
+      {photoPreview && (
+        <PhotoLightbox
+          {...photoPreview}
+          onIndex={(index) => setPhotoPreview({ ...photoPreview, index })}
+          onClose={() => setPhotoPreview(null)}
+        />
+      )}
       {modal === 'create' && (
         <CreateModal
           onClose={() => setModal(null)}
@@ -744,6 +764,8 @@ function Editor({
   }, [doc.status]);
   const [editText, setEditText] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pageToDelete, setPageToDelete] = useState<string | null>(null);
+  const [decorationCollection, setDecorationCollection] = useState('Tất cả');
   const [reference, setReference] = useState(todayIn(album.timezone));
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -781,7 +803,7 @@ function Editor({
   const deletePage = (id: string) => {
     if (album.pages.length <= 1) return;
     const target = album.pages.find((p) => p.id === id);
-    if (!target || !confirm('Xóa trang “' + target.title + '”? Bạn có thể hoàn tác.')) return;
+    if (!target) return;
     const remaining = album.pages.filter((p) => p.id !== id);
     doc.edit((a) => ({ ...a, pages: a.pages.filter((p) => p.id !== id) }));
     if (page.id === id) {
@@ -795,6 +817,7 @@ function Editor({
       );
       setSelectedIds([]);
     }
+    setPageToDelete(null);
   };
   const duplicateSelected = () => {
     const chosen = page.elements.filter((e) => selectedIdsHere.includes(e.id));
@@ -814,7 +837,8 @@ function Editor({
   };
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (uploading || historyOpen) return;
+      if (uploading || historyOpen || pageToDelete || document.querySelector('dialog[open]'))
+        return;
       const tag = (e.target as HTMLElement).tagName;
       if (
         ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) ||
@@ -908,15 +932,17 @@ function Editor({
     setUploading(false);
     if (input.current) input.current.value = '';
   };
-  const addPage = (theme: Theme) => {
+  const addPage = () => {
     if (album.pages.length >= 20) {
       notify('Album tối đa 20 trang.');
       return;
     }
-    const next = createPage(
-      theme,
-      album.assets.map((a) => a.id),
-    );
+    const next: Page = {
+      id: crypto.randomUUID(),
+      title: 'Trang mới',
+      background: page.background,
+      elements: [],
+    };
     doc.edit((a) => ({ ...a, pages: [...a.pages, next] }));
     setPageId(next.id);
     setSelected(null);
@@ -932,7 +958,11 @@ function Editor({
   const anniversary = nextAnnual(album.startDate, reference);
   return (
     <>
-      <div className="editor-shell" inert={uploading || historyOpen} aria-busy={uploading}>
+      <div
+        className="editor-shell"
+        inert={uploading || historyOpen || viewer}
+        aria-busy={uploading}
+      >
         <header className="editor-header">
           <div className="row">
             <button
@@ -1177,7 +1207,7 @@ function Editor({
                           aria-label={'Xóa trang ' + (i + 1) + ': ' + p.title}
                           title="Xóa trang · Có thể hoàn tác"
                           disabled={album.pages.length === 1}
-                          onClick={() => deletePage(p.id)}
+                          onClick={() => setPageToDelete(p.id)}
                         >
                           <Trash2 size={14} />
                         </button>
@@ -1195,15 +1225,14 @@ function Editor({
                     setSelectedIds([]);
                   }}
                 />
-                <h4>Thêm trang từ mẫu</h4>
-                <div className="template-buttons">
-                  {(Object.keys(themeNames) as Theme[]).map((t) => (
-                    <button key={t} onClick={() => addPage(t)}>
-                      <Plus size={14} />
-                      {themeNames[t]}
-                    </button>
-                  ))}
-                </div>
+                <button
+                  className="button quiet full"
+                  disabled={album.pages.length >= 20}
+                  onClick={addPage}
+                >
+                  <Plus size={14} />
+                  Thêm trang trống
+                </button>
                 <p className="muted small">
                   Mẫu là điểm bắt đầu. Mọi ảnh và dòng chữ đều có thể chỉnh.
                 </p>
@@ -1295,6 +1324,48 @@ function Editor({
                   Bộ đếm ngày bên nhau
                 </button>
                 <h4>Một chút trang trí</h4>
+                <div className="decoration-collections" role="group" aria-label="Bộ trang trí">
+                  {['Tất cả', ...new Set(decorationCatalog.map((d) => d.collection))].map(
+                    (name) => (
+                      <button
+                        key={name}
+                        aria-pressed={decorationCollection === name}
+                        onClick={() => setDecorationCollection(name)}
+                      >
+                        {name}
+                      </button>
+                    ),
+                  )}
+                </div>
+                <div className="decoration-gallery">
+                  {decorationCatalog
+                    .filter(
+                      (d) =>
+                        decorationCollection === 'Tất cả' || d.collection === decorationCollection,
+                    )
+                    .map((d) => (
+                      <button
+                        key={d.id}
+                        aria-label={'Thêm trang trí ' + d.name}
+                        onClick={() =>
+                          add(
+                            element('sticker', {
+                              decorationId: d.id,
+                              text: d.name,
+                              width: d.width,
+                              height: d.height,
+                              x: 220,
+                              y: 300,
+                            }),
+                          )
+                        }
+                      >
+                        <img src={d.src} alt="" />
+                        <span>{d.name}</span>
+                      </button>
+                    ))}
+                </div>
+                <h4>Ký hiệu nhỏ</h4>
                 <div className="sticker-grid">
                   {stickerOptions.map((s, i) => (
                     <button
@@ -1708,7 +1779,7 @@ function Editor({
                 <button
                   className="button danger"
                   disabled={album.pages.length === 1}
-                  onClick={() => deletePage(page.id)}
+                  onClick={() => setPageToDelete(page.id)}
                 >
                   <Trash2 size={15} />
                   Xóa trang này
@@ -1717,6 +1788,18 @@ function Editor({
             )}
           </aside>
         </div>
+        {pageToDelete && (
+          <ConfirmDialog
+            title="Xóa trang sổ này?"
+            description={
+              'Trang “' +
+              (album.pages.find((p) => p.id === pageToDelete)?.title || '') +
+              '” sẽ được bỏ khỏi cuốn sổ. Bạn có thể hoàn tác để lấy lại.'
+            }
+            onClose={() => setPageToDelete(null)}
+            onConfirm={() => deletePage(pageToDelete)}
+          />
+        )}
         {viewer && <Viewer album={album} onClose={() => setViewer(false)} />}
         <Suspense
           fallback={
@@ -1885,7 +1968,7 @@ function ElementProperties({
           }[e.type]
         }
       </div>
-      {e.type !== 'anniversary' && (
+      {e.type !== 'anniversary' && !e.decorationId && (
         <label>
           {e.type === 'image' ? 'Chú thích ảnh' : 'Nội dung'}
           <textarea
@@ -1982,7 +2065,7 @@ function ElementProperties({
             />
           </label>
         </>
-      ) : (
+      ) : !e.decorationId ? (
         <>
           <label>
             Kiểu chữ
@@ -2029,6 +2112,10 @@ function ElementProperties({
             </select>
           </label>
         </>
+      ) : (
+        <p className="notice">
+          Trang trí vector · có thể di chuyển, xoay, đổi kích thước, độ trong và thứ tự lớp.
+        </p>
       )}
       <div className="two-fields">
         {(['x', 'y', 'width', 'height'] as const).map((k) => (

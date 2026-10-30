@@ -3,6 +3,7 @@ import { Stage, Layer, Group, Rect, Text, Image as KonvaImage, Transformer } fro
 import type Konva from 'konva';
 import { bounds, expandSelection } from '../../../packages/domain/layout.js';
 import { elementSchema } from '../../../packages/domain/index.js';
+import { decoration } from '../../../packages/domain/decorations.js';
 import {
   type Album,
   type Page,
@@ -28,6 +29,10 @@ function useImage(src?: string) {
     };
   }, [src]);
   return image;
+}
+function DecorationArt({ e }: { e: ScrapElement }) {
+  const image = useImage(decoration(e.decorationId)?.src);
+  return <KonvaImage image={image} width={e.width} height={e.height} />;
 }
 function Photo({ e, album }: { e: ScrapElement; album: Album }) {
   const image = useImage(assetUrl(e.assetId, album));
@@ -439,6 +444,8 @@ export function CanvasEditor({
               >
                 {e.type === 'image' ? (
                   <Photo e={e} album={album} />
+                ) : e.type === 'sticker' && e.decorationId ? (
+                  <DecorationArt e={e} />
                 ) : (
                   <Text
                     text={displayedText(e, album, referenceDate)}

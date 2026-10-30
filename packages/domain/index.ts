@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { decorationIds } from './decorations.js';
 
 const finite = z.number().finite();
 export const dateString = z
@@ -29,6 +30,7 @@ export const elementSchema = z.object({
   groupId: z.string().uuid().nullable().optional(),
   text: z.string().max(3000),
   assetId: z.string().max(100).nullable(),
+  decorationId: z.enum(decorationIds).optional(),
   font: z.enum(['serif', 'sans', 'hand']),
   fontSize: finite.min(10).max(160),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/),

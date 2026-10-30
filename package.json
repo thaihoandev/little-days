@@ -6,6 +6,7 @@
   "scripts": {
     "test:journal": "tsx scripts/pilot-qa.ts journal",
     "test:design": "tsx scripts/pilot-qa.ts design",
+    "test:templates": "tsx scripts/pilot-qa.ts templates",
     "music:generate": "node scripts/generate-music.mjs",
     "test:pilot": "tsx scripts/pilot-qa.ts",
     "test:save-recovery": "tsx scripts/pilot-qa.ts save-recovery",

@@ -72,6 +72,15 @@ try {
       await quick.getByRole('button', { name: 'Sticker', exact: true }).click();
       current = await saved();
       assert.equal(current.pages[0].elements.at(-1)!.type, 'sticker');
+      await page.getByRole('button', { name: 'Trang trí', exact: true }).click();
+      await page
+        .getByRole('group', { name: 'Bộ trang trí', exact: true })
+        .getByRole('button', { name: 'Khu vườn', exact: true })
+        .click();
+      await page.getByRole('button', { name: 'Thêm trang trí Cúc nhỏ', exact: true }).click();
+      current = await saved();
+      assert.equal(current.pages[0].elements.at(-1)!.decorationId, 'daisy');
+      await expect(page.getByLabel('Nội dung', { exact: true })).toHaveCount(0);
       await page.getByRole('button', { name: 'Trang sổ', exact: true }).click();
       await page.getByRole('button', { name: 'Nhân bản trang', exact: true }).click();
       current = await saved();
@@ -79,11 +88,45 @@ try {
       await expect(page.getByLabel('Tên trang', { exact: true })).toHaveValue(
         current.pages[1].title,
       );
-      page.once('dialog', (dialog) => dialog.dismiss());
+      await page.getByRole('button', { name: 'Xem album', exact: true }).click();
+      const viewer = page.getByRole('dialog', { name: 'Xem album', exact: true });
+      for (const viewport of [
+        mobile ? { width: 390, height: 844 } : { width: 1600, height: 1100 },
+        { width: 640, height: 360 },
+      ]) {
+        await page.setViewportSize(viewport);
+        await expect
+          .poll(() =>
+            viewer.evaluate((node) => {
+              const art = node.querySelector('.viewer-page > div')!.getBoundingClientRect(),
+                controls = node.querySelector('.viewer-controls')!.getBoundingClientRect();
+              return (
+                node.scrollHeight <= node.clientHeight + 1 &&
+                art.y >= 0 &&
+                art.bottom <= innerHeight &&
+                controls.bottom <= innerHeight
+              );
+            }),
+          )
+          .toBe(true);
+      }
+      await page.getByRole('button', { name: 'Trang sau', exact: true }).click();
+      await expect(viewer.locator('.viewer-controls')).toContainText('2 / 2');
+      await page.keyboard.press('Escape');
+      await expect(viewer).not.toBeVisible();
+      await page.setViewportSize(
+        mobile ? { width: 390, height: 844 } : { width: 1600, height: 1100 },
+      );
       await page.locator('.page-delete').first().click();
+      const confirmation = page.getByRole('dialog', { name: 'Xóa trang sổ này?', exact: true });
+      await expect(confirmation).toBeVisible();
+      await page.screenshot({
+        path: 'test-results/page-delete-popup-' + (mobile ? 'mobile' : 'desktop') + '.png',
+      });
+      await confirmation.getByRole('button', { name: 'Giữ lại', exact: true }).click();
       assert.equal((await read()).pages.length, 2);
-      page.once('dialog', (dialog) => dialog.accept());
       await page.locator('.page-delete').first().click();
+      await confirmation.getByRole('button', { name: 'Xóa trang', exact: true }).click();
       const remainingId = current.pages[1].id;
       current = await saved();
       assert.deepEqual(
@@ -97,8 +140,8 @@ try {
       await page.getByRole('button', { name: 'Hoàn tác', exact: true }).click();
       current = await saved();
       assert.equal(current.pages.length, 2);
-      page.once('dialog', (dialog) => dialog.accept());
       await page.locator('.page-delete').last().click();
+      await confirmation.getByRole('button', { name: 'Xóa trang', exact: true }).click();
       current = await saved();
       assert.equal(current.pages.length, 1);
       await expect(page.getByLabel('Tên trang', { exact: true })).toHaveValue(
@@ -109,6 +152,7 @@ try {
       await expect(page.locator('.page-delete')).toBeDisabled();
       await expect(page.locator('.canvas-sheet canvas')).toBeVisible();
       assert.equal((await read()).pages[0].elements.at(-1)!.type, 'sticker');
+      assert.equal((await read()).pages[0].elements.at(-1)!.decorationId, 'daisy');
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
       await page.screenshot({
         path: 'test-results/design-tools-' + (mobile ? 'mobile' : 'desktop') + '.png',

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { ArrowLeft, ArrowRight, Heart, X } from 'lucide-react';
 import {
@@ -9,6 +10,7 @@ import {
   daysTogether,
 } from '../../../packages/domain/index.js';
 import { PageArtwork } from '../../../packages/scrapbook-renderer/index.js';
+import { useBodyScrollLock } from './Overlays.js';
 
 export function PagePreview({
   album,
@@ -32,9 +34,26 @@ export function PagePreview({
   );
 }
 export function Viewer({ album, onClose }: { album: Album; onClose?: () => void }) {
+  useBodyScrollLock();
   const [index, setIndex] = useState(0);
   const [width, setWidth] = useState(480);
   const host = useRef<HTMLDivElement>(null);
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && onClose) {
+        event.preventDefault();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', escape);
+    return () => document.removeEventListener('keydown', escape);
+  }, [onClose]);
+  useEffect(() => {
+    const previous = document.activeElement as HTMLElement | null;
+    root.current?.focus();
+    return () => previous?.focus();
+  }, []);
   const [reference, setReference] = useState(todayIn(album.timezone));
   useEffect(() => {
     const update = () => setReference(todayIn(album.timezone));
@@ -47,14 +66,62 @@ export function Viewer({ album, onClose }: { album: Album; onClose?: () => void 
   }, [album.timezone]);
   useEffect(() => {
     const observer = new ResizeObserver((entries) =>
-      setWidth(Math.min(entries[0].contentRect.width - 40, 490)),
+      setWidth(
+        Math.max(
+          1,
+          Math.min(
+            entries[0].contentRect.width - 32,
+            ((entries[0].contentRect.height - 16) * PAGE_WIDTH) / PAGE_HEIGHT,
+            720,
+          ),
+        ),
+      ),
     );
     if (host.current) observer.observe(host.current);
     return () => observer.disconnect();
   }, []);
   const days = daysTogether(album.startDate, reference);
-  return (
-    <div className="viewer" role="dialog" aria-modal={!!onClose} aria-label="Xem album">
+  return createPortal(
+    <div
+      ref={root}
+      tabIndex={-1}
+      className="viewer"
+      role="dialog"
+      aria-modal={!!onClose}
+      aria-label="Xem album"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && onClose) {
+          e.preventDefault();
+          e.stopPropagation();
+          onClose();
+        }
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          e.stopPropagation();
+          setIndex((i) => Math.max(0, i - 1));
+        }
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          e.stopPropagation();
+          setIndex((i) => Math.min(album.pages.length - 1, i + 1));
+        }
+        if (e.key === 'Tab' && onClose) {
+          const items = Array.from(
+            root.current!.querySelectorAll<HTMLElement>('button:not(:disabled),a[href]'),
+          );
+          if (
+            e.shiftKey &&
+            (document.activeElement === items[0] || document.activeElement === root.current)
+          ) {
+            e.preventDefault();
+            items.at(-1)?.focus();
+          } else if (!e.shiftKey && document.activeElement === items.at(-1)) {
+            e.preventDefault();
+            items[0]?.focus();
+          }
+        }
+      }}
+    >
       <header>
         <a className="wordmark" href="/">
           little days<span>♡</span>
@@ -121,6 +188,7 @@ export function Viewer({ album, onClose }: { album: Album; onClose?: () => void 
       <footer>
         <Heart size={13} /> Những điều bình thường, được thương thật nhiều.
       </footer>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -23,6 +23,7 @@ import {
   nextOccurrence,
 } from '../../../packages/domain/journal.js';
 import { api } from './api.js';
+import { PhotoLightbox } from './Overlays.js';
 
 type Item = JournalEntry & { album?: Album };
 const dateLabel = (
@@ -45,6 +46,10 @@ export default function JournalDashboard({
     todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone),
   );
   const [newKind, setNewKind] = useState<JournalContent['kind']>('memory');
+  const [photoPreview, setPhotoPreview] = useState<{
+    photos: JournalEntry['assets'];
+    index: number;
+  } | null>(null);
   useEffect(() => {
     const timer = setInterval(
       () => setToday(todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone)),
@@ -426,10 +431,15 @@ export default function JournalDashboard({
                     {entry.note && <p>{entry.note}</p>}
                     {entry.assets.length > 0 && (
                       <div className={'journal-photos photos-' + entry.assets.length}>
-                        {entry.assets.map((asset) => (
-                          <a href={asset.url} key={asset.id} target="_blank" rel="noreferrer">
+                        {entry.assets.map((asset, index) => (
+                          <button
+                            className="journal-photo-button"
+                            aria-label={'Xem ảnh ' + asset.name}
+                            key={asset.id}
+                            onClick={() => setPhotoPreview({ photos: entry.assets, index })}
+                          >
                             <img src={asset.url} alt={asset.name} loading="lazy" />
-                          </a>
+                          </button>
                         ))}
                       </div>
                     )}
@@ -486,6 +496,13 @@ export default function JournalDashboard({
           </button>
         )}
       </section>
+      {photoPreview && (
+        <PhotoLightbox
+          {...photoPreview}
+          onIndex={(index) => setPhotoPreview({ ...photoPreview, index })}
+          onClose={() => setPhotoPreview(null)}
+        />
+      )}
       {editing !== undefined && (
         <JournalDialog
           initial={editing}

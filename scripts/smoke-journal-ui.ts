@@ -70,6 +70,17 @@ try {
       await expect(form).not.toBeVisible({ timeout: 20000 });
       await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
       await expect(page.getByRole('img', { name: 'journal-photo.png', exact: true })).toBeVisible();
+      const tabsBefore = context.pages().length;
+      await page.getByRole('button', { name: 'Xem ảnh journal-photo.png', exact: true }).click();
+      const lightbox = page.getByRole('dialog', { name: 'Xem ảnh kỉ niệm', exact: true });
+      await expect(lightbox).toBeVisible();
+      await expect(
+        lightbox.getByRole('img', { name: 'journal-photo.png', exact: true }),
+      ).toBeVisible();
+      assert.equal(context.pages().length, tabsBefore, 'Photo must open in the same page');
+      await page.screenshot({ path: 'test-results/photo-lightbox-' + device + '.png' });
+      await page.keyboard.press('Escape');
+      await expect(lightbox).not.toBeVisible();
       const entries = await (await context.request.get(origin + '/api/journal')).json();
       const entry = entries.find((e: { title: string }) => e.title === title);
       assert.ok(entry.assets[0].url.startsWith('/api/journal/'));

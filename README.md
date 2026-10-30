@@ -80,6 +80,7 @@ Có lệnh `backup:create`, `backup:verify`, `backup:restore` cho database cùng
 - Text, ảnh, sticker và bộ đếm ngày; chọn nhiều, nhóm/bỏ nhóm, kéo/resize/xoay nhóm, crop, căn chỉnh, chia đều, đường dẫn căn, lớp ẩn/hiện/khóa.
 - Mẫu bố cục cá nhân lưu trên backend, tái sử dụng với ảnh album đích; trạng thái lớp và bố cục dùng chung giữa editor/viewer/MP4.
 - Thêm/nhân bản/xóa/sắp xếp trang; chỉnh màu giấy, font và chuyển động video.
+- 18 trang trí vector trong 5 bộ và 9 mẫu minh họa; popup xóa trang/xem ảnh, album co vừa một màn hình và scrollbar theo tông giao diện. Xem [hướng dẫn mẫu và trang trí](CALENDAR_TIMELINE.md).
 - Lưu server có optimistic revision, phát hiện xung đột, bản nháp local và undo/redo.
 - Quản lý kỉ niệm theo ngày; đếm ngày lịch theo múi giờ và tính kỉ niệm hằng năm, có quy tắc 29/2.
 - Upload nhiều ảnh theo lần lượt, kiểm tra file thực, giới hạn 20 MB/40 megapixel, tối ưu WebP và bỏ EXIF trên bản dẫn xuất.

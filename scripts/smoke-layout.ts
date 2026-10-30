@@ -193,6 +193,10 @@ try {
   album = await saved();
   assert.ok(album.pages[0].elements[0].groupId);
   // Actual MP4 from the saved grouped layout, with the hidden element retained in the snapshot.
+  await page.getByRole('button', { name: 'Trang trí', exact: true }).click();
+  await page.getByRole('button', { name: 'Thêm trang trí Cúc nhỏ', exact: true }).click();
+  album = await saved();
+  assert.equal(album.pages[0].elements.at(-1)!.decorationId, 'daisy');
   const response = await context.request.post(base + '/albums/' + id + '/exports', {
     data: {
       expectedRevision: album.revision,

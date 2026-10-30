@@ -285,6 +285,7 @@ export function TemplateLibrary({
           <button
             key={template.id}
             className="builtin-template-card"
+            aria-label={'Thêm trang từ mẫu ' + template.name}
             disabled={busy || album.pages.length >= 20}
             onClick={() =>
               onApply(

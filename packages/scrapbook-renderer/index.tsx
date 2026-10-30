@@ -1,4 +1,5 @@
 import React from 'react';
+import { decoration } from '../domain/decorations.js';
 import {
   type Album,
   type Page,
@@ -24,6 +25,16 @@ export function ElementContent({
   assetData?: Record<string, string>;
   imageComponent?: React.ElementType;
 }) {
+  const art = e.type === 'sticker' && decoration(e.decorationId);
+  if (art)
+    return (
+      <ImageComponent
+        src={art.src}
+        alt={art.name}
+        draggable={false}
+        style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
+      />
+    );
   if (e.type === 'image') {
     const src = (e.assetId && assetData[e.assetId]) || assetUrl(e.assetId, album);
     const metadata = album.assets.find((a) => a.id === e.assetId);
