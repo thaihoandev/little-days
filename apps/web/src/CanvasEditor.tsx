@@ -81,6 +81,7 @@ export function CanvasEditor({
   referenceDate,
   onEditText,
   zoom,
+  onZoomChange,
 }: {
   album: Album;
   page: Page;
@@ -90,6 +91,7 @@ export function CanvasEditor({
   referenceDate: string;
   onEditText: () => void;
   zoom: number;
+  onZoomChange: (zoom: number) => void;
 }) {
   const wrap = useRef<HTMLDivElement>(null);
   const stage = useRef<Konva.Stage>(null);
@@ -105,6 +107,111 @@ export function CanvasEditor({
   const start = useRef<{ x: number; y: number; additive: boolean } | null>(null);
   const dragging = useRef<{ id: string; ids: string[]; x: number; y: number } | null>(null);
   const [guides, setGuides] = useState<{ axis: 'x' | 'y'; value: number }[]>([]);
+  const pinching = useRef(false);
+  const pinch = useRef<{ distance: number; zoom: number; ids: [number, number] } | null>(null);
+  const latest = useRef({ page, zoom, onZoomChange });
+  latest.current = { page, zoom, onZoomChange };
+  useEffect(() => {
+    const container = wrap.current;
+    if (!container) return;
+    const cancelManipulation = () => {
+      dragging.current = null;
+      start.current = null;
+      setMarquee(null);
+      setGuides([]);
+      transformer.current?.stopTransform();
+      for (const e of latest.current.page.elements) {
+        const node = stage.current?.findOne('#' + e.id);
+        node?.stopDrag();
+        node?.setAttrs({
+          x: e.x,
+          y: e.y,
+          width: e.width,
+          height: e.height,
+          rotation: e.rotation,
+          scaleX: 1,
+          scaleY: 1,
+        });
+      }
+      transformer.current?.forceUpdate();
+      stage.current?.batchDraw();
+    };
+    const stop = (event: TouchEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+    };
+    const begin = (event: TouchEvent) => {
+      if (event.touches.length < 2) {
+        if (pinching.current) stop(event);
+        return;
+      }
+      if (
+        !pinching.current &&
+        !Array.from(event.touches).every(
+          (t) => t.target instanceof Node && container.contains(t.target),
+        )
+      )
+        return;
+      if (!pinching.current) {
+        pinching.current = true;
+        cancelManipulation();
+      }
+      if (event.touches.length !== 2) {
+        pinch.current = null;
+        stop(event);
+        return;
+      }
+      const [a, b] = Array.from(event.touches);
+      pinch.current = {
+        distance: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY),
+        zoom: latest.current.zoom,
+        ids: [a.identifier, b.identifier],
+      };
+      stop(event);
+    };
+    const move = (event: TouchEvent) => {
+      if (!pinching.current) return;
+      stop(event);
+      const state = pinch.current;
+      if (!state || event.touches.length !== 2 || state.distance < 1) return;
+      const a = Array.from(event.touches).find((t) => t.identifier === state.ids[0]),
+        b = Array.from(event.touches).find((t) => t.identifier === state.ids[1]);
+      if (!a || !b) return;
+      const next =
+        Math.round(
+          Math.max(
+            0.6,
+            Math.min(
+              1.5,
+              (state.zoom * Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY)) /
+                state.distance,
+            ),
+          ) * 100,
+        ) / 100;
+      latest.current.onZoomChange(next);
+    };
+    const end = (event: TouchEvent) => {
+      if (!pinching.current) return;
+      stop(event);
+      pinch.current = null;
+      // Keep suppressing element touches until every finger from this gesture is lifted.
+      if (event.touches.length === 0) {
+        cancelManipulation();
+        pinching.current = false;
+      } else if (event.touches.length === 2) begin(event);
+    };
+    const options = { capture: true, passive: false };
+    container.addEventListener('touchstart', begin, options);
+    container.addEventListener('touchmove', move, options);
+    container.addEventListener('touchend', end, options);
+    container.addEventListener('touchcancel', end, options);
+    return () => {
+      container.removeEventListener('touchstart', begin, true);
+      container.removeEventListener('touchmove', move, true);
+      container.removeEventListener('touchend', end, true);
+      container.removeEventListener('touchcancel', end, true);
+    };
+  }, []);
   useEffect(() => {
     const observer = new ResizeObserver((entries) => setWidth(entries[0].contentRect.width));
     if (wrap.current) observer.observe(wrap.current);
@@ -273,7 +380,9 @@ export function CanvasEditor({
               width={720}
               height={900}
               fill={page.background}
-              onTap={() => onSelect([])}
+              onTap={() => {
+                if (!pinching.current) onSelect([]);
+              }}
             />
             <Rect x={22} y={22} width={676} height={856} stroke="#9f895622" listening={false} />
             {page.elements.map((e) => (
@@ -295,7 +404,9 @@ export function CanvasEditor({
                   !(selected.includes(e.id) && locked)
                 }
                 onClick={(ev) => select(e.id, ev.evt.shiftKey)}
-                onTap={() => select(e.id)}
+                onTap={() => {
+                  if (!pinching.current) select(e.id);
+                }}
                 onDblClick={() => {
                   if (e.type === 'text' && !e.locked) {
                     onSelect([e.id]);
@@ -303,6 +414,7 @@ export function CanvasEditor({
                   }
                 }}
                 onDragStart={() => {
+                  if (pinching.current) return;
                   const ids = selected.includes(e.id)
                     ? selected
                     : expandSelection(page.elements, [e.id]);
@@ -311,6 +423,7 @@ export function CanvasEditor({
                 }}
                 onDragMove={(ev) => move(ev.target)}
                 onDragEnd={(ev) => {
+                  if (pinching.current) return;
                   move(ev.target);
                   const d = dragging.current;
                   if (d)
@@ -373,6 +486,7 @@ export function CanvasEditor({
               borderStroke="#6d7c54"
               keepRatio={chosen.length > 1 || chosen[0]?.type === 'image'}
               onTransformEnd={() => {
+                if (pinching.current) return;
                 const visible = chosen.filter((e) => e.visible !== false);
                 const first = visible[0];
                 if (!first) return;
@@ -419,6 +533,9 @@ export function CanvasEditor({
       </div>
       <div className="canvas-caption">
         {page.title} • Shift + chạm để chọn nhiều • Kéo vùng trống để chọn
+      </div>
+      <div className="canvas-caption canvas-touch-hint">
+        Dùng hai ngón để phóng to/thu nhỏ · Chạm mức % để về 100%
       </div>
     </div>
   );

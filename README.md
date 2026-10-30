@@ -41,6 +41,7 @@ npm run dev
 3. Trong **Ảnh**, tải JPEG/PNG/WebP, rồi bấm ảnh để thêm vào trang.
 4. Chọn phần tử trên canvas để kéo, resize, xoay, đổi chữ/font/màu hoặc crop. Chạm hai lần vào text để nhập lời nhắn.
 5. Giữ **Shift** khi chạm phần tử, kéo vùng trống hoặc dùng ô chọn trong **Lớp** để chọn nhiều. Dùng **Nhóm / Bỏ nhóm** (Ctrl+G / Ctrl+Shift+G), kéo/resize/xoay nhóm, căn chỉnh và chia đều khoảng cách. Đường dẫn căn xuất hiện khi kéo gần mép/tâm trang hoặc phần tử khác.
+   Trên màn hình cảm ứng, dùng hai ngón trên canvas để phóng to/thu nhỏ từ 60–150%; chạm mức `%` để về 100%. Chuyển sang hai ngón sẽ hủy thao tác kéo đang dở. Zoom chỉ thay đổi cách xem, không đổi bố cục hoặc tạo bước undo.
 6. Trong **Lớp**, chọn, ẩn/hiện, khóa/mở khóa; dùng **Lên/Xuống một lớp** ở bảng bên phải để sắp xếp.
 7. Trong **Trang sổ → Mẫu của bạn**, đặt tên rồi bấm **Lưu trang thành mẫu**. Thêm trang từ mẫu sẽ giữ chữ, bố cục, nhóm và hiệu ứng; dùng ảnh của album hiện tại theo thứ tự tải lên, hoặc để khung trống khi chưa có ảnh. Mẫu riêng được lưu theo tài khoản.
 8. Thêm, nhân bản và sắp xếp trang. Thay đổi tự lưu; kéo/resize nhóm là một bước undo/redo.

@@ -1,6 +1,6 @@
 # Hồ sơ nghiệm thu pilot Little Days
 
-Mẫu ghi nhận bắt đầu ngày 30/10/2026. Chưa có kết quả pilot thực tế. Dùng mã P01–P05 thay cho thông tin nhận diện; không ghi email, mật khẩu, token, khóa backup hoặc ảnh riêng tư vào file này.
+Mẫu ghi nhận bắt đầu ngày 30/10/2026. Người dùng đã yêu cầu bỏ qua pilot thật; không có kết quả pilot thực tế và không cần điền ma trận dưới đây để tiếp tục triển khai. Giữ mẫu để tham khảo; không ghi email, mật khẩu, token, khóa backup hoặc ảnh riêng tư vào file này.
 
 ## Điều kiện trước đợt thử
 
@@ -56,4 +56,4 @@ P0: mất dữ liệu/lộ nội dung/vượt quyền → dừng pilot và xử 
 - [ ] Ghi thời gian xuất và mức dùng tài nguyên trên hạ tầng đang chạy; có phương án nếu worker local tắt.
 - [ ] Đối chiếu license font/nhạc/Remotion theo mô hình phát hành thực tế.
 
-Quyết định hiện tại: **CHƯA NGHIỆM THU PILOT**. Người phụ trách, commit phát hành, phiên bản rollback và thời điểm mở rộng: chưa điền.
+Quyết định hiện tại: **PILOT THẬT ĐƯỢC BỎ QUA THEO YÊU CẦU**. Không đánh dấu các ô là đã thử. Hồ sơ phát hành/rollback được theo dõi độc lập khi cần.

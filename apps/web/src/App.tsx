@@ -1325,7 +1325,14 @@ function Editor({
                 >
                   <Minus size={15} />
                 </button>
-                <span className="small">{Math.round(zoom * 100)}%</span>
+                <button
+                  className="zoom-reset"
+                  aria-label="Đặt lại mức thu phóng"
+                  title="Về 100%"
+                  onClick={() => setZoom(1)}
+                >
+                  {Math.round(zoom * 100)}%
+                </button>
                 <button
                   className="icon-button tiny"
                   aria-label="Phóng to"
@@ -1360,6 +1367,7 @@ function Editor({
                 referenceDate={reference}
                 onEditText={() => setEditText(true)}
                 zoom={zoom}
+                onZoomChange={setZoom}
               />
             </Suspense>
             <div className="editor-bottom">

@@ -1,5 +1,7 @@
 # Pilot và nghiệm thu
 
+**Cập nhật 30/10/2026:** người dùng yêu cầu bỏ qua pilot người thật và tiếp tục triển khai. Phần mời người thử/checklist dưới đây được giữ làm tài liệu tham khảo, không còn là điều kiện chặn công việc. Các lệnh QA tự động vẫn dùng fixture để kiểm tra mã nguồn.
+
 ## Phạm vi
 
 Trạng thái ngày 30/10/2026: người dùng đã xác nhận email thật, backup theo lịch và phục hồi thử hoàn tất. Chưa có kết quả từ 3–5 người dùng thật; xác nhận receiver cảnh báo vận hành vẫn cần ghi riêng. Ghi run URL/checksum đã đối chiếu vào [PILOT_RESULTS.md](PILOT_RESULTS.md), không ghi khóa mã hóa hoặc thông tin tài khoản.
@@ -16,9 +18,12 @@ npm run test:pilot
 # Chỉ kiểm tra tự lưu/lưu thủ công khi backup và giữ bản nháp khi xung đột:
 npm run test:save-recovery
 
+# QA cảm ứng tự động (không cần người thử):
+npm run test:gestures
+
 ```
 
-`test:pilot` tự mở API, worker và web trên cổng localhost trống riêng, dùng SQLite/media/hộp thư local trong `test-results/pilot/<UUID>`. Không dùng `.env.cloud`, Neon, Cloudinary hoặc email thật; không chạy lên app production. Nó kiểm tra editor, autosave khi backup trả 503, auth, history, video, xóa tài khoản, layout và MP4 thật bằng các smoke scripts sẵn có. API bắt đầu trước worker để tránh migration khởi động cùng lúc. Chỉ các tiến trình do lượt kiểm thử tạo ra được dừng.
+`test:pilot` là tên runner QA tự động đã có; tự mở API, worker và web trên cổng localhost trống riêng, dùng SQLite/media/hộp thư local trong `test-results/pilot/<UUID>`. Không dùng `.env.cloud`, Neon, Cloudinary hoặc email thật; không chạy lên app production. Nó kiểm tra editor, autosave khi backup trả 503, pinch zoom, auth, history, video, xóa tài khoản, layout và MP4 thật bằng các smoke scripts sẵn có. API bắt đầu trước worker để tránh migration khởi động cùng lúc. Chỉ các tiến trình do lượt kiểm thử tạo ra được dừng.
 
 Kết quả là `report.json`, log từng kịch bản và ảnh desktop/mobile trong thư mục lượt chạy. Report ghi commit HEAD và `workingTreeDirty` để nhận biết kiểm thử có thay đổi chưa commit; `fullSuite: false` khi chạy riêng save-recovery. Luôn ghi `realPilotVerified: false`, không đánh dấu người thật đã thử. Các file này được ignore khỏi Git. Đừng chia sẻ toàn bộ thư mục data/mail; nếu cần đính kèm báo cáo chỉ chọn report và ảnh fixture.
 

@@ -8,6 +8,7 @@ import { ensureBrowser } from '@remotion/renderer';
 const suites = [
   ['editor', 'scripts/smoke-ui.ts'],
   ['save-recovery', 'scripts/smoke-save-recovery.ts'],
+  ['gestures', 'scripts/smoke-gestures.ts'],
   ['auth', 'scripts/smoke-auth-ui.ts'],
   ['history', 'scripts/smoke-history-ui.ts'],
   ['video', 'scripts/smoke-video-ui.ts'],
@@ -16,7 +17,7 @@ const suites = [
 ];
 const selected = process.argv[2];
 if (process.argv.length > 3 || (selected && !suites.some(([name]) => name === selected)))
-  throw new Error('Use npm run test:pilot or npm run test:save-recovery.');
+  throw new Error('Use npm run test:pilot, npm run test:save-recovery or npm run test:gestures.');
 
 const root = path.resolve('test-results/pilot', crypto.randomUUID());
 await mkdir(root, { recursive: true });

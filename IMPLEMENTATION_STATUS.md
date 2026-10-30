@@ -6,7 +6,7 @@ Ngày cập nhật: **30/10/2026**.
 
 App đã chạy công khai trên Render tại https://little-days-api.onrender.com, dùng PostgreSQL Neon và Cloudinary; người dùng xác nhận Brevo HTTPS đã gửi email thật thành công. Worker xuất video hiện vẫn chạy theo cấu hình cũ; phương án worker Northflank đã được người dùng hủy. Đây là bản MVP để chạy thử, chưa phải toàn bộ hệ thống production trong `IMPLEMENTATION_PLAN.md`.
 
-Ngày 30/10/2026, người dùng xác nhận đã bật backup theo lịch và hoàn tất phục hồi thử. Chưa ghi URL run/report kiểm chứng production vào hồ sơ; kết quả này được ghi nhận theo xác nhận của người dùng. Giai đoạn tiếp theo là pilot 3–5 người thật, theo PILOT.md và PILOT_RESULTS.md.
+Ngày 30/10/2026, người dùng xác nhận đã bật backup theo lịch và hoàn tất phục hồi thử. Chưa ghi URL run/report kiểm chứng production vào hồ sơ; kết quả này được ghi nhận theo xác nhận của người dùng. Người dùng đã yêu cầu bỏ qua pilot thật và tiếp tục triển khai; tài liệu pilot giữ làm tham khảo, không là bước chặn.
 
 **Bản 0.2** tách render worker khỏi API, thêm hàng đợi SQL có lease/heartbeat và adapter media local/S3. Đã kiểm chứng hai worker qua S3 fixture; PostgreSQL 17 và container production cũng đã chạy thật trong QA.
 
@@ -19,7 +19,7 @@ Ngày 30/10/2026, người dùng xác nhận đã bật backup theo lịch và h
 | Workspace | React/TypeScript/Vite, NestJS, domain schemas và Remotion composition |
 | Giao diện | Dashboard, thư viện ảnh, editor, viewer, video builder; bố cục desktop/mobile |
 | Template | Ba mẫu có sẵn và mẫu cá nhân theo tài khoản; lưu chữ/nhóm/layout/hiệu ứng, dùng ảnh album đích |
-| Editor | Shift/marquee/checkbox chọn nhiều, nhóm/bỏ nhóm, kéo/resize/xoay nhóm; căn chỉnh, chia đều, snap guides; thứ tự lớp, ẩn/hiện/khóa |
+| Editor | Shift/marquee/checkbox chọn nhiều, nhóm/bỏ nhóm, kéo/resize/xoay nhóm; căn chỉnh, chia đều, snap guides; thứ tự lớp, ẩn/hiện/khóa; pinch zoom 60–150% và reset 100% |
 | Trang | Thêm, nhân bản, đổi màu, đổi tên, sắp xếp và xóa |
 | Lưu | Autosave/revision/409, bản nháp và undo/redo; lịch sử server 50 phiên bản, checkpoint có tên, preview và restore có CAS |
 | Backup/restore | Database logic + media có SHA-256; restore vào đích trống, dry-run mặc định, import transaction; workflow GitHub Actions snapshot có lease/table locks, AES-256-GCM và restore drill trước khi upload; lịch chưa bật khi thiếu secrets/variables |
@@ -72,6 +72,7 @@ Autosave nhận diện `503 BACKUP_IN_PROGRESS`, giữ bản nháp/chỉnh sửa
 - `npm run test:scheduled-backup`: PostgreSQL schema QA riêng, SHARE locks chặn xóa media trong khi snapshot, Cloudinary HTTP fixture, chạy CLI mã hóa/giải mã/restore SQLite và so database/media; job bận không ghi đè archive tốt và lease được nhả. Đây là kiểm chứng fixture, chưa phải workflow chạy với Neon/Cloudinary thật.
 - `npm run test:pilot`: 7 luồng cô lập đã qua gồm editor, tự lưu sau bảo trì/giữ bản nháp khi 409 trên desktop/mobile, auth, history, audio/video, xóa tài khoản và layout/MP4 thật. Lượt QA khoảng 135 giây, MP4 1.360.658 byte. Có report/log/ảnh trong test-results/pilot; không thay thế kết quả người thật. CI bổ sung job pilot-ui riêng.
 - `npm run test:save-recovery`: kiểm tra bổ sung trên code cuối cho cả autosave/lưu thủ công, tôn trọng Retry-After, lưu nội dung mới nhất, xóa thông báo sau phục hồi và giữ draft khi 409; qua desktop/mobile.
+- `npm run test:gestures`: touch events thực qua Chromium CDP, mobile/desktop có cảm ứng; giới hạn 60–150%, reset 100%, không tăng revision/undo, không tràn ngang ở zoom tối đa, chuyển kéo sang pinch và touchcancel không làm lệch album; kéo một ngón sau đó vẫn lưu đúng. Core editor và layout/render MP4 đã chạy lại thành công sau cập nhật viewport.
 - `npm run test:api`: qua với local storage và với `SMOKE_STORAGE=s3`; kiểm tra ownership, đăng ký/đăng nhập, CAS, xử lý ảnh thật, media riêng tư, thu hồi share, idempotency, cancel và xóa.
 - `npm run test:s3`: qua HTTP fixture local, gồm SDK ký request, kiểm tra bucket, put buffer/stream, bounded read, get, prefix và delete.
 - `npm run test:cloudinary`: qua HTTP fixture local, gồm SDK ký upload, authenticated assets, chunked video trên 6 MB, private download, bounded read và xóa.
@@ -114,7 +115,7 @@ Kết quả screenshot và video nằm trong `test-results/` và không đưa v�
 | BullMQ/Redis + worker riêng | Worker riêng và SQL queue có atomic lease, retry, fencing | Giữ SQL queue để tránh dual-write/outbox; load test và đo nhu cầu trước khi thêm Redis |
 | IndexedDB draft | LocalStorage document không chứa binary | Chuyển IndexedDB nếu dữ liệu lớn; hạn mức/lifecycle bản nháp |
 | Server checkpoint/migration | Lịch sử 50 revision, checkpoint có tên, xem trước và restore trong UI; trigger nguyên tử | Migration schema document khi lên phiên bản mới |
-| Editor nâng cao | Multi-select, nhóm, căn/chia đều, snap guides, lớp, mẫu cá nhân và cảnh báo chữ tràn | Nhóm lồng nhau và gesture trên canvas |
+| Editor nâng cao | Multi-select, nhóm, căn/chia đều, snap guides, lớp, mẫu cá nhân, cảnh báo chữ tràn và pinch zoom | Nhóm lồng nhau hoặc các gesture bổ sung khi có yêu cầu |
 | Audio cá nhân | Nhạc gốc/tắt/upload, waveform/trim kéo, loop/volume/fade; lưu cấu hình, Cloudinary/S3/local | Thư viện nhạc tuyển chọn |
 | Triển khai cloud | Render công khai, Neon/Cloudinary, Brevo thật đã được người dùng xác nhận; backup/restore CLI đã kiểm chứng qua fixture | Bật receiver cảnh báo, lịch backup và restore drill trên hạ tầng thật; worker cloud đã hủy |
 
@@ -124,11 +125,11 @@ Docker Desktop đã khởi động được; đã build image và chạy contain
 
 Đã bổ sung xóa tài khoản vĩnh viễn: xác nhận mật khẩu/câu xác nhận trong UI, thu hồi session/share/auth token, hủy export, hàng đợi dọn dữ liệu và media có lease/retry qua restart. Có sổ object trước upload, chặn ghi muộn, dọn thư local, trạng thái theo dõi sau reload và CLI vận hành. API Cloudinary fixture và UI desktop/mobile đã qua; dữ liệu tài khoản khác được giữ. Backup/restore chặn khi còn yêu cầu xóa. Xem `ACCOUNT_DELETION.md` về backup cũ và media mồ côi trước khi có sổ object.
 
-1. Dùng thử album với ảnh thật và lấy phản hồi về thao tác editor/thiết kế template.
+1. Tiếp tục các cải tiến editor/video có trong kế hoạch; pilot người thật đã được bỏ qua theo yêu cầu.
 2. Bật và xác minh receiver cảnh báo trên Render bằng hai biến trong OPERATIONS.md; giữ Brevo hiện có.
 3. Điền GitHub Secrets/Variables theo SCHEDULED_BACKUP.md, bật workflow backup, kiểm tra run thật và tải archive để drill độc lập. Không cần VPS hoặc worker cloud.
 4. Đo tải/CPU/RAM toàn container và chi phí trên hạ tầng đích, hiệu chỉnh quota.
-5. Pilot 3–5 người theo PILOT.md; thư viện nhạc tuyển chọn, gesture và nhóm lồng nhau là mở rộng sau pilot.
+5. Thư viện nhạc tuyển chọn và nhóm lồng nhau là các phần mở rộng còn lại; không chờ pilot để phát triển tiếp.
 6. Đối chiếu license, kiểm toán bảo mật và xác nhận rollout/rollback trước phát hành.
 
 ## Tài liệu

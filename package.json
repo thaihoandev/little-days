@@ -6,6 +6,7 @@
   "scripts": {
     "test:pilot": "tsx scripts/pilot-qa.ts",
     "test:save-recovery": "tsx scripts/pilot-qa.ts save-recovery",
+    "test:gestures": "tsx scripts/pilot-qa.ts gestures",
     "backup:scheduled": "node --import tsx scripts/scheduled-backup.ts",
     "test:scheduled-backup": "tsx scripts/smoke-scheduled-backup.ts",
     "backup:key": "node --import tsx scripts/backup-crypto.ts key",

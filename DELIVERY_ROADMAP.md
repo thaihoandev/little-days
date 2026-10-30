@@ -18,6 +18,9 @@ Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → st
 - [x] Bật backup và hoàn tất phục hồi thử: người dùng xác nhận ngày 30/10/2026; chưa ghi URL run/report vào hồ sơ nghiệm thu.
 - [x] Runner QA pilot cô lập cho 7 luồng desktop/mobile, gồm autosave sau backup và MP4 thật; hồ sơ ghi nhận P01–P05 và tiêu chí nghiệm thu.
 - [ ] Đo công suất CPU/RAM/thời gian xuất trên hạ tầng đích và ghi bằng chứng backup/cảnh báo vào hồ sơ nghiệm thu.
-- [ ] Pilot 3–5 người thật; đối chiếu license và nghiệm thu phát hành.
+- [x] Thao tác hai ngón phóng to/thu nhỏ canvas, reset 100%, hủy kéo dở khi chuyển sang pinch; zoom không sửa album/lịch sử.
+- [ ] Đối chiếu license và nghiệm thu phát hành theo mô hình sử dụng thực tế.
 
-Worker cloud đã được người dùng hủy; giữ worker hiện tại và không tạo tài nguyên Northflank hoặc dịch vụ tính phí. App đã chạy tại https://little-days-api.onrender.com. Email thật hoàn tất theo xác nhận của người dùng; giám sát/backup/pilot thật vẫn cần kết quả riêng. Chi tiết: OPERATIONS.md, STAGING.md và PILOT.md.
+**Pilot 3–5 người thật được bỏ qua theo yêu cầu của người dùng ngày 30/10/2026.** Giữ các kiểm thử tự động để phát triển tiếp; không ghi nhận pilot là đã thực hiện.
+
+Worker cloud đã được người dùng hủy; giữ worker hiện tại và không tạo tài nguyên Northflank hoặc dịch vụ tính phí. App đã chạy tại https://little-days-api.onrender.com. Email thật, backup và phục hồi được người dùng xác nhận; receiver cảnh báo và số đo hạ tầng vẫn cần bằng chứng riêng. Pilot thật không còn là bước bắt buộc trong phiên làm việc này.
