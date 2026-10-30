@@ -81,6 +81,31 @@ try {
     400,
   );
   assert.equal((await (await alice('/render-capacity')).json()).available, false);
+  let cutoutAlbum: Album = await (
+    await alice('/albums', 'POST', { title: 'Cutout compatibility fixture' })
+  ).json();
+  cutoutAlbum.pages[0].elements = cutoutAlbum.pages[0].elements.map((e) =>
+    e.type === 'image' ? { ...e, photoStyle: 'cutout' } : e,
+  );
+  cutoutAlbum = await (
+    await alice('/albums/' + cutoutAlbum.id, 'PATCH', {
+      expectedRevision: cutoutAlbum.revision,
+      content: cutoutAlbum,
+    })
+  ).json();
+  const cutoutExport = await alice('/albums/' + cutoutAlbum.id + '/exports', 'POST', {
+    expectedRevision: cutoutAlbum.revision,
+    idempotencyKey: crypto.randomUUID(),
+    config: {
+      seconds: 15,
+      pageIds: [cutoutAlbum.pages[0].id],
+      opening: '',
+      closing: '',
+      musicId: 'none',
+    },
+  });
+  assert.equal(cutoutExport.status, 503, 'Do not enqueue cutouts without a compatible live worker');
+  assert.equal((await alice('/albums/' + cutoutAlbum.id, 'DELETE')).status, 200);
   const album: Album = await (await alice('/albums', 'POST', { title: 'Kiểm tra API' })).json();
   const unavailableMusic = await alice('/albums/' + album.id + '/exports', 'POST', {
     expectedRevision: album.revision,

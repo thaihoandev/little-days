@@ -5,6 +5,7 @@ import { bounds, expandSelection } from '../../../packages/domain/layout.js';
 import { elementSchema } from '../../../packages/domain/index.js';
 import { decoration } from '../../../packages/domain/decorations.js';
 import { counterAppearance } from '../../../packages/domain/counter.js';
+import { photoGeometry } from '../../../packages/domain/photo-edit.js';
 import {
   type Album,
   type Page,
@@ -78,6 +79,10 @@ function CounterArt({
 }
 function Photo({ e, album }: { e: ScrapElement; album: Album }) {
   const image = useImage(assetUrl(e.assetId, album));
+  if (e.photoStyle === 'cutout') {
+    const g = photoGeometry(e, image);
+    return image ? <KonvaImage image={image} {...g} /> : null;
+  }
   const w = e.width - 24,
     h = Math.max(1, e.height - 50);
   let crop: { x: number; y: number; width: number; height: number } | undefined;

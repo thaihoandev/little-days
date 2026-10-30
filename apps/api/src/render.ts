@@ -76,6 +76,7 @@ export class RenderQueue {
       busy: !!this.task,
       backupProtocol: 1,
       musicCatalogVersion: 1,
+      photoStylesVersion: 1,
     });
   }
   async start() {

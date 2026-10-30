@@ -10,6 +10,10 @@ The application currently pins Remotion packages to 4.0.440. Their metadata decl
 
 Official references: [Remotion license](https://github.com/remotion-dev/remotion/blob/main/packages/core/LICENSE.md), [license and pricing](https://www.remotion.dev/docs/license), [license FAQ](https://www.remotion.dev/docs/license/faq). Eligibility and commercial terms remain Remotion's terms. The Little Days exception grants no additional Remotion rights. Recheck the exact version's terms before distributing or changing the usage model.
 
+## Browser background removal
+
+The standalone image-processing worker uses IMG.LY background-removal 1.7.0 (AGPL-3.0) and ONNX Runtime Web 1.21.0 (MIT). Original notices, the model provider's declarations and provenance distinctions are preserved in [licenses/background-removal](licenses/background-removal/README.md). The pinned IS-Net resource manifest is in `packages/background-removal/resources.json`; weights are downloaded and integrity-checked during build. The worker does not import Remotion, and Little Days' Remotion exception does not extend to these third-party components. User photographs are not licensed by these notices.
+
 ## Fonts
 
 Be Vietnam Pro, Caveat, Lora and Patrick Hand are bundled through Fontsource. Their original SIL Open Font License 1.1 notices, authors and reserved names are preserved in `licenses/fonts/`. Font licensing is independent from Little Days' code license; do not remove the font notices or rename modified fonts contrary to their reserved-name requirements.

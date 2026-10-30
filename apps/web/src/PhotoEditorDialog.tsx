@@ -12,8 +12,10 @@ import {
   photoZoom,
   zoomPhoto,
   panPhoto,
+  photoGeometry,
 } from '../../../packages/domain/photo-edit.js';
 import { useBodyScrollLock } from './Overlays.js';
+import { BackgroundRemovalPanel } from './BackgroundRemovalPanel.js';
 
 export function PhotoEditorDialog({
   element,
@@ -33,6 +35,20 @@ export function PhotoEditorDialog({
   const [draft, setDraft] = useState(element),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
+  const [cutout, setCutout] = useState<Blob | null>(null),
+    [removing, setRemoving] = useState(false),
+    [previewUrl, setPreviewUrl] = useState(''),
+    [showOriginal, setShowOriginal] = useState(false);
+  useEffect(() => {
+    if (!cutout) {
+      setPreviewUrl('');
+      return;
+    }
+    const url = URL.createObjectURL(cutout);
+    setPreviewUrl(url);
+    setShowOriginal(false);
+    return () => URL.revokeObjectURL(url);
+  }, [cutout]);
   const drag = useRef<{
     x: number;
     y: number;
@@ -42,12 +58,21 @@ export function PhotoEditorDialog({
   } | null>(null);
   const asset = album.assets.find((a) => a.id === draft.assetId),
     crop = photoWindow(draft, asset);
+  const cutoutMode = draft.photoStyle === 'cutout',
+    g = photoGeometry(draft, asset);
+  const ratio =
+    previewUrl || cutoutMode
+      ? draft.width / draft.height
+      : Math.max(1, draft.width - 24) / Math.max(1, draft.height - 50);
   useEffect(() => {
     const node = dialog.current!;
     node.showModal();
     return () => node.close();
   }, []);
-  const replace = (id: string) => setDraft((e) => ({ ...e, assetId: id, crop: { ...fullPhoto } }));
+  const replace = (id: string) => {
+    setCutout(null);
+    setDraft((e) => ({ ...e, assetId: id, crop: { ...fullPhoto } }));
+  };
   return (
     <dialog
       ref={dialog}
@@ -75,26 +100,26 @@ export function PhotoEditorDialog({
       <div className="photo-editor-body">
         <div>
           <div
-            className="photo-crop-surface"
+            className={
+              'photo-crop-surface' +
+              (previewUrl || draft.photoStyle === 'cutout' ? ' transparency-grid' : '')
+            }
             role="img"
             aria-label="Kéo để dịch ảnh trong khung"
             style={{
-              width: Math.min(
-                430,
-                (330 * Math.max(1, draft.width - 24)) / Math.max(1, draft.height - 50),
-              ),
+              width: Math.min(430, 330 * ratio),
               maxWidth: '100%',
-              aspectRatio: `${Math.max(1, draft.width - 24)} / ${Math.max(1, draft.height - 50)}`,
+              aspectRatio: String(ratio),
             }}
             onPointerDown={(e) => {
-              if (busy) return;
+              if (busy || removing || previewUrl) return;
               e.currentTarget.setPointerCapture(e.pointerId);
               const r = e.currentTarget.getBoundingClientRect();
               drag.current = { x: e.clientX, y: e.clientY, crop, width: r.width, height: r.height };
             }}
             onPointerMove={(e) => {
               const d = drag.current;
-              if (!d || busy) return;
+              if (!d || busy || removing || previewUrl) return;
               setDraft((old) => ({
                 ...old,
                 crop: panPhoto(
@@ -112,24 +137,59 @@ export function PhotoEditorDialog({
               drag.current = null;
             }}
           >
-            {assetUrl(draft.assetId, album) && (
+            {previewUrl ? (
               <img
-                src={assetUrl(draft.assetId, album)}
-                alt=""
+                src={showOriginal ? assetUrl(draft.assetId, album) : previewUrl}
+                alt={showOriginal ? 'Ảnh gốc trước khi tách nền' : 'Xem trước ảnh đã tách nền'}
                 draggable={false}
-                style={{
-                  width: `${100 / crop.width}%`,
-                  height: `${100 / crop.height}%`,
-                  left: `${(-crop.x / crop.width) * 100}%`,
-                  top: `${(-crop.y / crop.height) * 100}%`,
-                }}
+                style={{ width: '100%', height: '100%', left: 0, top: 0, objectFit: 'contain' }}
               />
+            ) : (
+              assetUrl(draft.assetId, album) && (
+                <div
+                  style={
+                    cutoutMode
+                      ? {
+                          position: 'absolute',
+                          overflow: 'hidden',
+                          left: `${(g.x / draft.width) * 100}%`,
+                          top: `${(g.y / draft.height) * 100}%`,
+                          width: `${(g.width / draft.width) * 100}%`,
+                          height: `${(g.height / draft.height) * 100}%`,
+                        }
+                      : { position: 'absolute', inset: 0 }
+                  }
+                >
+                  <img
+                    src={assetUrl(draft.assetId, album)}
+                    alt=""
+                    draggable={false}
+                    style={{
+                      width: `${100 / crop.width}%`,
+                      height: `${100 / crop.height}%`,
+                      left: `${(-crop.x / crop.width) * 100}%`,
+                      top: `${(-crop.y / crop.height) * 100}%`,
+                    }}
+                  />
+                </div>
+              )
             )}
           </div>
+          {previewUrl && (
+            <button className="button quiet" onClick={() => setShowOriginal((value) => !value)}>
+              {showOriginal ? 'Xem ảnh tách nền' : 'So sánh ảnh gốc'}
+            </button>
+          )}
           <p className="muted small">
-            Kéo ảnh để chọn phần muốn giữ. Khung và bố cục trang không đổi.
+            {cutout
+              ? 'Áp dụng để dùng ảnh trong suốt như sticker trên trang sổ.'
+              : 'Kéo ảnh để chọn phần muốn giữ. Khung và bố cục trang không đổi.'}
           </p>
-          <fieldset disabled={busy} className="form-stack">
+          <fieldset
+            hidden={!!cutout}
+            disabled={busy || removing || !!cutout}
+            className="form-stack"
+          >
             <label>
               Phóng ảnh{' '}
               <input
@@ -180,6 +240,14 @@ export function PhotoEditorDialog({
           </fieldset>
         </div>
         <div>
+          <div inert={busy}>
+            <BackgroundRemovalPanel
+              key={draft.assetId}
+              asset={asset}
+              onResult={setCutout}
+              onProcessing={setRemoving}
+            />
+          </div>
           <h3>Thay ảnh trong khung</h3>
           <label className="button quiet photo-upload">
             <Upload size={16} /> Tải ảnh thay khung
@@ -187,7 +255,7 @@ export function PhotoEditorDialog({
               aria-label="Tải ảnh thay khung"
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              disabled={busy}
+              disabled={busy || removing}
               onChange={async (e) => {
                 const file = e.target.files?.[0];
                 e.target.value = '';
@@ -220,7 +288,7 @@ export function PhotoEditorDialog({
                 key={a.id}
                 aria-label={'Dùng ảnh ' + a.name}
                 aria-pressed={draft.assetId === a.id}
-                disabled={busy}
+                disabled={busy || removing}
                 onClick={() => replace(a.id)}
               >
                 <img src={a.url} alt="" loading="lazy" />
@@ -242,10 +310,26 @@ export function PhotoEditorDialog({
           </button>
           <button
             className="button primary"
-            disabled={busy}
-            onClick={() => {
-              onApply({ assetId: draft.assetId, crop: draft.crop });
-              onClose();
+            disabled={busy || removing}
+            onClick={async () => {
+              if (!cutout) {
+                onApply({ assetId: draft.assetId, crop: draft.crop, photoStyle: draft.photoStyle });
+                onClose();
+                return;
+              }
+              setBusy(true);
+              setError('');
+              try {
+                const next = await onUpload(
+                  new File([cutout], 'tach-nen.png', { type: 'image/png' }),
+                );
+                onApply({ assetId: next.id, crop: { ...fullPhoto }, photoStyle: 'cutout' });
+                onClose();
+              } catch (e) {
+                setError((e as Error).message);
+              } finally {
+                setBusy(false);
+              }
             }}
           >
             {busy ? 'Đang tải ảnh…' : 'Áp dụng ảnh'}

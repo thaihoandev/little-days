@@ -38,6 +38,9 @@ for (const [source, target] of [
   await fs.copyFile(source, 'apps/web/public/legal/' + target);
 await fs.cp('licenses/fonts', 'apps/web/public/legal/fonts', { recursive: true });
 await fs.cp('licenses/remotion', 'apps/web/public/legal/remotion', { recursive: true });
+await fs.cp('licenses/background-removal', 'apps/web/public/legal/background-removal', {
+  recursive: true,
+});
 const result = await collectLicenses();
 await fs.writeFile(
   'apps/web/public/legal/dependencies.json',

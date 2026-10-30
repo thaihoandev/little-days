@@ -4,6 +4,8 @@ Ngày cập nhật: **30/10/2026**.
 
 ## Kết quả hiện tại
 
+Thêm tách nền AI trên trình duyệt: xem trước/so sánh, hủy, viền trắng/bóng đổ, lưu bản sao trong suốt riêng tư và Undo/Redo. Kiểu ảnh cutout được dùng chung cho Canvas, viewer và MP4; giữ ảnh gốc và layout cũ. Không cần env hay dịch vụ trả phí mới. Xem [BACKGROUND_REMOVAL.md](BACKGROUND_REMOVAL.md) về tài nguyên mô hình, triển khai và yêu cầu cập nhật worker xuất video hiện có.
+
 Bổ sung logo cuốn sổ/trái tim, favicon SVG/PNG và Apple touch icon; ô lịch hiển thị thumbnail đại diện của sự kiện dưới số ngày. Đã bỏ giao diện sửa tiêu đề/mô tả timeline, vẫn hiển thị nội dung riêng đã lưu. Không đổi database hoặc biến môi trường.
 
 Frontend đã được người dùng deploy lên https://little-days-memories.vercel.app; kiểm tra HTTP và proxy healthcheck thành công. API chạy trên Render tại https://little-days-api.onrender.com, dùng PostgreSQL Neon và Cloudinary; người dùng xác nhận Brevo HTTPS đã gửi email thật thành công. Worker xuất video hiện vẫn chạy theo cấu hình cũ; phương án worker Northflank đã được người dùng hủy. Đây là bản MVP để chạy thử, chưa phải toàn bộ hệ thống production trong `IMPLEMENTATION_PLAN.md`.

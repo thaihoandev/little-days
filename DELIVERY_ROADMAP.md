@@ -2,6 +2,8 @@
 
 Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → staging/PostgreSQL → load test và pilot, cùng cải thiện editor/video và quy trình backup.
 
+- [x] Tách nền ảnh bằng AI trên trình duyệt, hủy/xem trước/so sánh, viền và bóng đổ; lưu bản sao riêng tư có alpha, giữ ảnh gốc và Undo/Redo; đồng bộ Canvas/viewer/MP4. Hướng dẫn trong `BACKGROUND_REMOVAL.md`.
+
 - [x] Quota dung lượng và xuất video nguyên tử, API mức sử dụng và giao diện.
 - [x] Retention video, dọn object được ghi nhận và workspace mồ côi; dry-run và lease.
 - [x] Log cấu trúc, metrics có bảo vệ và rules cảnh báo vận hành.

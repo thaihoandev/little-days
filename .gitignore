@@ -16,3 +16,4 @@ backups/
 data-cloud-worker/
 /apps/web/public/legal/
 /apps/web/public/legal-info.json
+/apps/web/public/background-removal/

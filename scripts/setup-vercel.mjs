@@ -16,6 +16,12 @@ export function vercelConfig(input) {
     installCommand: 'npm ci',
     buildCommand: 'npm run build:web',
     outputDirectory: 'dist',
+    headers: [
+      {
+        source: '/background-removal/(.*)',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+    ],
     rewrites: [
       { source: '/api/:path*', destination: origin.origin + '/api/:path*' },
       { source: '/(.*)', destination: '/index.html' },

@@ -7,6 +7,17 @@ export default defineConfig(({ mode }) => {
   return {
     root: fileURLToPath(new URL('.', import.meta.url)),
     plugins: [react()],
+    worker: { format: 'es' },
+    resolve: {
+      alias: [
+        {
+          find: /^onnxruntime-web(?:\/webgpu)?$/,
+          replacement: fileURLToPath(
+            new URL('../../node_modules/onnxruntime-web/dist/ort.wasm.min.mjs', import.meta.url),
+          ),
+        },
+      ],
+    },
     server: {
       host: '127.0.0.1',
       port: Number(process.env.WEB_PORT || env.WEB_PORT || 5173),

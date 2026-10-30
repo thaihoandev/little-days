@@ -6,6 +6,7 @@ import path from 'node:path';
 import { ensureBrowser } from '@remotion/renderer';
 
 const suites = [
+  ['background-removal', 'scripts/smoke-background-removal.ts'],
   ['editor-upgrade', 'scripts/smoke-editor-upgrade.ts'],
   ['journal', 'scripts/smoke-journal-ui.ts'],
   ['journal-album', 'scripts/smoke-journal-album-ui.ts'],
@@ -24,6 +25,7 @@ const selected = process.argv[2];
 if (process.argv.length > 3 || (selected && !suites.some(([name]) => name === selected)))
   throw new Error('Use npm run test:pilot, npm run test:save-recovery or npm run test:gestures.');
 await import('./prepare-legal.mjs');
+await (await import('./prepare-background.mjs')).prepareBackground();
 
 const root = path.resolve('test-results/pilot', crypto.randomUUID());
 await mkdir(root, { recursive: true });
@@ -44,7 +46,8 @@ async function port() {
 const apiPort = await port();
 let webPort = await port();
 while (webPort === apiPort) webPort = await port();
-const origin = 'http://127.0.0.1:' + webPort;
+const production = process.env.QA_PRODUCTION === 'true';
+const origin = 'http://127.0.0.1:' + (production ? apiPort : webPort);
 const browser = await ensureBrowser({
   browserExecutable: process.env.BROWSER_EXECUTABLE || undefined,
   logLevel: 'error',
@@ -52,7 +55,7 @@ const browser = await ensureBrowser({
 if (!('path' in browser)) throw new Error('Run npm run video:browser before pilot QA.');
 const env = {
   ...process.env,
-  NODE_ENV: 'development',
+  NODE_ENV: production ? 'production' : 'development',
   HOST: '127.0.0.1',
   PORT: String(apiPort),
   API_PORT: String(apiPort),
@@ -61,7 +64,7 @@ const env = {
   DATABASE_URL: '',
   DATA_DIR: path.join(root, 'data'),
   STORAGE_DRIVER: 'local',
-  MAIL_DRIVER: 'local',
+  MAIL_DRIVER: production ? 'disabled' : 'local',
   OPS_ALERT_ENABLED: 'false',
   OPS_TOKEN: '',
   OPS_TOKEN_FILE: '',
@@ -108,7 +111,10 @@ async function run(name: string, file: string) {
     process.stdout.write(d);
   });
   child.stderr!.on('data', (d) => (output += String(d)));
-  const timeout = setTimeout(() => child.kill('SIGTERM'), 240000);
+  const timeout = setTimeout(
+    () => child.kill('SIGTERM'),
+    name === 'background-removal' ? 600000 : 240000,
+  );
   try {
     const code = await new Promise<number | null>((resolve, reject) => {
       child.once('error', reject);
@@ -124,10 +130,15 @@ async function run(name: string, file: string) {
 }
 let passed = false;
 try {
-  service(['--import', 'tsx', 'apps/api/src/main.ts']);
+  service(
+    production ? ['build/apps/api/src/main.js'] : ['--import', 'tsx', 'apps/api/src/main.ts'],
+  );
   await ready('http://127.0.0.1:' + apiPort + '/api/health');
-  service(['--import', 'tsx', 'apps/worker/src/main.ts']);
-  service(['node_modules/vite/bin/vite.js', '--config', 'apps/web/vite.config.ts']);
+  service(
+    production ? ['build/apps/worker/src/main.js'] : ['--import', 'tsx', 'apps/worker/src/main.ts'],
+  );
+  if (!production)
+    service(['node_modules/vite/bin/vite.js', '--config', 'apps/web/vite.config.ts']);
   await ready(origin);
   for (const [name, file] of suites.filter(([name]) => !selected || name === selected))
     await run(name, file);

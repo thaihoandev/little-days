@@ -871,6 +871,26 @@ class AppController {
     )
       throw new ConflictException('Album đã có một video đang xuất.');
     validateReferences(album);
+    if (
+      album.pages.some(
+        (p) =>
+          input.config.pageIds.includes(p.id) &&
+          p.elements.some(
+            (e) => e.type === 'image' && e.visible !== false && e.photoStyle === 'cutout',
+          ),
+      )
+    ) {
+      const workers = await repository.list<{ lastSeen: number; photoStylesVersion?: number }>(
+          'worker',
+        ),
+        now = await repository.now();
+      const live = workers.filter((w) => now - w.lastSeen < 15000);
+      if (!live.length || live.some((w) => w.photoStylesVersion !== 1))
+        throw new HttpException(
+          'Ảnh tách nền chưa sẵn sàng xuất video. Vui lòng thử lại sau khi bộ xuất được cập nhật.',
+          503,
+        );
+    }
     if (['warm-piano', 'little-waltz', 'evening'].includes(input.config.musicId)) {
       const workers = await repository.list<{ lastSeen: number; musicCatalogVersion?: number }>(
           'worker',
@@ -1074,6 +1094,10 @@ app.useGlobalFilters({
   },
 });
 if (process.env.NODE_ENV === 'production') {
+  app.use(
+    '/background-removal',
+    express.static(path.resolve('dist/background-removal'), { maxAge: '1y', immutable: true }),
+  );
   app.use(express.static(path.resolve('dist')));
   app.use((req: Request, res: Response, next: NextFunction) =>
     req.method === 'GET' && !req.path.startsWith('/api')

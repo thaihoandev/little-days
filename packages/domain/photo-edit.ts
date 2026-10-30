@@ -5,6 +5,7 @@ export function photoSize(asset?: Pick<Asset, 'width' | 'height'>) {
   return { width: asset?.width || 600, height: asset?.height || 650 };
 }
 export function photoWindow(e: ScrapElement, asset?: Pick<Asset, 'width' | 'height'>) {
+  if (e.photoStyle === 'cutout') return { ...e.crop };
   const size = photoSize(asset);
   const crop = imageCrop(
     size.width,
@@ -19,6 +20,29 @@ export function photoWindow(e: ScrapElement, asset?: Pick<Asset, 'width' | 'heig
     width: crop.width / size.width,
     height: crop.height / size.height,
   };
+}
+/** Shared image placement: cutouts contain the complete cropped subject without a paper frame. */
+export function photoGeometry(e: ScrapElement, asset?: Pick<Asset, 'width' | 'height'>) {
+  const size = photoSize(asset),
+    c = photoWindow(e, asset);
+  const crop = {
+    x: c.x * size.width,
+    y: c.y * size.height,
+    width: c.width * size.width,
+    height: c.height * size.height,
+  };
+  if (e.photoStyle !== 'cutout')
+    return {
+      x: 12,
+      y: 12,
+      width: Math.max(1, e.width - 24),
+      height: Math.max(1, e.height - 50),
+      crop,
+    };
+  const factor = Math.min(e.width / crop.width, e.height / crop.height),
+    width = crop.width * factor,
+    height = crop.height * factor;
+  return { x: (e.width - width) / 2, y: (e.height - height) / 2, width, height, crop };
 }
 export function photoZoom(e: ScrapElement, asset?: Pick<Asset, 'width' | 'height'>) {
   return photoWindow({ ...e, crop: fullPhoto }, asset).width / photoWindow(e, asset).width;

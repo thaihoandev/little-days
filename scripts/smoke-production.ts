@@ -54,6 +54,10 @@ try {
     }
   }
   const denied = await fetch(`http://127.0.0.1:${port}/api/albums`);
+  const resources = await fetch(`http://127.0.0.1:${port}/background-removal/1.7.0/resources.json`);
+  assert.equal(resources.status, 200);
+  assert.match(resources.headers.get('cache-control') || '', /immutable/);
+  assert.ok((await resources.json())['/models/isnet_quint8']);
   assert.equal(denied.status, 401);
   const session = await fetch(`http://127.0.0.1:${port}/api/session`);
   assert.ok(session.headers.get('set-cookie')?.includes('HttpOnly'));

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "lockSha256": "8b1e50ce3a11bafe9c6442d17cdd4bbe8bc8465d8e87740ca3d763d078f1e806",
+  "lockSha256": "2d49e431e5c4e14ff353fd57689439c8765a23a28461652cb4f388c097159941",
   "platform": "win32",
   "architecture": "x64",
   "entries": [
@@ -1223,6 +1223,32 @@
       "review": "declared-license-not-legal-clearance"
     },
     {
+      "name": "@imgly/background-removal",
+      "version": "1.7.0",
+      "location": "node_modules/@imgly/background-removal",
+      "license": "SEE LICENSE IN LICENSE.md",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "custom-license-review"
+    },
+    {
+      "name": "zod",
+      "version": "3.25.76",
+      "location": "node_modules/@imgly/background-removal/node_modules/zod",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
       "name": "@jridgewell/gen-mapping",
       "version": "0.3.13",
       "location": "node_modules/@jridgewell/gen-mapping",
@@ -1619,6 +1645,123 @@
       "noticeFiles": [
         "LICENSE",
         "NOTICE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@protobufjs/aspromise",
+      "version": "1.1.2",
+      "location": "node_modules/@protobufjs/aspromise",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@protobufjs/base64",
+      "version": "1.1.2",
+      "location": "node_modules/@protobufjs/base64",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@protobufjs/codegen",
+      "version": "2.0.5",
+      "location": "node_modules/@protobufjs/codegen",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@protobufjs/eventemitter",
+      "version": "1.1.1",
+      "location": "node_modules/@protobufjs/eventemitter",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@protobufjs/fetch",
+      "version": "1.1.1",
+      "location": "node_modules/@protobufjs/fetch",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@protobufjs/float",
+      "version": "1.0.2",
+      "location": "node_modules/@protobufjs/float",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@protobufjs/path",
+      "version": "1.1.2",
+      "location": "node_modules/@protobufjs/path",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@protobufjs/pool",
+      "version": "1.1.0",
+      "location": "node_modules/@protobufjs/pool",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@protobufjs/utf8",
+      "version": "1.1.2",
+      "location": "node_modules/@protobufjs/utf8",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
       ],
       "review": "declared-license-not-legal-clearance"
     },
@@ -4122,6 +4265,19 @@
       "review": "declared-license-not-legal-clearance"
     },
     {
+      "name": "flatbuffers",
+      "version": "25.9.23",
+      "location": "node_modules/flatbuffers",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
       "name": "forwarded",
       "version": "0.2.0",
       "location": "node_modules/forwarded",
@@ -4300,6 +4456,17 @@
       "review": "declared-license-not-legal-clearance"
     },
     {
+      "name": "guid-typescript",
+      "version": "1.0.9",
+      "location": "node_modules/guid-typescript",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
       "name": "has-flag",
       "version": "4.0.0",
       "location": "node_modules/has-flag",
@@ -4417,9 +4584,35 @@
       "review": "declared-license-not-legal-clearance"
     },
     {
+      "name": "iota-array",
+      "version": "1.0.0",
+      "location": "node_modules/iota-array",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
       "name": "ipaddr.js",
       "version": "1.9.1",
       "location": "node_modules/ipaddr.js",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "is-buffer",
+      "version": "1.1.6",
+      "location": "node_modules/is-buffer",
       "license": "MIT",
       "dev": false,
       "optional": false,
@@ -4694,6 +4887,32 @@
       "version": "4.18.1",
       "location": "node_modules/lodash",
       "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "lodash-es",
+      "version": "4.18.1",
+      "location": "node_modules/lodash-es",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "long",
+      "version": "5.3.2",
+      "location": "node_modules/long",
+      "license": "Apache-2.0",
       "dev": false,
       "optional": false,
       "installed": true,
@@ -5002,6 +5221,19 @@
       "review": "declared-license-not-legal-clearance"
     },
     {
+      "name": "ndarray",
+      "version": "1.0.19",
+      "location": "node_modules/ndarray",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
       "name": "negotiator",
       "version": "1.1.0",
       "location": "node_modules/negotiator",
@@ -5130,6 +5362,28 @@
         "license"
       ],
       "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "onnxruntime-common",
+      "version": "1.21.0",
+      "location": "node_modules/onnxruntime-common",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "onnxruntime-web",
+      "version": "1.21.0",
+      "location": "node_modules/onnxruntime-web",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
     },
     {
       "name": "open",
@@ -5323,6 +5577,19 @@
       "review": "declared-license-not-legal-clearance"
     },
     {
+      "name": "platform",
+      "version": "1.3.6",
+      "location": "node_modules/platform",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
       "name": "playwright",
       "version": "1.64.1",
       "location": "node_modules/playwright",
@@ -5451,6 +5718,19 @@
       "installed": true,
       "noticeFiles": [
         "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "protobufjs",
+      "version": "7.6.6",
+      "location": "node_modules/protobufjs",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
       ],
       "review": "declared-license-not-legal-clearance"
     },

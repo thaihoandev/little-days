@@ -1,6 +1,7 @@
 import React from 'react';
 import { decoration } from '../domain/decorations.js';
 import { counterAppearance } from '../domain/counter.js';
+import { photoGeometry } from '../domain/photo-edit.js';
 import {
   type Album,
   type Page,
@@ -39,6 +40,39 @@ export function ElementContent({
   if (e.type === 'image') {
     const src = (e.assetId && assetData[e.assetId]) || assetUrl(e.assetId, album);
     const metadata = album.assets.find((a) => a.id === e.assetId);
+    if (e.photoStyle === 'cutout') {
+      const g = photoGeometry(e, metadata),
+        size = { width: metadata?.width || 600, height: metadata?.height || 650 };
+      return (
+        <div
+          data-photo-style="cutout"
+          style={{
+            position: 'absolute',
+            left: g.x,
+            top: g.y,
+            width: g.width,
+            height: g.height,
+            overflow: 'hidden',
+          }}
+        >
+          {src && (
+            <ImageComponent
+              src={src}
+              alt={e.text || 'Ảnh đã tách nền'}
+              draggable={false}
+              style={{
+                position: 'absolute',
+                maxWidth: 'none',
+                width: `${(size.width / g.crop.width) * 100}%`,
+                height: `${(size.height / g.crop.height) * 100}%`,
+                left: `${(-g.crop.x / g.crop.width) * 100}%`,
+                top: `${(-g.crop.y / g.crop.height) * 100}%`,
+              }}
+            />
+          )}
+        </div>
+      );
+    }
     const naturalWidth = metadata?.width || 600,
       naturalHeight = metadata?.height || 650;
     const crop = imageCrop(

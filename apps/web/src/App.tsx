@@ -2139,6 +2139,22 @@ function ElementProperties({
           <button className="button primary" onClick={onEditPhoto}>
             Chỉnh / thay ảnh trong khung
           </button>
+          <label>
+            Kiểu hiển thị ảnh
+            <select
+              aria-label="Kiểu hiển thị ảnh"
+              value={e.photoStyle || 'polaroid'}
+              onChange={(ev) =>
+                patch({
+                  photoStyle: ev.target.value as ScrapElement['photoStyle'],
+                  crop: { ...fullPhoto },
+                })
+              }
+            >
+              <option value="polaroid">Khung Polaroid</option>
+              <option value="cutout">Ảnh tự do / nền trong suốt</option>
+            </select>
+          </label>
           <label className="photo-ratio-toggle">
             <input
               type="checkbox"

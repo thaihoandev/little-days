@@ -31,6 +31,7 @@ export const elementSchema = z.object({
   groupId: z.string().uuid().nullable().optional(),
   text: z.string().max(3000),
   assetId: z.string().max(100).nullable(),
+  photoStyle: z.enum(['polaroid', 'cutout']).optional(),
   decorationId: z.enum(decorationIds).optional(),
   font: z.enum(['serif', 'sans', 'hand']),
   fontSize: finite.min(10).max(160),
