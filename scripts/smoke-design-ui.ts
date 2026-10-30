@@ -187,7 +187,7 @@ try {
         current.pages[0].title,
       );
       await page.reload();
-      await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
+      await expect(page).toHaveURL(new RegExp('/albums/' + album.id + '$'));
       await expect(page.locator('.page-delete')).toBeDisabled();
       await expect(page.locator('.canvas-sheet canvas')).toBeVisible();
       assert.equal((await read()).pages[0].elements.at(-1)!.type, 'sticker');

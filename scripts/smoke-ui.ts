@@ -18,13 +18,11 @@ const errors: string[] = [];
 page.on('pageerror', (error) => errors.push(error.message));
 try {
   await page.goto(origin);
-  await expect(
-    page.getByRole('heading', { name: 'Những ngày bình thường, thương thật nhiều.' }),
-  ).toBeVisible();
-  await expect(page.locator('.welcome')).toHaveCSS('opacity', '1');
+  await expect(page.getByRole('heading', { name: 'Hôm nay, mình giữ lại điều gì?' })).toBeVisible();
+  await expect(page.locator('.calendar-card')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
   await page.screenshot({ path: 'test-results/dashboard-desktop.png', fullPage: true });
-  await page.getByRole('button', { name: 'Bắt đầu một cuốn sổ', exact: true }).click();
+  await page.getByRole('button', { name: 'Tạo album', exact: true }).click();
   await page.getByLabel('Tên cuốn sổ').fill('Nhật ký kiểm thử giao diện');
   await page.getByRole('button', { name: 'Tạo cuốn sổ của mình' }).click();
   await expect(page.getByRole('button', { name: 'Tạo video', exact: true })).toBeVisible();
@@ -81,7 +79,7 @@ try {
   });
   await page.screenshot({ path: 'test-results/editor-desktop.png', fullPage: true });
   await page.reload();
-  await page.getByRole('button', { name: 'Mở Nhật ký kiểm thử giao diện', exact: true }).click();
+  await expect(page).toHaveURL(/\/albums\/[a-f0-9-]+$/);
   await expect(page.getByRole('button', { name: 'Tạo video', exact: true })).toBeVisible();
   album = await getAlbum();
   assert.ok(

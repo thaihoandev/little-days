@@ -165,9 +165,7 @@ try {
         changed.assetId,
       );
       await page.reload();
-      await page
-        .getByRole('button', { name: 'Mở Sổ có thể sửa ảnh ' + mobile, exact: true })
-        .click();
+      await expect(page).toHaveURL(/\/albums\/[a-f0-9-]+$/);
       await page.getByRole('button', { name: 'Phối màu Bầu trời đêm', exact: true }).click();
       current = await save();
       assert.equal(current.pages[0].background, '#192c50');

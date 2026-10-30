@@ -38,6 +38,19 @@ try {
   assert.match(html, /<title>Little Days\b[^<]*<\/title>/);
   const script = html.match(/src="([^"]+\.js)"/)![1];
   assert.equal((await fetch(`http://127.0.0.1:${port}${script}`)).status, 200);
+  for (const route of [
+    '/today',
+    '/timeline',
+    '/calendar',
+    '/albums',
+    '/photos',
+    '/albums/123e4567-e89b-42d3-a456-426614174000',
+  ]) {
+    const deep = await fetch(`http://127.0.0.1:${port}${route}`);
+    assert.equal(deep.status, 200);
+    assert.match(deep.headers.get('content-type') || '', /text\/html/);
+    assert.match(await deep.text(), /<title>Little Days\b/);
+  }
   for (const asset of ['/logo.svg', '/favicon-32.png', '/apple-touch-icon.png']) {
     assert.ok(html.includes(`href="${asset}"`), 'HTML must reference ' + asset);
     const response = await fetch(`http://127.0.0.1:${port}${asset}`);

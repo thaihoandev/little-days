@@ -19,12 +19,27 @@ export const defaultTimelineHeading = {
 };
 export type TimelineHeading = z.infer<typeof timelineHeadingSchema> & { revision: number };
 export type JournalEntry = JournalContent & {
+  timelineId?: string;
+  timelineLabel?: string;
+  calendarVisible?: boolean;
   id: string;
   revision: number;
   createdAt: string;
   updatedAt: string;
   assets: Asset[];
 };
+export type TimelineGrant = {
+  id: string;
+  timelineOwner: string;
+  memberId: string;
+  ownerLabel: string;
+  memberLabel: string;
+  state: 'pending' | 'active';
+  showOnCalendar: boolean;
+  revision: number;
+  createdAt: string;
+};
+export type TimelineSharingState = { ownId: string; grants: TimelineGrant[] };
 export function occursOn(entry: Pick<JournalContent, 'date' | 'annual'>, date: string) {
   return entry.annual ? nextAnnual(entry.date, date).date === date : entry.date === date;
 }

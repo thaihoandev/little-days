@@ -43,7 +43,7 @@
 }
 .journal-overview {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
   gap: 22px;
   align-items: stretch;
 }
@@ -710,9 +710,6 @@
   text-align: left;
 }
 @media (max-width: 1100px) {
-  .journal-overview {
-    grid-template-columns: 1fr;
-  }
   .upcoming-card {
     padding: 22px;
   }
@@ -907,5 +904,335 @@
   .template-picker .built-in-preview > div {
     transform: scale(0.8);
     transform-origin: top left;
+  }
+}
+.journal-primary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+  padding-top: 26px;
+}
+.journal-hero > div:first-child {
+  min-width: 0;
+}
+.today-focus {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 20px 24px;
+  margin-bottom: 22px;
+  border: 1px solid #dbe1cd;
+  border-radius: 14px;
+  background: linear-gradient(120deg, #eef1e5, #faf9f1);
+}
+.today-focus span {
+  display: block;
+  font-size: 9px;
+  letter-spacing: 1.8px;
+  color: #6c7b59;
+}
+.today-focus strong {
+  display: block;
+  font:
+    23px Lora,
+    serif;
+  margin: 8px 0;
+}
+.today-focus p {
+  margin: 0;
+  font-size: 12px;
+  color: #797b6c;
+}
+.upcoming-card {
+  min-width: 0;
+  padding: 22px 18px;
+}
+.upcoming-card h2 {
+  font-size: 20px;
+  line-height: 1.5;
+}
+.upcoming-card .upcoming-item {
+  flex-wrap: wrap;
+  gap: 7px;
+}
+.upcoming-card .upcoming-item > span:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.upcoming-card .upcoming-item > b {
+  font-size: 10px;
+  margin-left: auto;
+}
+.selected-day-notes {
+  border-bottom: 1px solid #dddccf;
+  margin-bottom: 22px;
+  padding-bottom: 18px;
+}
+.selected-day-notes h3 {
+  font:
+    19px Lora,
+    serif;
+  margin: 10px 0 16px;
+}
+.day-note {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fffdf2;
+  margin-top: 8px;
+}
+.day-note strong,
+.day-note span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.day-note strong {
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+.day-note span {
+  font-size: 11px;
+  color: #837a65;
+  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.timeline-scope {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 22px;
+  font-size: 12px;
+}
+.timeline-scope select {
+  max-width: 350px;
+}
+.timeline-invitation-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  border: 1px solid #d8bca1;
+  border-radius: 10px;
+  background: #fcf0de;
+  width: 100%;
+  text-align: left;
+  margin: 0 0 22px;
+  font-size: 13px;
+}
+.timeline-invitation-banner span {
+  flex: 1;
+}
+.invitation-count {
+  border-radius: 50%;
+  min-width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  background: #ad7065;
+  color: white;
+  font-size: 10px;
+}
+.timeline-sharing-dialog {
+  width: min(700px, calc(100vw - 24px));
+  max-height: calc(100dvh - 32px);
+  padding: 28px;
+  overflow: auto;
+  border: 1px solid #d8d4c2;
+  border-radius: 18px;
+  background: #fffcf4;
+  color: #514b3a;
+}
+.timeline-sharing-dialog::backdrop {
+  background: #292d3866;
+  backdrop-filter: blur(5px);
+}
+.timeline-sharing-dialog > header,
+.timeline-sharing-dialog > footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+}
+.timeline-sharing-dialog h2 {
+  font:
+    24px Lora,
+    serif;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 12px 0;
+}
+.timeline-sharing-dialog > p {
+  font-size: 12px;
+  line-height: 1.8;
+}
+.timeline-sharing-dialog h3 {
+  font-size: 14px;
+  margin: 25px 0 12px;
+}
+.timeline-sharing-dialog > footer {
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+.timeline-invite-form {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-top: 20px;
+}
+.timeline-invite-form label {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+.timeline-invite-form input {
+  width: 100%;
+}
+.sharing-hint {
+  padding: 12px;
+  border-radius: 8px;
+  background: #eef0e4;
+  color: #687555;
+}
+.timeline-member {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 15px 0;
+  border-bottom: 1px solid #e7e2d7;
+}
+.timeline-member > div {
+  flex: 1;
+  min-width: min(230px, 100%);
+  overflow-wrap: anywhere;
+}
+.timeline-member strong {
+  display: block;
+  font-size: 13px;
+}
+.timeline-member small {
+  display: block;
+  font-size: 11px;
+  color: #8b8675;
+  margin-top: 7px;
+}
+.timeline-member .sharing-calendar-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+.sharing-calendar-toggle input {
+  width: 17px;
+  height: 17px;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+}
+.journal-target-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+.shared-timeline-label {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 900px) {
+  .journal-overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .journal-primary-actions {
+    justify-content: flex-start;
+    padding-top: 0;
+  }
+  .journal-hero {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+}
+@media (max-width: 600px) {
+  .today-focus {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px;
+  }
+  .timeline-sharing-dialog {
+    padding: 18px;
+  }
+  .timeline-sharing-dialog h2 {
+    font-size: 21px;
+  }
+  .timeline-invite-form {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .timeline-scope {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .timeline-scope select {
+    max-width: 100%;
+  }
+  .journal-primary-actions {
+    width: 100%;
+  }
+  .journal-primary-actions .button {
+    flex: 1;
+    font-size: 11px;
+    padding: 10px;
+  }
+  .journal-primary-actions .journal-share-action {
+    flex: 0 0 44px;
+    position: relative;
+  }
+  .journal-share-action .share-action-label {
+    display: none;
+  }
+  .journal-share-action .invitation-count {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+  }
+  .home-mode .journal-hero h1 {
+    font-size: 25px;
+    margin-top: 10px;
+  }
+  .home-mode .journal-hero p {
+    display: none;
+  }
+  .home-mode .today-focus {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 14px;
+    gap: 12px;
+  }
+  .home-mode .today-focus > div {
+    flex: 1;
+    min-width: 105px;
+  }
+  .home-mode .today-focus strong {
+    font-size: 18px;
+  }
+  .home-mode .today-focus p {
+    display: none;
+  }
+  .home-mode .today-focus .button {
+    font-size: 10px;
+    padding: 10px;
   }
 }

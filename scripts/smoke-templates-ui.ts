@@ -29,7 +29,7 @@ try {
     assert.ok(
       album.pages[0].elements.filter((e: { decorationId?: string }) => e.decorationId).length >= 3,
     );
-    await page.goto(origin);
+    await page.goto(origin + '/albums');
     await page.getByRole('button', { name: 'Mở ' + title, exact: true }).click();
     await page.getByRole('button', { name: 'Xem album', exact: true }).click();
     const viewer = page.getByRole('dialog', { name: 'Xem album', exact: true });
@@ -133,7 +133,7 @@ try {
     },
   });
   assert.equal(posterResponse.status(), 200);
-  await page.goto(origin);
+  await page.goto(origin + '/albums');
   await page.getByRole('button', { name: 'Mở ' + poster.title, exact: true }).click();
   await page.getByRole('button', { name: 'Xem album', exact: true }).click();
   const posterViewer = page.getByRole('dialog', { name: 'Xem album', exact: true });

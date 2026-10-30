@@ -39,7 +39,7 @@ try {
     timeout: 15000,
   });
   await page.reload();
-  await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
+  await expect(page).toHaveURL(new RegExp('/albums/' + album.id + '$'));
   await page.getByRole('button', { name: 'Lịch sử phiên bản', exact: true }).click();
   await page.getByRole('button', { name: /Bản 0 · Trước khi viết lời nhắn/ }).click();
   await expect(page.getByRole('button', { name: 'Khôi phục bản 0', exact: true })).toBeEnabled();

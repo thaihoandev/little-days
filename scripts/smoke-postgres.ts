@@ -42,6 +42,7 @@ try {
       'tests/resource-policy.test.ts',
       'tests/ops-monitor.test.ts',
       'tests/journal.test.ts',
+      'tests/timeline-sharing.test.ts',
       'tests/journal-album.test.ts',
     ]),
   );

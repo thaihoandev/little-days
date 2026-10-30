@@ -13,18 +13,21 @@ import {
   Repeat2,
   NotebookPen,
   BookOpen,
+  UsersRound,
 } from 'lucide-react';
 import { type Album, todayIn, daysTogether } from '../../../packages/domain/index.js';
 import {
   type JournalEntry,
   type JournalContent,
+  type TimelineSharingState,
   journalKindNames,
   monthDays,
   occursOn,
   nextOccurrence,
 } from '../../../packages/domain/journal.js';
 import { api } from './api.js';
-import { PhotoLightbox } from './Overlays.js';
+import { PhotoLightbox, ConfirmDialog } from './Overlays.js';
+import { TimelineSharingPanel } from './TimelineSharingPanel.js';
 import { TimelineAlbumDialog, type TimelineChoice } from './TimelineAlbumDialog.js';
 import { TimelineHeading } from './TimelineHeading.js';
 
@@ -41,16 +44,32 @@ export default function JournalDashboard({
   mode,
   onOpenAlbum,
   onCreatedAlbum,
+  userId,
+  verified,
 }: {
   albums: Album[];
   mode: 'home' | 'timeline' | 'calendar';
   onOpenAlbum: (album: Album) => void;
   onCreatedAlbum: (album: Album) => void;
+  userId: string;
+  verified: boolean;
 }) {
   const [today, setToday] = useState(() =>
     todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone),
   );
   const [newKind, setNewKind] = useState<JournalContent['kind']>('memory');
+  const loadVersion = useRef(0);
+  const [sharing, setSharing] = useState<TimelineSharingState>({ ownId: userId, grants: [] }),
+    [sharingOpen, setSharingOpen] = useState(false),
+    [selectedTimeline, setSelectedTimeline] = useState('all'),
+    [deleting, setDeleting] = useState<JournalEntry | null>(null),
+    [deletingBusy, setDeletingBusy] = useState(false);
+  const timelineOptions = [
+    { id: userId, label: 'Dòng thời gian của tôi' },
+    ...sharing.grants
+      .filter((g) => g.memberId === userId && g.state === 'active')
+      .map((g) => ({ id: g.timelineOwner, label: 'Cùng ' + g.ownerLabel })),
+  ];
   const [chosen, setChosen] = useState<string[]>([]),
     [creatingAlbum, setCreatingAlbum] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<{
@@ -75,20 +94,57 @@ export default function JournalDashboard({
     [editing, setEditing] = useState<JournalEntry | null | undefined>();
   useEffect(() => {
     let active = true;
-    api<JournalEntry[]>('/journal')
-      .then((data) => {
-        if (active) setEntries(data);
+    const version = ++loadVersion.current;
+    Promise.all([api<JournalEntry[]>('/journal'), api<TimelineSharingState>('/timeline-sharing')])
+      .then(([data, state]) => {
+        if (active && version === loadVersion.current) {
+          setEntries(data);
+          setSharing(state);
+        }
       })
       .catch((e) => {
-        if (active) setError(e.message);
+        if (active && version === loadVersion.current) setError(e.message);
       })
       .finally(() => {
         if (active) setLoading(false);
       });
     return () => {
       active = false;
+      loadVersion.current++;
     };
   }, []);
+  const refresh = async () => {
+    const version = ++loadVersion.current;
+    const [data, state] = await Promise.all([
+      api<JournalEntry[]>('/journal'),
+      api<TimelineSharingState>('/timeline-sharing'),
+    ]);
+    if (version !== loadVersion.current) return;
+    setEntries(data);
+    setSharing(state);
+    setError('');
+    if (
+      selectedTimeline !== 'all' &&
+      selectedTimeline !== userId &&
+      !state.grants.some(
+        (g) =>
+          g.memberId === userId && g.timelineOwner === selectedTimeline && g.state === 'active',
+      )
+    )
+      setSelectedTimeline('all');
+  };
+  useEffect(() => {
+    const update = () => {
+      if (document.visibilityState === 'visible' && editing === undefined && !sharingOpen)
+        void refresh().catch((e) => setError(e.message));
+    };
+    const timer = setInterval(update, 30000);
+    window.addEventListener('focus', update);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('focus', update);
+    };
+  }, [editing, sharingOpen, selectedTimeline]);
   useEffect(() => setLimit(20), [query, kind, mode]);
   const albumItems: Item[] = albums.flatMap((album) => [
     {
@@ -117,14 +173,18 @@ export default function JournalDashboard({
       album,
     })),
   ]);
-  const all: Item[] = [...entries, ...albumItems],
+  const all: Item[] = [...entries, ...albumItems].filter((e) =>
+      mode === 'timeline'
+        ? selectedTimeline === 'all' || (e.timelineId || userId) === selectedTimeline
+        : e.calendarVisible !== false,
+    ),
     upcoming = all
       .map((entry) => ({ entry, next: nextOccurrence(entry, today) }))
       .filter((i): i is { entry: Item; next: string } => !!i.next)
       .sort((a, b) => a.next.localeCompare(b.next))
       .slice(0, 4);
   const choices: TimelineChoice[] = all
-    .filter((e) => chosen.includes(e.id))
+    .filter((e) => chosen.includes(e.id) && !e.timelineId)
     .map((entry) => ({
       entry,
       source: entry.album
@@ -165,20 +225,24 @@ export default function JournalDashboard({
   const update = (entry: JournalEntry) =>
     setEntries((previous) => [entry, ...previous.filter((e) => e.id !== entry.id)]);
   const remove = async (entry: JournalEntry) => {
-    if (!window.confirm('Xóa dấu mốc “' + entry.title + '” và ảnh của dấu mốc này?')) return;
+    if (deletingBusy) return;
+    setDeletingBusy(true);
     try {
       await api('/journal/' + entry.id, {
         method: 'DELETE',
         body: JSON.stringify({ expectedRevision: entry.revision }),
       });
       setEntries((previous) => previous.filter((e) => e.id !== entry.id));
+      setDeleting(null);
     } catch (e) {
       setError((e as Error).message);
+    } finally {
+      setDeletingBusy(false);
     }
   };
   return (
     <section
-      className={'journal-home' + (mode === 'timeline' ? ' timeline-mode' : '')}
+      className={'journal-home ' + mode + '-mode'}
       aria-label="Lịch và dòng thời gian của bạn"
     >
       <div className="journal-hero">
@@ -203,17 +267,84 @@ export default function JournalDashboard({
             {dateLabel(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </span>
         </div>
-        <button
-          className="button primary"
-          onClick={() => {
-            setNewKind('memory');
-            setEditing(null);
-          }}
-        >
-          <Plus size={17} />
-          Thêm dấu mốc
-        </button>
+        <div className="journal-primary-actions">
+          <button
+            className="button quiet journal-share-action"
+            aria-label="Chia sẻ dòng thời gian"
+            title="Chia sẻ dòng thời gian"
+            onClick={() => setSharingOpen(true)}
+          >
+            <UsersRound size={17} />
+            <span className="share-action-label">Chia sẻ dòng thời gian</span>
+            {sharing.grants.some((g) => g.memberId === userId && g.state === 'pending') && (
+              <span className="invitation-count">
+                {
+                  sharing.grants.filter((g) => g.memberId === userId && g.state === 'pending')
+                    .length
+                }
+              </span>
+            )}
+          </button>
+          <button
+            className="button primary"
+            onClick={() => {
+              setNewKind('memory');
+              setEditing(null);
+            }}
+          >
+            <Plus size={17} />
+            Thêm dấu mốc
+          </button>
+        </div>
       </div>
+      {sharing.grants.some((g) => g.memberId === userId && g.state === 'pending') && (
+        <button className="timeline-invitation-banner" onClick={() => setSharingOpen(true)}>
+          <UsersRound size={18} />
+          <span>Bạn có lời mời cùng xây dựng dòng thời gian</span>
+          <ArrowUpRight size={16} />
+        </button>
+      )}
+      {mode === 'home' && (
+        <div className="today-focus" aria-label="Tổng quan hôm nay">
+          <div>
+            <span>HÔM NAY</span>
+            <strong>{all.filter((e) => occursOn(e, today)).length} điều muốn nhớ</strong>
+            <p>Lịch, lời hẹn và ghi chú của bạn ở ngay bên dưới.</p>
+          </div>
+          <button
+            className="button quiet"
+            onClick={() => {
+              setSelected(today);
+              setMonth(today.slice(0, 7));
+              setNewKind('note');
+              setEditing(null);
+            }}
+          >
+            <NotebookPen size={16} />
+            Ghi nhanh hôm nay
+          </button>
+        </div>
+      )}
+      {mode === 'timeline' && timelineOptions.length > 1 && (
+        <label className="timeline-scope">
+          Dòng thời gian đang xem
+          <select
+            aria-label="Chọn dòng thời gian"
+            value={selectedTimeline}
+            onChange={(e) => {
+              setSelectedTimeline(e.target.value);
+              setChosen([]);
+            }}
+          >
+            <option value="all">Tất cả dòng thời gian</option>
+            {timelineOptions.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       {mode === 'timeline' && (
         <div className="journey-intro">
           <div className="journey-intro-copy">
@@ -259,9 +390,7 @@ export default function JournalDashboard({
             className="text-button"
             onClick={() => {
               setError('');
-              api<JournalEntry[]>('/journal')
-                .then(setEntries)
-                .catch((e) => setError(e.message));
+              refresh().catch((e) => setError(e.message));
             }}
           >
             Tải lại
@@ -362,6 +491,23 @@ export default function JournalDashboard({
             </p>
           </section>
           <aside className="upcoming-card">
+            <section className="selected-day-notes" aria-label="Ghi chú ngày đang chọn">
+              <span className="eyebrow">NGÀY ĐANG CHỌN</span>
+              <h3>{dateLabel(selected, { day: 'numeric', month: 'long' })}</h3>
+              {dayItems.filter((e) => e.kind === 'note').length ? (
+                dayItems
+                  .filter((e) => e.kind === 'note')
+                  .slice(0, 3)
+                  .map((e) => (
+                    <button key={e.id} className="day-note" onClick={() => setEditing(e)}>
+                      <strong>{e.title}</strong>
+                      <span>{e.note || 'Mở ghi chú'}</span>
+                    </button>
+                  ))
+              ) : (
+                <p className="muted small">Chưa có ghi chú cho ngày này.</p>
+              )}
+            </section>
             <span className="eyebrow">MỘT CHÚT HÁO HỨC</span>
             <h2>Sắp đến những ngày đẹp</h2>
             {upcoming.length ? (
@@ -403,7 +549,7 @@ export default function JournalDashboard({
           </aside>
         </div>
       )}
-      {mode === 'timeline' && all.length > 0 && (
+      {mode === 'timeline' && all.some((entry) => !entry.timelineId) && (
         <section className="timeline-import-bar" aria-label="Tạo sổ từ dấu mốc">
           <div>
             <BookOpen size={20} />
@@ -419,7 +565,14 @@ export default function JournalDashboard({
           <div className="import-bar-actions">
             <button
               className="text-button"
-              onClick={() => setChosen(visible.slice(0, 20).map((e) => e.id))}
+              onClick={() =>
+                setChosen(
+                  visible
+                    .filter((e) => !e.timelineId)
+                    .slice(0, 20)
+                    .map((e) => e.id),
+                )
+              }
             >
               Chọn mốc đang hiện
             </button>
@@ -505,7 +658,7 @@ export default function JournalDashboard({
                     <small>{dateLabel(entry.date, { month: 'short', year: 'numeric' })}</small>
                   </div>
                   <div className="journal-entry-body">
-                    {mode === 'timeline' && (
+                    {mode === 'timeline' && !entry.timelineId && (
                       <label className="import-pick">
                         <input
                           type="checkbox"
@@ -525,6 +678,12 @@ export default function JournalDashboard({
                     )}
                     <div className="journal-entry-meta">
                       <span>{journalKindNames[entry.kind]}</span>
+                      {entry.timelineLabel && (
+                        <small className="shared-timeline-label">
+                          <UsersRound size={12} />
+                          Cùng {entry.timelineLabel}
+                        </small>
+                      )}
                       {entry.annual && (
                         <small>
                           <Repeat2 size={12} />
@@ -576,7 +735,7 @@ export default function JournalDashboard({
                           <button
                             className="text-button"
                             aria-label={'Xóa dấu mốc ' + entry.title}
-                            onClick={() => void remove(entry)}
+                            onClick={() => setDeleting(entry)}
                           >
                             <Trash2 size={13} />
                             Xóa
@@ -631,6 +790,10 @@ export default function JournalDashboard({
       )}
       {editing !== undefined && (
         <JournalDialog
+          timelines={timelineOptions}
+          defaultTimeline={
+            mode === 'timeline' && selectedTimeline !== 'all' ? selectedTimeline : userId
+          }
           initial={editing}
           initialKind={newKind}
           date={selected}
@@ -644,6 +807,27 @@ export default function JournalDashboard({
           }}
         />
       )}
+      {sharingOpen && (
+        <TimelineSharingPanel
+          state={sharing}
+          verified={verified}
+          onChange={refresh}
+          onClose={() => setSharingOpen(false)}
+        />
+      )}
+      {deleting && (
+        <ConfirmDialog
+          title="Xóa dấu mốc?"
+          description={
+            'Xóa “' + deleting.title + '” cùng ảnh khỏi dòng thời gian và lịch của mọi thành viên?'
+          }
+          confirmLabel="Xóa dấu mốc"
+          onClose={() => {
+            if (!deletingBusy) setDeleting(null);
+          }}
+          onConfirm={() => void remove(deleting)}
+        />
+      )}
     </section>
   );
 }
@@ -655,6 +839,8 @@ function FlowerMark() {
   );
 }
 function JournalDialog({
+  timelines,
+  defaultTimeline,
   initial,
   initialKind,
   date,
@@ -662,6 +848,8 @@ function JournalDialog({
   onSaved,
   onUpdated,
 }: {
+  timelines: { id: string; label: string }[];
+  defaultTimeline: string;
   initial: JournalEntry | null;
   initialKind: JournalContent['kind'];
   date: string;
@@ -670,6 +858,7 @@ function JournalDialog({
   onUpdated: (entry: JournalEntry) => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null),
+    [timelineId, setTimelineId] = useState(initial?.timelineId || defaultTimeline),
     [entry, setEntry] = useState(initial),
     [content, setContent] = useState<JournalContent>(() =>
       initial
@@ -698,7 +887,9 @@ function JournalDialog({
     try {
       current = await api<JournalEntry>(entry ? '/journal/' + entry.id : '/journal', {
         method: entry ? 'PATCH' : 'POST',
-        body: JSON.stringify(entry ? { expectedRevision: entry.revision, content } : content),
+        body: JSON.stringify(
+          entry ? { expectedRevision: entry.revision, content } : { ...content, timelineId },
+        ),
       });
       setEntry(current);
       onUpdated(current);
@@ -741,6 +932,23 @@ function JournalDialog({
         </button>
       </header>
       <form className="form-stack" onSubmit={(event) => void submit(event)}>
+        {timelines.length > 1 && (
+          <label className="journal-target-label">
+            Lưu vào dòng thời gian
+            <select
+              aria-label="Lưu vào dòng thời gian"
+              value={timelineId}
+              disabled={busy || !!entry}
+              onChange={(e) => setTimelineId(e.target.value)}
+            >
+              {timelines.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <div className="journal-form-fields">
           <fieldset disabled={busy}>
             <label>

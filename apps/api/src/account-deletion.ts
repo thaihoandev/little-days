@@ -193,6 +193,21 @@ export class AccountDeletion {
         [userId],
       );
       await this.db.query('DELETE FROM auth_tokens WHERE owner=? RETURNING token_hash', [userId]);
+      const grants = await this.db.list<{ id: string; memberId: string; timelineOwner: string }>(
+        'timeline-grant',
+        userId,
+      );
+      for (const index of await this.db.list<{ id: string }>('timeline-member-index', userId)) {
+        const grant = await this.db.get<{ id: string; memberId: string; timelineOwner: string }>(
+          'timeline-grant',
+          index.id,
+        );
+        if (grant?.memberId === userId) grants.push(grant);
+      }
+      for (const grant of grants.sort((a, b) => a.id.localeCompare(b.id))) {
+        await this.db.remove('timeline-member-index', grant.id);
+        await this.db.remove('timeline-grant', grant.id);
+      }
       await this.db.query(
         "UPDATE render_jobs SET cancel_requested=1,phase=CASE WHEN queue_state='queued' THEN 'canceled' ELSE phase END,queue_state=CASE WHEN queue_state='queued' THEN 'canceled' ELSE queue_state END WHERE owner=? AND queue_state IN ('queued','running') RETURNING id",
         [userId],
@@ -378,6 +393,7 @@ export class AccountDeletion {
             'reset:' + account.email,
             'change:' + owner,
             'delete:' + owner,
+            'timeline-invite:' + owner,
           ])
             await this.db.query(
               'DELETE FROM auth_rate_limits WHERE rate_key=? RETURNING rate_key',

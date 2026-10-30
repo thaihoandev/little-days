@@ -173,7 +173,7 @@ try {
   assert.equal(copy.width, source.width);
   assert.notEqual(copy.groupId, source.groupId);
   await page.reload();
-  await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
+  await expect(page).toHaveURL(new RegExp('/albums/' + album.id + '$'));
   await page.getByRole('button', { name: 'Lớp', exact: true }).click();
   await page.locator('.layer-name').filter({ hasText: 'Ảnh 1' }).click();
   await expect(page.getByText('Đã chọn 4 phần tử', { exact: true })).toBeVisible();

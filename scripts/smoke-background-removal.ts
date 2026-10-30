@@ -154,7 +154,7 @@ try {
         )
         .toBe('cutout');
       await page.reload();
-      await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
+      await expect(page).toHaveURL(new RegExp('/albums/' + album.id + '$'));
       await page.getByRole('button', { name: 'Xem album', exact: true }).click();
       await expect(
         page

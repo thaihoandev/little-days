@@ -68,6 +68,7 @@ import AccountDeletionStatus, { readDeletionReceipt } from './AccountDeletionSta
 import { readAuthLink } from './auth-link.js';
 import { TextOverflowWarning } from './TextOverflowWarning.js';
 import JournalDashboard from './JournalDashboard.js';
+import { useAppRoute, sectionPaths, type AppSection } from './useAppRoute.js';
 import { ConfirmDialog, PhotoLightbox } from './Overlays.js';
 import { decorationCatalog } from '../../../packages/domain/decorations.js';
 import {
@@ -174,9 +175,13 @@ export default function App() {
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
   const [modal, setModal] = useState<'create' | 'account' | 'help' | null>(null);
-  const [section, setSection] = useState<'home' | 'timeline' | 'calendar' | 'albums' | 'photos'>(
-    'home',
-  );
+  const { route, pathname, navigate } = useAppRoute();
+  const section = route.section;
+  const setSection = (section: AppSection) => navigate(sectionPaths[section]);
+  const openAlbum = (album: Album) => {
+    setActive(album);
+    navigate('/albums/' + album.id);
+  };
   const [shared, setShared] = useState<Album | null>(null);
   const [photoPreview, setPhotoPreview] = useState<{
     photos: Album['assets'];
@@ -205,6 +210,24 @@ export default function App() {
     if (!authLink) void load();
   }, []);
   useEffect(() => {
+    if (token || authLink || loading) return;
+    if (pathname === '/') navigate('/today', true);
+    if (route.albumId) {
+      const album = albums.find((a) => a.id === route.albumId);
+      if (album && active?.id !== album.id) {
+        setActive(album);
+        setError('');
+      } else if (!album) {
+        setActive(null);
+        setError('Không tìm thấy album hoặc bạn chưa có quyền truy cập.');
+      }
+    } else setActive(null);
+  }, [pathname, loading, user?.id]);
+  useEffect(() => {
+    if (!token && !authLink)
+      document.title = `${active?.title || { home: 'Hôm nay', timeline: 'Dòng thời gian', calendar: 'Lịch của mình', albums: 'Album của mình', photos: 'Ảnh đã lưu' }[section]} · Little Days`;
+  }, [section, active?.title, token, authLink]);
+  useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(''), 5000);
     return () => clearTimeout(timer);
@@ -216,6 +239,7 @@ export default function App() {
           link={authLink}
           onContinue={() => {
             setAuthLink(null);
+            navigate('/today', true);
             setAccountMode('login');
             setModal('account');
             void load();
@@ -258,6 +282,7 @@ export default function App() {
           notify={notify}
           onBack={() => {
             setActive(null);
+            navigate('/albums');
             void load();
           }}
         />
@@ -345,6 +370,18 @@ export default function App() {
           </div>
         </aside>
         <main className="dashboard">
+          {route.unknown && (
+            <div className="error-banner">
+              Trang này không tồn tại.{' '}
+              <button onClick={() => setSection('home')}>Về Hôm nay</button>
+            </div>
+          )}
+          {route.albumId && error && (
+            <div className="error-banner">
+              {error}
+              <button onClick={() => setSection('albums')}>Về album của mình</button>
+            </div>
+          )}
           {deletionReceipt && (
             <AccountDeletionStatus
               receipt={deletionReceipt}
@@ -369,64 +406,68 @@ export default function App() {
           {user && ['home', 'timeline', 'calendar'].includes(section) && (
             <JournalDashboard
               key={user.id}
+              userId={user.id}
+              verified={!!user.emailVerified}
               albums={albums}
               mode={section as 'home' | 'timeline' | 'calendar'}
-              onOpenAlbum={setActive}
+              onOpenAlbum={openAlbum}
               onCreatedAlbum={(album) => {
                 setAlbums((items) => [album, ...items]);
-                setActive(album);
+                openAlbum(album);
               }}
             />
           )}
           {section === 'albums' || section === 'home' ? (
             <>
-              <motion.section
-                className={section === 'home' ? 'welcome welcome-secondary' : 'welcome'}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <div className="welcome-copy">
-                  <span className="eyebrow">
-                    <span className="little-line" /> CHUYỆN CỦA CHÚNG MÌNH
-                  </span>
-                  <h1>
-                    Những ngày bình thường,
-                    <br />
-                    <em>thương thật nhiều.</em>
-                  </h1>
-                  <p>
-                    Gói ghém ảnh, lời nhắn và những lần cùng nhau.
-                    <br />
-                    Một cuốn scrapbook, một câu chuyện của riêng hai bạn.
-                  </p>
-                  <button className="button primary" onClick={() => setModal('create')}>
-                    <Plus size={18} />
-                    Bắt đầu một cuốn sổ
-                  </button>
-                  <div className="welcome-foot">
-                    <Heart size={13} /> Tự tay sắp xếp. Tự mình kể chuyện.
+              {section === 'albums' && (
+                <motion.section
+                  className="welcome"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <div className="welcome-copy">
+                    <span className="eyebrow">
+                      <span className="little-line" /> CHUYỆN CỦA CHÚNG MÌNH
+                    </span>
+                    <h1>
+                      Những ngày bình thường,
+                      <br />
+                      <em>thương thật nhiều.</em>
+                    </h1>
+                    <p>
+                      Gói ghém ảnh, lời nhắn và những lần cùng nhau.
+                      <br />
+                      Một cuốn scrapbook, một câu chuyện của riêng hai bạn.
+                    </p>
+                    <button className="button primary" onClick={() => setModal('create')}>
+                      <Plus size={18} />
+                      Bắt đầu một cuốn sổ
+                    </button>
+                    <div className="welcome-foot">
+                      <Heart size={13} /> Tự tay sắp xếp. Tự mình kể chuyện.
+                    </div>
                   </div>
-                </div>
-                <div className="hero-collage" aria-label="Minh họa scrapbook">
-                  <span className="tape tape-one" />
-                  <div className="hero-photo photo-back">
-                    <img src="/illustrations/demo-2.svg" alt="Minh họa một buổi chiều bên biển" />
-                    <span>một chiều bên nhau</span>
+                  <div className="hero-collage" aria-label="Minh họa scrapbook">
+                    <span className="tape tape-one" />
+                    <div className="hero-photo photo-back">
+                      <img src="/illustrations/demo-2.svg" alt="Minh họa một buổi chiều bên biển" />
+                      <span>một chiều bên nhau</span>
+                    </div>
+                    <div className="hero-photo photo-front">
+                      <img src="/illustrations/demo-1.svg" alt="Minh họa một chuyến đi trên đồi" />
+                      <span>đi đâu cũng được, cùng bạn.</span>
+                    </div>
+                    <span className="hero-doodle">✿</span>
+                    <span className="hero-heart">♡</span>
+                    <span className="hero-note">
+                      our little
+                      <br />
+                      happy things
+                    </span>
+                    <span className="sample-label">Ảnh minh họa · thay bằng ảnh của hai bạn</span>
                   </div>
-                  <div className="hero-photo photo-front">
-                    <img src="/illustrations/demo-1.svg" alt="Minh họa một chuyến đi trên đồi" />
-                    <span>đi đâu cũng được, cùng bạn.</span>
-                  </div>
-                  <span className="hero-doodle">✿</span>
-                  <span className="hero-heart">♡</span>
-                  <span className="hero-note">
-                    our little
-                    <br />
-                    happy things
-                  </span>
-                  <span className="sample-label">Ảnh minh họa · thay bằng ảnh của hai bạn</span>
-                </div>
-              </motion.section>
+                </motion.section>
+              )}
               <section className="albums-section">
                 <div className="section-heading">
                   <div>
@@ -447,11 +488,11 @@ export default function App() {
                   </div>
                 )}
                 <div className="album-grid">
-                  {albums.map((album) => (
+                  {(section === 'home' ? albums.slice(0, 3) : albums).map((album) => (
                     <article className="album-card" key={album.id}>
                       <button
                         className="album-cover"
-                        onClick={() => setActive(album)}
+                        onClick={() => openAlbum(album)}
                         aria-label={`Mở ${album.title}`}
                       >
                         <div className="cover-preview">
@@ -460,7 +501,7 @@ export default function App() {
                         <span className="cover-tag">{themeNames[album.theme]}</span>
                       </button>
                       <div className="album-info">
-                        <button onClick={() => setActive(album)}>
+                        <button onClick={() => openAlbum(album)}>
                           <h3>{album.title}</h3>
                           <p>
                             {album.names.join(' & ')} <span>·</span> {album.pages.length} trang
@@ -468,7 +509,7 @@ export default function App() {
                         </button>
                         <button
                           className="icon-button"
-                          onClick={() => setActive(album)}
+                          onClick={() => openAlbum(album)}
                           aria-label="Mở album"
                         >
                           <ArrowRight size={18} />
@@ -488,21 +529,23 @@ export default function App() {
                   </button>
                 </div>
               </section>
-              <section className="recap-banner">
-                <div className="recap-icon">
-                  <Film size={29} />
-                </div>
-                <div>
-                  <h3>Một cuốn sổ. Cả một thước phim.</h3>
-                  <p>Biến những trang kỉ niệm thành video ngắn để xem lại, gửi nhau, giữ mãi.</p>
-                </div>
-                <button
-                  className="text-button"
-                  onClick={() => (albums.length ? setActive(albums[0]) : setModal('create'))}
-                >
-                  Khám phá <ArrowRight size={16} />
-                </button>
-              </section>
+              {section === 'albums' && (
+                <section className="recap-banner">
+                  <div className="recap-icon">
+                    <Film size={29} />
+                  </div>
+                  <div>
+                    <h3>Một cuốn sổ. Cả một thước phim.</h3>
+                    <p>Biến những trang kỉ niệm thành video ngắn để xem lại, gửi nhau, giữ mãi.</p>
+                  </div>
+                  <button
+                    className="text-button"
+                    onClick={() => (albums.length ? openAlbum(albums[0]) : setModal('create'))}
+                  >
+                    Khám phá <ArrowRight size={16} />
+                  </button>
+                </section>
+              )}
               <footer className="dashboard-footer">
                 <span>Made for the little things.</span>
                 <span>
@@ -562,7 +605,7 @@ export default function App() {
           onClose={() => setModal(null)}
           onCreated={(album) => {
             setAlbums((a) => [album, ...a]);
-            setActive(album);
+            openAlbum(album);
             setModal(null);
           }}
         />
@@ -581,6 +624,7 @@ export default function App() {
             }
             setUser(null);
             setActive(null);
+            navigate('/today');
             setAlbums([]);
             setLoading(true);
             setModal(null);

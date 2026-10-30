@@ -14,14 +14,48 @@ import type { MediaStore } from './storage.js';
 import { ResourcePolicy } from './resource-policy.js';
 import { AccountDeletion, UPLOAD_TIMEOUT_MS } from './account-deletion.js';
 import { logEvent } from './observability.js';
+import { TimelineSharing } from './timeline-sharing.js';
 
 export class JournalService {
+  readonly sharing: TimelineSharing;
   constructor(
     private db: Repository,
     private store: MediaStore,
     private resources: ResourcePolicy,
     private deletion: AccountDeletion,
-  ) {}
+  ) {
+    this.sharing = new TimelineSharing(db, deletion);
+  }
+  private async ownerOf(actor: string, id: string) {
+    const owner = await this.db.owner('journal', id);
+    if (!owner) throw new NotFoundException('Không tìm thấy dấu mốc.');
+    await this.sharing.access(actor, owner);
+    return owner;
+  }
+  private async present(actor: string, owner: string, entry: JournalEntry): Promise<JournalEntry> {
+    if (actor === owner) return entry;
+    const grant = (await this.sharing.access(actor, owner))!;
+    return {
+      ...entry,
+      timelineId: owner,
+      timelineLabel: grant.ownerLabel,
+      calendarVisible: grant.showOnCalendar,
+    };
+  }
+  private async withTimeline<T>(actor: string, owner: string, action: () => Promise<T>) {
+    const operations: string[] = [];
+    try {
+      for (const id of [...new Set([actor, owner])].sort())
+        operations.push(await this.deletion.begin(id));
+      return await this.db.transaction(async () => {
+        await this.sharing.lock(owner, actor);
+        await this.sharing.access(actor, owner);
+        return action();
+      });
+    } finally {
+      for (const operation of operations.reverse()) await this.deletion.end(operation);
+    }
+  }
   private async guarded<T>(owner: string, action: () => Promise<T>) {
     const operation = await this.deletion.begin(owner);
     try {
@@ -31,7 +65,20 @@ export class JournalService {
     }
   }
   async list(owner: string) {
-    return (await this.db.list<JournalEntry>('journal', owner)).sort(
+    const entries = await this.db.list<JournalEntry>('journal', owner);
+    const { grants } = await this.sharing.state(owner);
+    for (const grant of grants.filter((g) => g.memberId === owner && g.state === 'active')) {
+      await this.sharing.access(owner, grant.timelineOwner);
+      entries.push(
+        ...(await this.db.list<JournalEntry>('journal', grant.timelineOwner)).map((entry) => ({
+          ...entry,
+          timelineId: grant.timelineOwner,
+          timelineLabel: grant.ownerLabel,
+          calendarVisible: grant.showOnCalendar,
+        })),
+      );
+    }
+    return entries.sort(
       (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
     );
   }
@@ -65,16 +112,17 @@ export class JournalService {
       return heading;
     });
   }
-  async owned(owner: string, id: string) {
-    if ((await this.db.owner('journal', id)) !== owner)
-      throw new NotFoundException('Không tìm thấy dấu mốc.');
+  async owned(actor: string, id: string) {
+    await this.ownerOf(actor, id);
     const entry = await this.db.get<JournalEntry>('journal', id);
     if (!entry) throw new NotFoundException('Không tìm thấy dấu mốc.');
     return entry;
   }
-  async create(owner: string, body: unknown) {
+  async create(actor: string, body: unknown) {
     const content = journalContentSchema.parse(body);
-    return this.guarded(owner, () =>
+    const { timelineId } = z.object({ timelineId: z.uuid().optional() }).parse(body);
+    const owner = timelineId || actor;
+    return this.withTimeline(actor, owner, () =>
       this.db.transaction(async () => {
         if (this.db.driver === 'postgresql')
           await this.db.query('SELECT pg_advisory_xact_lock(hashtext(?))', ['journal:' + owner]);
@@ -90,12 +138,13 @@ export class JournalService {
             updatedAt: now,
           };
         await this.db.insert('journal', entry.id, owner, entry);
-        return entry;
+        return this.present(actor, owner, entry);
       }),
     );
   }
-  async save(owner: string, id: string, body: unknown) {
-    return this.guarded(owner, async () => {
+  async save(actor: string, id: string, body: unknown) {
+    const owner = await this.ownerOf(actor, id);
+    return this.withTimeline(actor, owner, async () => {
       const input = z
         .object({ expectedRevision: z.number().int().nonnegative(), content: journalContentSchema })
         .parse(body);
@@ -110,26 +159,32 @@ export class JournalService {
         throw new ConflictException(
           'Dấu mốc vừa thay đổi. Tải lại trước khi lưu; nội dung bạn đang nhập vẫn được giữ.',
         );
-      return entry;
+      return this.present(actor, owner, entry);
     });
   }
-  async remove(owner: string, id: string, body: unknown) {
+  async remove(actor: string, id: string, body: unknown) {
+    const owner = await this.ownerOf(actor, id);
     const { expectedRevision } = z
-        .object({ expectedRevision: z.number().int().nonnegative() })
-        .parse(body),
-      entry = await this.owned(owner, id);
+      .object({ expectedRevision: z.number().int().nonnegative() })
+      .parse(body);
     const operation = await this.deletion.begin(owner);
     try {
-      await this.deletion.track(
-        operation,
-        entry.assets.map((a) => 'journal/' + a.id + '.jpg'),
-      );
-      const removed = await this.db.query(
-        "DELETE FROM records WHERE kind='journal' AND id=? AND owner=? AND revision=? RETURNING id",
-        [id, owner, expectedRevision],
-      );
-      if (!removed.length)
-        throw new ConflictException('Dấu mốc vừa thay đổi. Tải lại trước khi xóa.');
+      const entry = await this.withTimeline(actor, owner, async () => {
+        const entry = await this.owned(actor, id);
+        if (entry.revision !== expectedRevision)
+          throw new ConflictException('Dấu mốc vừa thay đổi. Tải lại trước khi xóa.');
+        await this.deletion.track(
+          operation,
+          entry.assets.map((a) => 'journal/' + a.id + '.jpg'),
+        );
+        const removed = await this.db.query(
+          "DELETE FROM records WHERE kind='journal' AND id=? AND owner=? AND revision=? RETURNING id",
+          [id, owner, expectedRevision],
+        );
+        if (!removed.length)
+          throw new ConflictException('Dấu mốc vừa thay đổi. Tải lại trước khi xóa.');
+        return entry;
+      });
       const results = await Promise.allSettled(
         entry.assets.map((a) => this.resources.remove('journal/' + a.id + '.jpg')),
       );
@@ -138,8 +193,8 @@ export class JournalService {
       await this.deletion.end(operation);
     }
   }
-  async upload(owner: string, id: string, file: Express.Multer.File | undefined) {
-    await this.owned(owner, id);
+  async upload(actor: string, id: string, file: Express.Multer.File | undefined) {
+    const owner = await this.ownerOf(actor, id);
     if (!file || file.size > 20 * 1048576)
       throw new BadRequestException('Chọn ảnh JPEG/PNG/WebP tối đa 20 MB.');
     let result: Awaited<ReturnType<typeof normalizePhoto>>;
@@ -157,7 +212,7 @@ export class JournalService {
       await this.resources.reserve(owner, key, result.data.length);
       await this.store.put(key, result.data, 'image/jpeg', AbortSignal.timeout(UPLOAD_TIMEOUT_MS));
       for (let i = 0; i < 5; i++) {
-        const current = await this.owned(owner, id);
+        const current = await this.owned(actor, id);
         if (current.assets.length >= 6) throw new BadRequestException('Mỗi dấu mốc tối đa 6 ảnh.');
         const entry = {
           ...current,
@@ -175,8 +230,12 @@ export class JournalService {
             },
           ],
         };
-        if (await this.db.compareAndSwap('journal', id, owner, current.revision, entry))
-          return entry;
+        const saved = await this.withTimeline(actor, owner, async () => {
+          if (!(await this.db.compareAndSwap('journal', id, owner, current.revision, entry)))
+            return null;
+          return this.present(actor, owner, entry);
+        });
+        if (saved) return saved;
       }
       throw new ConflictException('Dấu mốc đang thay đổi. Vui lòng tải ảnh lại.');
     } catch (error) {
@@ -186,26 +245,30 @@ export class JournalService {
       await this.deletion.end(operation);
     }
   }
-  async removeAsset(owner: string, id: string, assetId: string, body: unknown) {
+  async removeAsset(actor: string, id: string, assetId: string, body: unknown) {
+    const owner = await this.ownerOf(actor, id);
     return this.guarded(owner, async () => {
-      const { expectedRevision } = z
-          .object({ expectedRevision: z.number().int().nonnegative() })
-          .parse(body),
-        current = await this.owned(owner, id);
-      if (!current.assets.some((a) => a.id === assetId))
-        throw new NotFoundException('Không tìm thấy ảnh.');
-      const entry = {
-        ...current,
-        revision: current.revision + 1,
-        assets: current.assets.filter((a) => a.id !== assetId),
-        updatedAt: new Date().toISOString(),
-      };
-      if (!(await this.db.compareAndSwap('journal', id, owner, expectedRevision, entry)))
-        throw new ConflictException('Dấu mốc vừa thay đổi. Vui lòng tải lại.');
+      const saved = await this.withTimeline(actor, owner, async () => {
+        const { expectedRevision } = z
+            .object({ expectedRevision: z.number().int().nonnegative() })
+            .parse(body),
+          current = await this.owned(owner, id);
+        if (!current.assets.some((a) => a.id === assetId))
+          throw new NotFoundException('Không tìm thấy ảnh.');
+        const entry = {
+          ...current,
+          revision: current.revision + 1,
+          assets: current.assets.filter((a) => a.id !== assetId),
+          updatedAt: new Date().toISOString(),
+        };
+        if (!(await this.db.compareAndSwap('journal', id, owner, expectedRevision, entry)))
+          throw new ConflictException('Dấu mốc vừa thay đổi. Vui lòng tải lại.');
+        return this.present(actor, owner, entry);
+      });
       await this.resources
         .remove('journal/' + assetId + '.jpg')
         .catch(() => logEvent('journal_media_cleanup_deferred'));
-      return entry;
+      return saved;
     });
   }
 }

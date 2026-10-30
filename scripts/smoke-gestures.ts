@@ -157,7 +157,7 @@ try {
       assert.notEqual(after.pages[0].elements[0].x, before.pages[0].elements[0].x);
       assert.deepEqual(after.pages[0].elements[1], before.pages[0].elements[1]);
       await page.reload();
-      await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
+      await expect(page).toHaveURL(new RegExp('/albums/' + album.id + '$'));
       await expect(reset).toHaveText('100%');
       await expect(sheet.locator('canvas')).toBeVisible();
       await page.evaluate(() => document.fonts.ready);

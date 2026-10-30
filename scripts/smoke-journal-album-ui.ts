@@ -85,7 +85,7 @@ try {
       );
       assert.equal((await context.request.get(origin + album.assets[0].url)).status(), 200);
       await page.reload();
-      await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
+      await expect(page).toHaveURL(new RegExp('/albums/' + album.id + '$'));
       await expect(page.locator('.canvas-sheet canvas')).toBeVisible();
       await page.getByRole('button', { name: 'Xem album', exact: true }).click();
       const viewer = page.getByRole('dialog', { name: 'Xem album', exact: true });

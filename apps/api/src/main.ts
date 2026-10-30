@@ -164,6 +164,27 @@ function validateReferences(album: Album) {
 
 @Controller('api')
 class AppController {
+  @Get('timeline-sharing') async timelineSharing(@Req() req: UserRequest) {
+    return journal.sharing.state(req.userId);
+  }
+  @Post('timeline-sharing') async inviteTimeline(@Req() req: UserRequest, @Body() body: unknown) {
+    await security.rateLimit('timeline-invite:' + req.userId, 10, 60000);
+    return journal.sharing.invite(req.userId, body);
+  }
+  @Patch('timeline-sharing/:id') async changeTimeline(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return journal.sharing.change(req.userId, id, body);
+  }
+  @Delete('timeline-sharing/:id') async leaveTimeline(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return journal.sharing.change(req.userId, id, body, true);
+  }
   @Get('timeline-heading') async timelineHeading(@Req() req: UserRequest) {
     return journal.heading(req.userId);
   }

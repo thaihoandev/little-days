@@ -4,6 +4,8 @@ Ngày cập nhật: **30/10/2026**.
 
 ## Kết quả hiện tại
 
+Bổ sung cộng tác dòng thời gian theo email tài khoản đã xác minh: lời mời/chấp nhận trong ứng dụng, cùng CRUD dấu mốc và ảnh, lịch chung có tùy chọn hiện/ẩn theo thành viên, thu hồi/rời và xử lý xóa tài khoản. Dữ liệu chia sẻ không mở quyền album riêng. Lịch desktop 3:1, trang Hôm nay ưu tiên nội dung ngày hiện tại; các trang và editor có URL riêng, hỗ trợ tải lại/Back/Forward. Hướng dẫn trong [TIMELINE_COLLABORATION.md](TIMELINE_COLLABORATION.md); cần deploy FE/API cùng commit, không thêm env.
+
 Thêm tách nền AI trên trình duyệt: xem trước/so sánh, hủy, viền trắng/bóng đổ, lưu bản sao trong suốt riêng tư và Undo/Redo. Kiểu ảnh cutout được dùng chung cho Canvas, viewer và MP4; giữ ảnh gốc và layout cũ. Không cần env hay dịch vụ trả phí mới. Xem [BACKGROUND_REMOVAL.md](BACKGROUND_REMOVAL.md) về tài nguyên mô hình, triển khai và yêu cầu cập nhật worker xuất video hiện có.
 
 Bổ sung logo cuốn sổ/trái tim, favicon SVG/PNG và Apple touch icon; ô lịch hiển thị thumbnail đại diện của sự kiện dưới số ngày. Đã bỏ giao diện sửa tiêu đề/mô tả timeline, vẫn hiển thị nội dung riêng đã lưu. Không đổi database hoặc biến môi trường.

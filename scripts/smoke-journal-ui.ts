@@ -257,7 +257,7 @@ try {
       });
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
       await page.getByRole('button', { name: 'Hôm nay', exact: true }).first().click();
-      await page.getByRole('button', { name: 'Bắt đầu một cuốn sổ', exact: true }).click();
+      await page.getByRole('button', { name: 'Tạo album', exact: true }).click();
       await visibleAction(page.getByRole('button', { name: 'Tạo cuốn sổ của mình', exact: true }));
       const create = page.getByRole('dialog', { name: 'Bắt đầu một cuốn sổ', exact: true });
       assert.ok(
@@ -289,8 +289,12 @@ try {
       );
       await page.getByRole('button', { name: 'Đóng', exact: true }).click();
       await page.getByRole('button', { name: 'Về danh sách album', exact: true }).click();
-      page.once('dialog', (d) => d.accept());
+      await page.getByRole('button', { name: 'Dòng thời gian', exact: true }).click();
       await page.getByRole('button', { name: 'Xóa dấu mốc ' + title, exact: true }).click();
+      await page
+        .getByRole('dialog', { name: 'Xóa dấu mốc?', exact: true })
+        .getByRole('button', { name: 'Xóa dấu mốc', exact: true })
+        .click();
       await expect(page.getByRole('heading', { name: title, exact: true })).not.toBeVisible();
       assert.equal((await context.request.get(origin + entry.assets[0].url)).status(), 404);
       assert.deepEqual(errors, []);
