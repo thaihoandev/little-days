@@ -79,6 +79,16 @@ import {
 import { counterStyleNames } from '../../../packages/domain/counter.js';
 import { ElementContent } from '../../../packages/scrapbook-renderer/index.js';
 import { LegalLinks } from './LegalLinks.js';
+import { InlineTitle } from './InlineTitle.js';
+import { paperPalettes, recolorPage } from '../../../packages/domain/palettes.js';
+import { PhotoEditorDialog } from './PhotoEditorDialog.js';
+import {
+  fullPhoto,
+  photoWindow,
+  photoZoom,
+  zoomPhoto,
+  panPhoto,
+} from '../../../packages/domain/photo-edit.js';
 import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 import type { PublicUser } from './AccountSettings.js';
 const AccountSettings = lazy(() => import('./AccountSettings.js'));
@@ -757,6 +767,8 @@ function Editor({
     'pages' | 'photos' | 'decorations' | 'memories' | 'settings' | 'layers'
   >('pages');
   const [zoom, setZoom] = useState(1);
+  const [keepPhotoRatio, setKeepPhotoRatio] = useState(false);
+  const [editingPhoto, setEditingPhoto] = useState<string | null>(null);
   const [viewer, setViewer] = useState(false);
   const [video, setVideo] = useState<Album | null>(null);
   const [share, setShare] = useState<string | null>(null);
@@ -995,7 +1007,10 @@ function Editor({
             </button>
             <span className="header-divider" />
             <div>
-              <strong>{album.title}</strong>
+              <InlineTitle
+                value={album.title}
+                onSave={(title) => doc.edit((a) => ({ ...a, title }), 'album-title')}
+              />
               <button
                 className={`save-status ${doc.status}`}
                 onClick={() =>
@@ -1680,6 +1695,8 @@ function Editor({
                 }
                 referenceDate={reference}
                 onEditText={() => setEditText(true)}
+                onEditPhoto={setEditingPhoto}
+                keepPhotoRatio={keepPhotoRatio}
                 zoom={zoom}
                 onZoomChange={setZoom}
               />
@@ -1723,6 +1740,9 @@ function Editor({
               <>
                 <ElementProperties
                   e={selectedElement}
+                  keepPhotoRatio={keepPhotoRatio}
+                  onKeepPhotoRatio={setKeepPhotoRatio}
+                  onEditPhoto={() => setEditingPhoto(selectedElement.id)}
                   patch={(p) =>
                     patch(
                       selectedElement.id,
@@ -1756,10 +1776,11 @@ function Editor({
                   />
                 </label>
                 <div className="paper-colors">
-                  {['#f8f1e5', '#f1e4df', '#e7eddf', '#edf0ed', '#f9f7f0'].map((color) => (
+                  {paperPalettes.map(({ paper: color, name }) => (
                     <button
                       key={color}
                       aria-label={`Giấy ${color}`}
+                      title={name}
                       style={{ background: color }}
                       onClick={() =>
                         doc.edit((a) => ({
@@ -1770,6 +1791,26 @@ function Editor({
                         }))
                       }
                     />
+                  ))}
+                </div>
+                <p className="muted small">Phối cả màu giấy và chữ cho trang hiện tại:</p>
+                <div className="page-palette-grid">
+                  {paperPalettes.map((palette) => (
+                    <button
+                      key={palette.name}
+                      aria-label={'Phối màu ' + palette.name}
+                      style={{ background: palette.paper, color: palette.ink }}
+                      onClick={() =>
+                        doc.edit((a) => ({
+                          ...a,
+                          pages: a.pages.map((p) =>
+                            p.id === page.id ? recolorPage(p, palette) : p,
+                          ),
+                        }))
+                      }
+                    >
+                      {palette.name}
+                    </button>
                   ))}
                 </div>
                 <div className="note-card">
@@ -1958,6 +1999,27 @@ function Editor({
           />
         )}
       </Suspense>
+      {editingPhoto && page.elements.find((e) => e.id === editingPhoto && !e.locked) && (
+        <PhotoEditorDialog
+          element={page.elements.find((e) => e.id === editingPhoto)!}
+          album={album}
+          onClose={() => setEditingPhoto(null)}
+          onApply={(p) => patch(editingPhoto, p)}
+          onUpload={async (file) => {
+            await doc.flush();
+            const form = new FormData();
+            form.append('file', file);
+            const updated = await api<Album>(`/albums/${album.id}/assets`, {
+              method: 'POST',
+              body: form,
+            });
+            doc.accept(updated);
+            const asset = updated.assets.find((a) => !album.assets.some((old) => old.id === a.id));
+            if (!asset) throw new Error('Không tìm thấy ảnh vừa tải.');
+            return asset;
+          }}
+        />
+      )}
       {uploading && (
         <div className="upload-progress" role="status" aria-live="polite">
           <LoaderCircle className="spin" size={28} />
@@ -1973,11 +2035,19 @@ function ElementProperties({
   e,
   patch,
   album,
+  keepPhotoRatio,
+  onKeepPhotoRatio,
+  onEditPhoto,
 }: {
   e: ScrapElement;
   patch: (p: Partial<ScrapElement>) => void;
   album: Album;
+  keepPhotoRatio: boolean;
+  onKeepPhotoRatio: (value: boolean) => void;
+  onEditPhoto: () => void;
 }) {
+  const asset = album.assets.find((a) => a.id === e.assetId),
+    crop = photoWindow(e, asset);
   return (
     <fieldset className="form-stack properties" disabled={e.locked}>
       <TextOverflowWarning element={e} album={album} />
@@ -2066,9 +2136,25 @@ function ElementProperties({
       )}
       {e.type === 'image' ? (
         <>
+          <button className="button primary" onClick={onEditPhoto}>
+            Chỉnh / thay ảnh trong khung
+          </button>
+          <label className="photo-ratio-toggle">
+            <input
+              type="checkbox"
+              checked={keepPhotoRatio}
+              onChange={(ev) => onKeepPhotoRatio(ev.target.checked)}
+            />
+            Giữ tỉ lệ khi kéo khung
+          </label>
           <label>
             Thay ảnh
-            <select value={e.assetId || ''} onChange={(ev) => patch({ assetId: ev.target.value })}>
+            <select
+              aria-label="Thay ảnh"
+              value={e.assetId || ''}
+              onChange={(ev) => patch({ assetId: ev.target.value || null, crop: { ...fullPhoto } })}
+            >
+              <option value="">Khung trống</option>
               {[1, 2, 3].map((i) => (
                 <option key={i} value={`demo-${i}`}>
                   Tranh minh họa {i}
@@ -2085,15 +2171,13 @@ function ElementProperties({
             Phóng vùng ảnh
             <input
               type="range"
-              min={0.3}
-              max={1}
-              step={0.01}
-              value={e.crop.width}
+              min={1}
+              max={8}
+              step={0.05}
+              value={Math.min(8, photoZoom(e, asset))}
               onChange={(ev) => {
                 const value = Number(ev.target.value);
-                patch({
-                  crop: { x: (1 - value) / 2, y: (1 - value) / 2, width: value, height: value },
-                });
+                patch({ crop: zoomPhoto(e, asset, value) });
               }}
             />
           </label>
@@ -2102,10 +2186,12 @@ function ElementProperties({
             <input
               type="range"
               min={0}
-              max={1 - e.crop.width}
+              max={Math.max(0, 1 - crop.width)}
               step={0.01}
-              value={e.crop.x}
-              onChange={(ev) => patch({ crop: { ...e.crop, x: Number(ev.target.value) } })}
+              value={crop.x}
+              onChange={(ev) =>
+                patch({ crop: panPhoto(e, asset, Number(ev.target.value), crop.y) })
+              }
             />
           </label>
           <label>
@@ -2113,10 +2199,12 @@ function ElementProperties({
             <input
               type="range"
               min={0}
-              max={1 - e.crop.height}
+              max={Math.max(0, 1 - crop.height)}
               step={0.01}
-              value={e.crop.y}
-              onChange={(ev) => patch({ crop: { ...e.crop, y: Number(ev.target.value) } })}
+              value={crop.y}
+              onChange={(ev) =>
+                patch({ crop: panPhoto(e, asset, crop.x, Number(ev.target.value)) })
+              }
             />
           </label>
         </>

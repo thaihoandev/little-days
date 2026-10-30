@@ -61,6 +61,25 @@ try {
   assert.equal((await alice('/albums')).status, 401);
   await alice('/session');
   await bob('/session');
+  assert.equal((await client()('/timeline-heading')).status, 401);
+  const headingInput = {
+    expectedRevision: -1,
+    content: { title: 'Hành trình của Alice', description: 'Ngày đẹp, chuyện đẹp.' },
+  };
+  assert.equal((await alice('/timeline-heading', 'PATCH', headingInput)).status, 200);
+  assert.equal((await (await alice('/timeline-heading')).json()).title, headingInput.content.title);
+  assert.equal((await (await bob('/timeline-heading')).json()).revision, -1);
+  assert.equal((await alice('/timeline-heading', 'PATCH', headingInput)).status, 409);
+  assert.equal(
+    (
+      await alice('/timeline-heading', 'PATCH', {
+        ...headingInput,
+        expectedRevision: 0,
+        content: { title: '', description: '' },
+      })
+    ).status,
+    400,
+  );
   assert.equal((await (await alice('/render-capacity')).json()).available, false);
   const album: Album = await (await alice('/albums', 'POST', { title: 'Kiểm tra API' })).json();
   const unavailableMusic = await alice('/albums/' + album.id + '/exports', 'POST', {

@@ -127,6 +127,8 @@ export function CanvasEditor({
   onPatchMany,
   referenceDate,
   onEditText,
+  onEditPhoto,
+  keepPhotoRatio,
   zoom,
   onZoomChange,
 }: {
@@ -137,6 +139,8 @@ export function CanvasEditor({
   onPatchMany: (patches: { id: string; patch: Partial<ScrapElement> }[]) => void;
   referenceDate: string;
   onEditText: () => void;
+  onEditPhoto: (id: string) => void;
+  keepPhotoRatio: boolean;
   zoom: number;
   onZoomChange: (zoom: number) => void;
 }) {
@@ -443,6 +447,7 @@ export function CanvasEditor({
                 height={e.height}
                 rotation={e.rotation}
                 opacity={e.opacity}
+                listening={!e.locked}
                 draggable={
                   !e.locked &&
                   !page.elements.some(
@@ -455,9 +460,19 @@ export function CanvasEditor({
                   if (!pinching.current) select(e.id);
                 }}
                 onDblClick={() => {
+                  if (e.type === 'image' && !e.locked) {
+                    onSelect([e.id]);
+                    onEditPhoto(e.id);
+                  }
                   if (e.type === 'text' && !e.locked) {
                     onSelect([e.id]);
                     onEditText();
+                  }
+                }}
+                onDblTap={() => {
+                  if (e.type === 'image' && !e.locked) {
+                    onSelect([e.id]);
+                    onEditPhoto(e.id);
                   }
                 }}
                 onDragStart={() => {
@@ -531,11 +546,26 @@ export function CanvasEditor({
               rotateEnabled
               flipEnabled={false}
               ignoreStroke
-              anchorSize={9}
+              anchorSize={12}
               anchorFill="#fffdf8"
               anchorStroke="#6d7c54"
               borderStroke="#6d7c54"
-              keepRatio={chosen.length > 1 || chosen[0]?.type === 'image'}
+              keepRatio={chosen.length > 1 || (chosen[0]?.type === 'image' && keepPhotoRatio)}
+              shiftBehavior="none"
+              enabledAnchors={
+                chosen.length === 1 && chosen[0].type === 'image' && keepPhotoRatio
+                  ? ['top-left', 'top-right', 'bottom-left', 'bottom-right']
+                  : [
+                      'top-left',
+                      'top-center',
+                      'top-right',
+                      'middle-left',
+                      'middle-right',
+                      'bottom-left',
+                      'bottom-center',
+                      'bottom-right',
+                    ]
+              }
               onTransformEnd={() => {
                 if (pinching.current) return;
                 const visible = chosen.filter((e) => e.visible !== false);
@@ -575,9 +605,15 @@ export function CanvasEditor({
                 });
                 commit(patches);
               }}
-              boundBoxFunc={(oldBox, newBox) =>
-                newBox.width < 24 * scale || newBox.height < 24 * scale ? oldBox : newBox
-              }
+              boundBoxFunc={(oldBox, newBox) => {
+                const photo = chosen.length === 1 && chosen[0].type === 'image';
+                return newBox.width < (photo ? 64 : 24) * scale ||
+                  newBox.height < (photo ? 80 : 24) * scale ||
+                  (chosen.length === 1 &&
+                    (newBox.width > 1600 * scale || newBox.height > 2000 * scale))
+                  ? oldBox
+                  : newBox;
+              }}
             />
           </Layer>
         </Stage>

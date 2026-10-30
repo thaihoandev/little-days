@@ -26,6 +26,7 @@ import {
 import { api } from './api.js';
 import { PhotoLightbox } from './Overlays.js';
 import { TimelineAlbumDialog, type TimelineChoice } from './TimelineAlbumDialog.js';
+import { TimelineHeading } from './TimelineHeading.js';
 
 type Item = JournalEntry & { album?: Album };
 const dateLabel = (
@@ -185,14 +186,18 @@ export default function JournalDashboard({
           <span className="eyebrow">
             <Heart size={13} /> GÓC NHỎ CỦA NHỮNG NGÀY THƯƠNG
           </span>
-          <h1>
-            {mode === 'timeline'
-              ? 'Dòng thời gian của mình.'
-              : mode === 'calendar'
-                ? 'Những ngày mình muốn nhớ.'
-                : 'Hôm nay, mình giữ lại điều gì?'}
-          </h1>
-          <p>Kỉ niệm có ảnh, lời nhắn có ngày. Những điều quan trọng luôn ở đây.</p>
+          {mode === 'timeline' ? (
+            <TimelineHeading />
+          ) : (
+            <>
+              <h1>
+                {mode === 'calendar'
+                  ? 'Những ngày mình muốn nhớ.'
+                  : 'Hôm nay, mình giữ lại điều gì?'}
+              </h1>
+              <p>Kỉ niệm có ảnh, lời nhắn có ngày. Những điều quan trọng luôn ở đây.</p>
+            </>
+          )}
           <span className="journal-today">
             <CalendarDays size={15} />
             {dateLabel(today, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}

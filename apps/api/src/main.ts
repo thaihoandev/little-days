@@ -164,6 +164,15 @@ function validateReferences(album: Album) {
 
 @Controller('api')
 class AppController {
+  @Get('timeline-heading') async timelineHeading(@Req() req: UserRequest) {
+    return journal.heading(req.userId);
+  }
+  @Patch('timeline-heading') async saveTimelineHeading(
+    @Req() req: UserRequest,
+    @Body() body: unknown,
+  ) {
+    return journal.saveHeading(req.userId, body);
+  }
   @Get('journal') async journalList(@Req() req: UserRequest) {
     return journal.list(req.userId);
   }

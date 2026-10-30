@@ -4,7 +4,7 @@ Ngày cập nhật: **30/10/2026**.
 
 ## Kết quả hiện tại
 
-App đã chạy công khai trên Render tại https://little-days-api.onrender.com, dùng PostgreSQL Neon và Cloudinary; người dùng xác nhận Brevo HTTPS đã gửi email thật thành công. Worker xuất video hiện vẫn chạy theo cấu hình cũ; phương án worker Northflank đã được người dùng hủy. Đây là bản MVP để chạy thử, chưa phải toàn bộ hệ thống production trong `IMPLEMENTATION_PLAN.md`.
+Frontend đã được người dùng deploy lên https://little-days-memories.vercel.app; kiểm tra HTTP và proxy healthcheck thành công. API chạy trên Render tại https://little-days-api.onrender.com, dùng PostgreSQL Neon và Cloudinary; người dùng xác nhận Brevo HTTPS đã gửi email thật thành công. Worker xuất video hiện vẫn chạy theo cấu hình cũ; phương án worker Northflank đã được người dùng hủy. Đây là bản MVP để chạy thử, chưa phải toàn bộ hệ thống production trong `IMPLEMENTATION_PLAN.md`.
 
 Ngày 30/10/2026, người dùng xác nhận đã bật backup theo lịch và hoàn tất phục hồi thử. Chưa ghi URL run/report kiểm chứng production vào hồ sơ; kết quả này được ghi nhận theo xác nhận của người dùng. Người dùng đã yêu cầu bỏ qua pilot thật và tiếp tục triển khai; tài liệu pilot giữ làm tham khảo, không là bước chặn.
 
@@ -148,6 +148,10 @@ Chủ dự án đã chọn AGPL-3.0-only và chấp thuận ngoại lệ liên k
 Kiểm tra bổ sung đã qua: 12 luồng UI cô lập desktop/mobile; 8 unit test import và 2 test giấy phép; PostgreSQL có 42 test qua/1 test dành riêng SQLite được bỏ qua, API, ba người dùng render và backup/restore. Build/typecheck/format đã qua; MP4 import đã trích và xem khung mở đầu/trang ảnh/trang lời nhắn/kết. Các kết quả này dùng fixture local/Cloudinary giả, không xác nhận rollout production hoặc pilot người thật.
 
 ## Ưu tiên tiếp theo
+
+Đợt cải tiến editor tiếp theo đã thêm popup chỉnh/thay ảnh trong khung (kéo, zoom, upload), resize tự do/giữ tỉ lệ, tên sổ sửa trên header và tiêu đề/mô tả timeline lưu riêng theo tài khoản. Năm mẫu màu mới nâng catalog lên 14; tám bảng phối giấy/chữ cho trang hiện tại giữ ảnh/SVG và hỗ trợ Undo. Giấy/trang trí khóa không chặn chọn ảnh bên dưới. Không thêm biến môi trường hoặc bảng mới; API/frontend phải deploy cùng commit để có endpoint `timeline-heading`.
+
+Đã qua 93 unit test, build/typecheck/format, 13 luồng UI desktop/mobile và API trên PostgreSQL 17 riêng. Sáu test journal trên PostgreSQL bao gồm tạo tiêu đề đồng thời và revision conflict. Video crop/phối màu thật đã được kiểm bằng ffprobe (H.264 1080×1920, khoảng 7 giây) và xem khung hình; đã xem gallery 14 mẫu. Đây là QA tự động bằng fixture, không phải pilot người thật hoặc xác nhận rollout production.
 
 Đã bổ sung xóa tài khoản vĩnh viễn: xác nhận mật khẩu/câu xác nhận trong UI, thu hồi session/share/auth token, hủy export, hàng đợi dọn dữ liệu và media có lease/retry qua restart. Có sổ object trước upload, chặn ghi muộn, dọn thư local, trạng thái theo dõi sau reload và CLI vận hành. API Cloudinary fixture và UI desktop/mobile đã qua; dữ liệu tài khoản khác được giữ. Backup/restore chặn khi còn yêu cầu xóa. Xem `ACCOUNT_DELETION.md` về backup cũ và media mồ côi trước khi có sổ object.
 

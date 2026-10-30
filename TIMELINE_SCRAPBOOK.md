@@ -5,7 +5,7 @@
 1. Mở **Dòng thời gian**, tìm hoặc lọc những kỉ niệm muốn giữ lại.
 2. Đánh dấu từng thẻ hoặc bấm **Chọn mốc đang hiện**, tối đa 20 mốc.
 3. Bấm **Tạo scrapbook**, nhập tên sổ và tên hai người.
-4. Chọn một trong chín mẫu minh họa, xem các trang bằng nút chuyển trang.
+4. Chọn một trong mười bốn mẫu minh họa, xem các trang bằng nút chuyển trang.
 5. Bấm nút tạo sổ. Album mới mở trong editor để sửa bố cục, chữ, ảnh và trang trí; có thể xem như quyển sổ và tạo video bằng luồng hiện có.
 
 Ngày được sắp từ cũ đến mới. Có thể chọn dấu mốc riêng, ngày bắt đầu của album hoặc kỉ niệm trong album. Ảnh thiếu không được thay bằng ảnh demo. Ghi chú dài được chia sang trang tiếp theo; bản đầy đủ cũng nằm trong các kỉ niệm của album.

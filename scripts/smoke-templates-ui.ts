@@ -58,7 +58,14 @@ try {
     await page.getByRole('button', { name: 'Đóng album', exact: true }).click();
     assert.equal(await page.evaluate(() => document.body.style.overflow), '');
   }
-  await sharp({ create: { width: 924, height: 1140, channels: 3, background: '#e7e4d8' } })
+  await sharp({
+    create: {
+      width: 924,
+      height: Math.ceil(thumbnails.length / 3) * 380,
+      channels: 3,
+      background: '#e7e4d8',
+    },
+  })
     .composite(
       thumbnails.map((input, i) => ({
         input,
@@ -148,7 +155,7 @@ try {
   await page.getByRole('button', { name: 'Đóng album', exact: true }).click();
   assert.deepEqual(errors, []);
   console.log(
-    'PASS templates: all 9 illustrated layouts persist via API, SVG/photos decode in viewer, screenshots and contact sheet, scroll lock restored.',
+    `PASS templates: all ${builtInTemplates.length} illustrated layouts persist via API, SVG/photos decode in viewer, screenshots and contact sheet, scroll lock restored.`,
   );
 } finally {
   await browser.close();

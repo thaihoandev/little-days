@@ -1,6 +1,6 @@
 # Little Days — Couple Scrapbook
 
-Ứng dụng React + TypeScript cho cặp đôi: trang chủ lịch và timeline, lưu dấu mốc/ảnh/ghi chú, tùy chỉnh scrapbook và xuất video MP4. API NestJS xử lý tài khoản, dữ liệu riêng tư và tác vụ render Remotion. Xem [lịch, timeline, 9 mẫu và thư viện nhạc](CALENDAR_TIMELINE.md), gồm hướng dẫn cập nhật API/worker hiện có.
+Ứng dụng React + TypeScript cho cặp đôi: trang chủ lịch và timeline, lưu dấu mốc/ảnh/ghi chú, tùy chỉnh scrapbook và xuất video MP4. API NestJS xử lý tài khoản, dữ liệu riêng tư và tác vụ render Remotion. Xem [lịch, timeline, 14 mẫu và thư viện nhạc](CALENDAR_TIMELINE.md), gồm hướng dẫn cập nhật API/worker hiện có.
 
 ## Chạy local
 

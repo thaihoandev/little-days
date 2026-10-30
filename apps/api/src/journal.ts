@@ -2,7 +2,13 @@ import { BadRequestException, ConflictException, NotFoundException } from '@nest
 import { randomUUID } from 'node:crypto';
 import { normalizePhoto } from './images.js';
 import { z } from 'zod';
-import { journalContentSchema, type JournalEntry } from '../../../packages/domain/journal.js';
+import {
+  journalContentSchema,
+  timelineHeadingSchema,
+  defaultTimelineHeading,
+  type TimelineHeading,
+  type JournalEntry,
+} from '../../../packages/domain/journal.js';
 import { Repository } from './database.js';
 import type { MediaStore } from './storage.js';
 import { ResourcePolicy } from './resource-policy.js';
@@ -28,6 +34,36 @@ export class JournalService {
     return (await this.db.list<JournalEntry>('journal', owner)).sort(
       (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
     );
+  }
+  async heading(owner: string): Promise<TimelineHeading> {
+    return (
+      (await this.db.list<TimelineHeading>('timeline-heading', owner))[0] || {
+        ...defaultTimelineHeading,
+      }
+    );
+  }
+  async saveHeading(owner: string, body: unknown) {
+    const input = z
+      .object({ expectedRevision: z.number().int().min(-1), content: timelineHeadingSchema })
+      .parse(body);
+    return this.guarded(owner, async () => {
+      const heading = { ...input.content, revision: input.expectedRevision + 1 };
+      const saved =
+        input.expectedRevision === -1
+          ? await this.db.insert('timeline-heading', owner, owner, heading)
+          : await this.db.compareAndSwap(
+              'timeline-heading',
+              owner,
+              owner,
+              input.expectedRevision,
+              heading,
+            );
+      if (!saved)
+        throw new ConflictException(
+          'Tiêu đề timeline vừa thay đổi. Nội dung đang nhập được giữ; tải lại trước khi sửa tiếp.',
+        );
+      return heading;
+    });
   }
   async owned(owner: string, id: string) {
     if ((await this.db.owner('journal', id)) !== owner)

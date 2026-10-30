@@ -64,6 +64,41 @@ export const builtInTemplates = [
     color: '#e8dfd1',
     description: 'Bốn khung ảnh cho một ngày trọn vẹn.',
   },
+  {
+    id: 'sunset',
+    name: 'Hoàng hôn rực rỡ',
+    theme: 'polaroid',
+    color: '#ffc5a1',
+    description: 'Cam đào và đỏ gạch, hai khung ảnh như nắng cuối ngày.',
+  },
+  {
+    id: 'lavender',
+    name: 'Hẹn dưới trời tím',
+    theme: 'letter',
+    color: '#d9ccff',
+    description: 'Tím lilac, hoa nhỏ và một lá thư nằm cạnh ảnh.',
+  },
+  {
+    id: 'ocean',
+    name: 'Ngày xanh biển',
+    theme: 'timeline',
+    color: '#a7e4ed',
+    description: 'Xanh biển trong trẻo, ba tấm ảnh xếp theo hành trình.',
+  },
+  {
+    id: 'midnight',
+    name: 'Bầu trời hai đứa',
+    theme: 'letter',
+    color: '#192c50',
+    description: 'Nền xanh đêm, ánh vàng và một khoảnh khắc thật lớn.',
+  },
+  {
+    id: 'pop',
+    name: 'Yêu thật nhiều màu',
+    theme: 'polaroid',
+    color: '#ffda53',
+    description: 'Vàng nắng, hồng pop và collage ảnh vui tươi.',
+  },
 ] as const;
 export type BuiltInTemplateId = (typeof builtInTemplates)[number]['id'];
 export function templatePage(id: string, assets: string[] = []): Page {
@@ -89,6 +124,96 @@ export function templatePage(id: string, assets: string[] = []): Page {
       locked,
     });
   };
+  if (['sunset', 'lavender', 'ocean', 'midnight', 'pop'].includes(id)) {
+    const ink =
+      id === 'midnight'
+        ? '#fff0bf'
+        : id === 'lavender'
+          ? '#553d86'
+          : id === 'ocean'
+            ? '#095767'
+            : '#7c3241';
+    const text = (
+      value: string,
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      fontSize: number,
+    ) => element('text', { text: value, x, y, width, height, fontSize, color: ink });
+    const photo = (i: number, x: number, y: number, width: number, height: number, rotation = 0) =>
+      element('image', {
+        assetId: assets.length ? assets[i % assets.length] : `demo-${(i % 3) + 1}`,
+        text: 'ngày mình muốn giữ',
+        x,
+        y,
+        width,
+        height,
+        rotation,
+      });
+    const accents = [
+      decor('tape-sand', 260, 160, 180, -4),
+      decor(
+        'daisy',
+        id === 'ocean' ? 70 : 565,
+        id === 'ocean' ? 830 : 720,
+        id === 'ocean' ? 60 : 90,
+        6,
+      ),
+      decor('postage', 35, 155, 65, -7),
+    ];
+    let elements: Page['elements'];
+    if (id === 'sunset')
+      elements = [
+        text('Nắng cuối ngày, có bạn.', 55, 55, 610, 90, 44),
+        photo(0, 65, 200, 360, 410, -6),
+        photo(1, 370, 405, 285, 320, 7),
+        text('Mình gom những ấm áp bé xíu\nthành một ngày thật đáng nhớ.', 70, 740, 450, 110, 28),
+      ];
+    else if (id === 'lavender')
+      elements = [
+        text('Một cuộc hẹn màu tím', 65, 65, 590, 95, 42),
+        decor('paper-cream', 340, 265, 300, 4, true),
+        photo(0, 65, 205, 335, 440, -4),
+        text(
+          'Gửi người mình thương,\n\nCảm ơn vì đã ở đây,\ncùng mình qua những\nngày thật bình thường.',
+          415,
+          335,
+          205,
+          335,
+          25,
+        ),
+        text('mình cứ dịu dàng với nhau như thế.', 80, 800, 550, 60, 24),
+      ];
+    else if (id === 'ocean')
+      elements = [
+        text('Chuyến đi màu xanh', 65, 50, 590, 90, 44),
+        photo(0, 55, 180, 395, 265, -3),
+        photo(1, 260, 430, 395, 265, 3),
+        photo(2, 65, 600, 265, 220, -5),
+        text('Cùng nhau đi xa,\ncùng nhau trở về.', 375, 735, 280, 110, 28),
+      ];
+    else if (id === 'midnight')
+      elements = [
+        text('Dưới cùng một bầu trời', 60, 60, 600, 100, 41),
+        photo(0, 95, 215, 530, 450, -1),
+        text('Giữa bao la,\nmình tìm thấy nhau.', 95, 725, 520, 115, 35),
+      ];
+    else
+      elements = [
+        text('Hôm nay vui hết cỡ!', 60, 55, 600, 100, 47),
+        photo(0, 65, 205, 330, 340, -7),
+        photo(1, 365, 180, 285, 310, 6),
+        photo(2, 230, 510, 335, 310, -3),
+        text('LOVE / LAUGH / REPEAT', 55, 835, 610, 40, 24),
+      ];
+    return {
+      id: crypto.randomUUID(),
+      title: spec.name,
+      background: spec.color,
+      elements: [...elements, ...accents],
+    };
+  }
   if (['polaroid', 'letter', 'timeline'].includes(id)) {
     if (id === 'timeline')
       return {

@@ -17,6 +17,7 @@ import './design.css';
 import './polish.css';
 import './creative.css';
 import './timeline-album.css';
+import './editor-upgrade.css';
 class Boundary extends React.Component<{ children: React.ReactNode }, { error: boolean }> {
   state = { error: false };
   static getDerivedStateFromError() {

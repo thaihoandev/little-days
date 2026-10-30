@@ -58,6 +58,42 @@ test('calendar dates, annual leap-day events and month grids use calendar days w
   assert.equal(new Date(days[0] + 'T00:00Z').getUTCDay(), 1);
   assert.equal(new Set(days).size, 42);
 });
+
+test('timeline headings persist per owner and reject concurrent first writes and stale edits', async () => {
+  const f = await fixture(),
+    owner = randomUUID(),
+    other = randomUUID();
+  try {
+    assert.equal((await f.journal.heading(owner)).revision, -1);
+    const input = {
+      expectedRevision: -1,
+      content: { title: 'Chuyện của chúng mình', description: 'Những ngày nhiều màu.' },
+    };
+    const attempts = await Promise.allSettled([
+      f.journal.saveHeading(owner, input),
+      f.journal.saveHeading(owner, input),
+    ]);
+    assert.equal(attempts.filter((r) => r.status === 'fulfilled').length, 1);
+    const saved = await f.journal.heading(owner);
+    assert.equal(saved.title, input.content.title);
+    assert.equal(saved.revision, 0);
+    assert.equal((await f.journal.heading(other)).revision, -1);
+    await assert.rejects(f.journal.saveHeading(owner, input), (e: any) => e.getStatus() === 409);
+    const next = await f.journal.saveHeading(owner, {
+      ...input,
+      expectedRevision: 0,
+      content: { title: 'Tên mới', description: '' },
+    });
+    assert.equal(next.revision, 1);
+    assert.equal(next.description, '');
+    assert.equal((await f.journal.heading(owner)).title, 'Tên mới');
+    await assert.rejects(
+      f.journal.saveHeading(owner, { ...input, content: { title: ' ', description: '' } }),
+    );
+  } finally {
+    await f.db.close();
+  }
+});
 test('built-in designs validate, clone fresh IDs and bind only supplied album photos', () => {
   for (const template of builtInTemplates) {
     const page = templatePage(template.id, ['photo-one', 'photo-two', 'photo-three', 'photo-four']),

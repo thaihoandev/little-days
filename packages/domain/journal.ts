@@ -8,6 +8,16 @@ export const journalContentSchema = z.object({
   annual: z.boolean(),
 });
 export type JournalContent = z.infer<typeof journalContentSchema>;
+export const timelineHeadingSchema = z.object({
+  title: z.string().trim().min(1).max(160),
+  description: z.string().trim().max(600),
+});
+export const defaultTimelineHeading = {
+  title: 'Dòng thời gian của mình.',
+  description: 'Kỉ niệm có ảnh, lời nhắn có ngày. Những điều quan trọng luôn ở đây.',
+  revision: -1,
+};
+export type TimelineHeading = z.infer<typeof timelineHeadingSchema> & { revision: number };
 export type JournalEntry = JournalContent & {
   id: string;
   revision: number;
