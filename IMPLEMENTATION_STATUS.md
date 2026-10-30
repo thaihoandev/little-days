@@ -16,6 +16,8 @@ Ngày 30/10/2026, người dùng xác nhận đã bật backup theo lịch và h
 
 **Bổ sung ngày 30/10:** lịch và timeline trở thành nội dung chính của trang chủ; dấu mốc/ghi chú độc lập kèm tối đa 6 ảnh, lặp hằng năm, tìm/lọc; chín mẫu scrapbook và bốn bản nhạc nghe thử/chọn cho video. Journal được tính quota, bảo vệ ownership, CAS, backup/restore và xóa tài khoản. Xem [hướng dẫn chức năng và cập nhật API/worker](CALENDAR_TIMELINE.md). Chưa xác nhận deploy commit bổ sung này lên dịch vụ thật; không cần thêm env hoặc worker cloud.
 
+**Cải thiện thiết kế tiếp theo:** timeline có đường nối hành trình, phân tháng, thẻ giấy và ảnh lớn; thống kê từ dữ liệu thật. Popup select có theme riêng trên trình duyệt hỗ trợ, fallback native. Danh sách trang có icon xóa với xác nhận/undo/bảo vệ trang cuối. Thanh trên canvas thêm nhanh chữ/khung ảnh/sticker, tải ảnh, nhân bản Ctrl/⌘ D và căn giữa; không thay đổi schema hay file env. Chi tiết và phím tắt trong `CALENDAR_TIMELINE.md`.
+
 | Hạng mục | Kết quả |
 | --- | --- |
 | Workspace | React/TypeScript/Vite, NestJS, domain schemas và Remotion composition |
@@ -76,6 +78,7 @@ Autosave nhận diện `503 BACKUP_IN_PROGRESS`, giữ bản nháp/chỉnh sửa
 - `npm run test:scheduled-backup`: PostgreSQL schema QA riêng, SHARE locks chặn xóa media trong khi snapshot, Cloudinary HTTP fixture, chạy CLI mã hóa/giải mã/restore SQLite và so database/media; job bận không ghi đè archive tốt và lease được nhả. Đây là kiểm chứng fixture, chưa phải workflow chạy với Neon/Cloudinary thật.
 - `npm run test:pilot`: **9 luồng cô lập qua**: journal, editor, save-recovery, gestures, auth, history, video, deletion, layout-render. Report ngày 30/10 tại `test-results/pilot/be85e2b5-0c2f-49f1-a3a2-c38f4709ac7e/report.json`; ảnh/log nằm trong test-results (gitignored). Đây là QA tự động, không phải pilot người thật. CI chạy cùng runner.
 - `npm run test:journal`: kiểm tra trang chủ lịch, tạo/sửa/xóa mốc và ghi chú, ảnh riêng tư/404 tài khoản khác, reload, tìm timeline, lịch mobile không tràn, tạo album từ mẫu mới và lưu lựa chọn nhạc.
+- Lượt QA sau cải thiện thiết kế: `npm run test:pilot` **10 luồng qua**, gồm suite `design` mới và các luồng ở trên; report `test-results/pilot/42329bbf-3765-46a6-a4ec-dbeb81135ac6/report.json`. Xác minh thêm icon xóa trang hiện tại/trang khác, hủy/xác nhận/undo, bảo vệ trang cuối, Ctrl+D, căn giữa, tải/thêm ảnh và lưu sau reload trên desktop/mobile. Timeline/popup dropdown mở thật được kiểm tra ở 1440px, 390px và 320px. Build/typecheck và format đều qua; MP4 layout vẫn xuất thành công 1.360.658 byte. Chưa kiểm chứng popup trên Safari/Firefox thật; trình duyệt thiếu hỗ trợ dùng native.
 - API qua Cloudinary fixture và backup/restore đã chạy lại với journal: phục hồi được ghi chú và bytes ảnh JPEG; API/ảnh vẫn kiểm tra chủ sở hữu.
 - `SMOKE_STORAGE=cloudinary SMOKE_MUSIC_ID=warm-piano npm run test:workers`: MP4 15 giây **1.769.585 byte**, hai worker nhận đúng một lần, snapshot bất biến. ffprobe/ffmpeg xác nhận H.264 1080×1920/30 fps, AAC và đối chiếu nhạc nguồn tại ba vị trí bằng `scripts/verify-library-video.ts`.
 - `npm run test:postgres`: chạy lại trên PostgreSQL 17 Docker QA riêng, gồm journal; 33 unit qua/1 SQLite-only bỏ qua, API, ba video đồng thời và backup/restore qua Cloudinary fixture. Container QA được dọn sau kiểm thử.

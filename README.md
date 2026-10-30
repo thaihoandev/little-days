@@ -45,6 +45,7 @@ npm run dev
 6. Trong **Lớp**, chọn, ẩn/hiện, khóa/mở khóa; dùng **Lên/Xuống một lớp** ở bảng bên phải để sắp xếp.
 7. Trong **Trang sổ → Mẫu của bạn**, đặt tên rồi bấm **Lưu trang thành mẫu**. Thêm trang từ mẫu sẽ giữ chữ, bố cục, nhóm và hiệu ứng; dùng ảnh của album hiện tại theo thứ tự tải lên, hoặc để khung trống khi chưa có ảnh. Mẫu riêng được lưu theo tài khoản.
 8. Thêm, nhân bản và sắp xếp trang. Thay đổi tự lưu; kéo/resize nhóm là một bước undo/redo.
+   Icon thùng rác nằm ngay trong danh sách **Trang sổ**, có xác nhận và hoàn tác; không xóa được trang cuối. Thanh **Thiết kế nhanh** trên canvas thêm chữ/khung ảnh/sticker, tải ảnh, nhân bản và căn giữa. **Ctrl/⌘ D** nhân bản lựa chọn; các thao tác vẫn được autosave và undo/redo.
 9. Trong **Kỉ niệm**, thêm sự kiện và đặt lời nhắn lên trang.
 10. **Xem album** để đọc; **Chia sẻ** tạo link chỉ đọc, có thể thu hồi.
 11. **Tạo video** → chọn trang/thứ tự, lời mở/kết và nhạc. Giữ preset 15/30/60 giây hoặc bật **Thời lượng từng trang** để đặt mỗi cảnh 1–60 giây; tổng tối đa 180 giây, gồm 2 giây mở đầu và 3 giây kết.

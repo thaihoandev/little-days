@@ -7,6 +7,7 @@ import { ensureBrowser } from '@remotion/renderer';
 
 const suites = [
   ['journal', 'scripts/smoke-journal-ui.ts'],
+  ['design', 'scripts/smoke-design-ui.ts'],
   ['editor', 'scripts/smoke-ui.ts'],
   ['save-recovery', 'scripts/smoke-save-recovery.ts'],
   ['gestures', 'scripts/smoke-gestures.ts'],

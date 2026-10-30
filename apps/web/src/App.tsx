@@ -58,7 +58,12 @@ import {
 } from '../../../packages/domain/index.js';
 import { api, ApiError } from './api.js';
 import { SelectionTools, Layers, TemplateLibrary } from './LayoutTools.js';
-import { expandSelection, translated, cloneLayout } from '../../../packages/domain/layout.js';
+import {
+  expandSelection,
+  translated,
+  cloneLayout,
+  alignElements,
+} from '../../../packages/domain/layout.js';
 import { useDocument } from './useDocument.js';
 import AccountDeletionStatus, { readDeletionReceipt } from './AccountDeletionStatus.js';
 import { readAuthLink } from './auth-link.js';
@@ -773,11 +778,56 @@ function Editor({
     changeElements(page.elements.filter((e) => !selectedIdsHere.includes(e.id)));
     setSelectedIds([]);
   };
+  const deletePage = (id: string) => {
+    if (album.pages.length <= 1) return;
+    const target = album.pages.find((p) => p.id === id);
+    if (!target || !confirm('Xóa trang “' + target.title + '”? Bạn có thể hoàn tác.')) return;
+    const remaining = album.pages.filter((p) => p.id !== id);
+    doc.edit((a) => ({ ...a, pages: a.pages.filter((p) => p.id !== id) }));
+    if (page.id === id) {
+      setPageId(
+        remaining[
+          Math.min(
+            album.pages.findIndex((p) => p.id === id),
+            remaining.length - 1,
+          )
+        ].id,
+      );
+      setSelectedIds([]);
+    }
+  };
+  const duplicateSelected = () => {
+    const chosen = page.elements.filter((e) => selectedIdsHere.includes(e.id));
+    if (!chosen.length) return;
+    if (page.elements.length + chosen.length > 50) {
+      notify('Mỗi trang tối đa 50 phần tử.');
+      return;
+    }
+    const copies = cloneLayout({ ...page, elements: chosen }).elements.map((e) => ({
+      ...e,
+      x: Math.min(2000, e.x + 20),
+      y: Math.min(2500, e.y + 20),
+      locked: false,
+    }));
+    changeElements([...page.elements, ...copies]);
+    setSelectedIds(copies.map((e) => e.id));
+  };
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (uploading || historyOpen) return;
       const tag = (e.target as HTMLElement).tagName;
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || viewer || video || editText) return;
+      if (
+        ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) ||
+        (e.target as HTMLElement).isContentEditable ||
+        viewer ||
+        video ||
+        editText
+      )
+        return;
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd' && selectedIdsHere.length) {
+        e.preventDefault();
+        duplicateSelected();
+      }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         e.shiftKey ? doc.redo() : doc.undo();
@@ -1064,6 +1114,19 @@ function Editor({
                 }
               </p>
             </div>
+            <input
+              ref={input}
+              hidden
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(e) => {
+                const target = e.currentTarget;
+                void upload(target.files).finally(() => {
+                  target.value = '';
+                });
+              }}
+            />
             {panel === 'layers' && (
               <Layers
                 page={page}
@@ -1109,6 +1172,15 @@ function Editor({
                         >
                           <Copy size={13} />
                         </button>
+                        <button
+                          className="icon-button tiny page-delete"
+                          aria-label={'Xóa trang ' + (i + 1) + ': ' + p.title}
+                          title="Xóa trang · Có thể hoàn tác"
+                          disabled={album.pages.length === 1}
+                          onClick={() => deletePage(p.id)}
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -1139,14 +1211,6 @@ function Editor({
             )}
             {panel === 'photos' && (
               <>
-                <input
-                  ref={input}
-                  hidden
-                  type="file"
-                  multiple
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={(e) => void upload(e.target.files)}
-                />
                 <button
                   className="upload-zone"
                   disabled={uploading}
@@ -1403,6 +1467,96 @@ function Editor({
                 </button>
               </div>
             </div>
+            <div className="design-quickbar" role="toolbar" aria-label="Thiết kế nhanh">
+              <button
+                onClick={() =>
+                  add(
+                    element('text', {
+                      text: 'Viết một điều thương…',
+                      x: 150,
+                      y: 330,
+                      width: 420,
+                      height: 100,
+                    }),
+                  )
+                }
+                title="Thêm chữ nhanh"
+              >
+                <Type size={16} />
+                Chữ
+              </button>
+              <button
+                onClick={() =>
+                  add(
+                    element('image', {
+                      assetId: album.assets[0]?.id ?? null,
+                      x: 210,
+                      y: 230,
+                      width: 300,
+                      height: 360,
+                      text: 'Ảnh của mình',
+                    }),
+                  )
+                }
+                title="Thêm khung ảnh nhanh"
+              >
+                <ImagePlus size={16} />
+                Khung ảnh
+              </button>
+              <button
+                onClick={() =>
+                  add(
+                    element('sticker', {
+                      text: '♡',
+                      x: 300,
+                      y: 350,
+                      width: 100,
+                      height: 100,
+                      fontSize: 80,
+                      color: '#ac6b55',
+                    }),
+                  )
+                }
+                title="Thêm sticker nhanh"
+              >
+                <Heart size={16} />
+                Sticker
+              </button>
+              <span className="quickbar-divider" />
+              <button
+                disabled={
+                  !selectedIdsHere.length || page.elements.length + selectedIdsHere.length > 50
+                }
+                onClick={duplicateSelected}
+                title="Nhân bản nhanh · Ctrl/⌘ D"
+              >
+                <Copy size={16} />
+                Nhân bản
+              </button>
+              <button
+                disabled={
+                  !selectedIdsHere.length ||
+                  page.elements.some((e) => selectedIdsHere.includes(e.id) && e.locked)
+                }
+                onClick={() =>
+                  changeElements(alignElements(page.elements, selectedIdsHere, 'page-center'))
+                }
+                title="Căn lựa chọn vào giữa trang"
+              >
+                <LayoutTemplate size={16} />
+                Căn giữa
+              </button>
+              <button
+                onClick={() => {
+                  setPanel('photos');
+                  input.current?.click();
+                }}
+                title="Tải ảnh nhanh"
+              >
+                <Images size={16} />
+                Tải ảnh
+              </button>
+            </div>
             <Suspense
               fallback={
                 <div className="canvas-scroll">
@@ -1554,12 +1708,7 @@ function Editor({
                 <button
                   className="button danger"
                   disabled={album.pages.length === 1}
-                  onClick={() => {
-                    if (confirm('Xóa trang này khỏi album? Bạn có thể hoàn tác.')) {
-                      doc.edit((a) => ({ ...a, pages: a.pages.filter((p) => p.id !== page.id) }));
-                      setSelected(null);
-                    }
-                  }}
+                  onClick={() => deletePage(page.id)}
                 >
                   <Trash2 size={15} />
                   Xóa trang này

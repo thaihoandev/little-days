@@ -112,6 +112,22 @@ try {
         path: 'test-results/journal-home-' + device + '.png',
         fullPage: true,
       });
+      for (const [month, label] of [
+        ['09', 'Một chuyến đi rất đẹp'],
+        ['08', 'Ngày mình bắt đầu'],
+      ] as const) {
+        const seed = await context.request.post(origin + '/api/journal', {
+          data: {
+            title: label,
+            date: entry.date.slice(0, 4) + '-' + month + '-12',
+            note: 'Giữ lại một lời nhắn và một khoảnh khắc bên nhau.',
+            kind: 'memory',
+            annual: false,
+          },
+        });
+        assert.equal(seed.status(), 201);
+      }
+      await page.reload();
       await page.getByRole('button', { name: 'Dòng thời gian', exact: true }).click();
       await page.getByLabel('Tìm dấu mốc').fill(title);
       const searchLayout = await page.locator('.journal-search').evaluate((label) => {
@@ -138,6 +154,21 @@ try {
       await expect(page.getByRole('heading', { name: title, exact: true })).not.toBeVisible();
       await page.getByLabel('Lọc loại dấu mốc').selectOption('all');
       await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
+      const filter = page.getByLabel('Lọc loại dấu mốc');
+      if (await page.evaluate(() => CSS.supports('appearance', 'base-select'))) {
+        await filter.click();
+        await expect.poll(() => filter.evaluate((e) => e.matches(':open'))).toBe(true);
+        const option = page.getByRole('option', { name: 'Ghi chú', exact: true });
+        await expect(option).toBeVisible();
+        await page.screenshot({ path: 'test-results/timeline-dropdown-' + device + '.png' });
+        await option.click();
+        await expect(filter).toHaveValue('note');
+        await filter.selectOption('all');
+      }
+      await page.getByLabel('Tìm dấu mốc').fill('');
+      await expect(
+        page.getByRole('heading', { name: 'Một chuyến đi rất đẹp', exact: true }),
+      ).toBeVisible();
       await page.screenshot({
         path: 'test-results/journal-timeline-' + device + '.png',
         fullPage: true,

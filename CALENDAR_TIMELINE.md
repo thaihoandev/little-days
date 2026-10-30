@@ -10,6 +10,7 @@ Cập nhật 30/10/2026. Trang **Hôm nay** mở mặc định: lịch tháng, n
 - Bấm **Lưu dấu mốc** để lưu trên backend. Ghi chú tối đa 5.000 ký tự; tối đa 500 dấu mốc/ghi chú mỗi tài khoản. Đóng biểu mẫu trước khi lưu sẽ bỏ phần đang nhập.
 - **Dòng thời gian** có tìm theo tên/nội dung và lọc loại. **Lịch của mình** xem từng ngày; **Sắp đến những ngày đẹp** hiển thị bốn mốc gần nhất và số ngày còn lại.
 - Ngày bắt đầu và kỉ niệm đã có trong album cũng xuất hiện. Bấm **Xem album** để sửa các mục này trong album nguồn.
+- Timeline có mốc tháng, đường nối hành trình, thẻ giấy và ảnh lớn; desktop xếp xen kẽ, mobile chuyển về một cột. Các con số ở đầu trang tính từ dữ liệu thật của tài khoản.
 
 Lịch dùng ngày trên múi giờ thiết bị; ngày trong album giữ nguyên giá trị đã lưu. Bản này quản lý ngày, chưa có đặt giờ hay email nhắc lịch tự động. Các dấu mốc độc lập chưa tự biến thành trang scrapbook/video; video vẫn xuất từ các trang album được chọn.
 
@@ -28,6 +29,16 @@ Chín mẫu nằm trong hộp tạo album và **Trang sổ → Mẫu có sẵn**
 9. Gom từng chút nhớ.
 
 Mỗi mẫu có ảnh xem trước và layout chỉnh sửa được bằng editor hiện có. Khi thêm trang, mẫu nhận ảnh của album đích; không sao chép ảnh riêng của người khác. Mẫu cá nhân vẫn lưu riêng theo tài khoản. Chín thiết kế dùng ba theme nền hiện tại và cùng renderer cho editor/viewer/video.
+
+## Thao tác thiết kế nhanh
+
+- Mỗi thumbnail trong **Trang sổ** có icon nhân bản và thùng rác. Xóa cần xác nhận; **Hoàn tác** phục hồi trang. Trang cuối cùng không thể xóa. Xóa trang khác vẫn giữ trang đang xem; xóa trang đang xem chuyển sang trang bên cạnh.
+- Thanh phía trên canvas thêm nhanh chữ, khung ảnh, sticker và tải ảnh. Khung ảnh dùng ảnh đầu tiên đã tải; có thể đổi ảnh trong thuộc tính. Khi chưa có ảnh, tạo khung trống để điền sau.
+- Chọn một hoặc nhiều phần tử rồi bấm **Nhân bản**, hoặc **Ctrl/⌘ D**. Bản sao có ID/nhóm mới và lệch 20 đơn vị để dễ nhận ra; tài nguyên ảnh dùng lại cùng album. Giới hạn 50 phần tử/trang vẫn áp dụng.
+- **Căn giữa** đặt lựa chọn vào giữa trang; phần tử khóa được bảo vệ. Mỗi thao tác là một bước undo/redo và được autosave như chỉnh sửa thông thường. Phím tắt không chạy khi đang nhập trong form.
+- Dropdown có popup màu giấy, bo góc, trạng thái chọn/hover và vùng bấm lớn trên trình duyệt hỗ trợ `appearance: base-select`; trình duyệt khác giữ menu native. Bàn phím và label của select được giữ nguyên.
+
+Kiểm tra riêng editor: `npm run test:design`. Runner dùng dữ liệu giả để kiểm tra Ctrl+D, thêm ảnh/chữ/sticker, căn giữa/undo, xóa trang/giữ trang hiện tại, bảo vệ trang cuối, reload và bố cục mobile. `npm run test:pilot` hiện bao gồm 10 luồng QA tự động; pilot người thật vẫn được bỏ qua theo yêu cầu.
 
 ## Thư viện nhạc
 

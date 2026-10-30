@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   CalendarDays,
   ChevronLeft,
@@ -152,7 +152,10 @@ export default function JournalDashboard({
     }
   };
   return (
-    <section className="journal-home" aria-label="Lịch và dòng thời gian của bạn">
+    <section
+      className={'journal-home' + (mode === 'timeline' ? ' timeline-mode' : '')}
+      aria-label="Lịch và dòng thời gian của bạn"
+    >
       <div className="journal-hero">
         <div>
           <span className="eyebrow">
@@ -182,6 +185,44 @@ export default function JournalDashboard({
           Thêm dấu mốc
         </button>
       </div>
+      {mode === 'timeline' && (
+        <div className="journey-intro">
+          <div className="journey-intro-copy">
+            <span className="eyebrow">OUR LITTLE JOURNEY</span>
+            <h2>
+              Từng chút nhớ,
+              <br />
+              <em>thành chuyện của mình.</em>
+            </h2>
+            <p>
+              Mỗi ngày đáng nhớ là một trang nhỏ. Giữ lại ảnh, lời nhắn và những điều hai đứa đã
+              cùng đi qua.
+            </p>
+          </div>
+          <div className="journey-numbers" aria-label="Câu chuyện qua những con số">
+            <div>
+              <Heart size={19} />
+              <strong>{all.length}</strong>
+              <span>dấu mốc đã giữ</span>
+            </div>
+            <div>
+              <ImagePlus size={19} />
+              <strong>{new Set(all.flatMap((e) => e.assets.map((a) => a.id))).size}</strong>
+              <span>tấm ảnh kỉ niệm</span>
+            </div>
+            <div>
+              <CalendarDays size={19} />
+              <strong>{all.filter((e) => !!nextOccurrence(e, today)).length}</strong>
+              <span>ngày đang chờ</span>
+            </div>
+          </div>
+          <span className="journey-stamp" aria-hidden="true">
+            little days
+            <br />♡<br />
+            made of us
+          </span>
+        </div>
+      )}
       {error && (
         <p className="error-banner" role="alert">
           {error}
@@ -355,61 +396,72 @@ export default function JournalDashboard({
           </p>
         ) : visible.length ? (
           <div className="journal-timeline">
-            {visible.map((entry) => (
-              <article key={entry.id} className={'journal-entry ' + entry.kind}>
-                <div className="journal-date">
-                  <strong>{entry.date.slice(-2)}</strong>
-                  <small>{dateLabel(entry.date, { month: 'short', year: 'numeric' })}</small>
-                </div>
-                <div className="journal-entry-body">
-                  <div className="journal-entry-meta">
-                    <span>{journalKindNames[entry.kind]}</span>
-                    {entry.annual && (
-                      <small>
-                        <Repeat2 size={12} />
-                        Mỗi năm
-                      </small>
-                    )}
-                  </div>
-                  <h3>{entry.title}</h3>
-                  {entry.note && <p>{entry.note}</p>}
-                  {entry.assets.length > 0 && (
-                    <div className="journal-photos">
-                      {entry.assets.map((asset) => (
-                        <a href={asset.url} key={asset.id} target="_blank" rel="noreferrer">
-                          <img src={asset.url} alt={asset.name} loading="lazy" />
-                        </a>
-                      ))}
+            {visible.map((entry, index) => (
+              <Fragment key={entry.id}>
+                {mode === 'timeline' &&
+                  (index === 0 ||
+                    visible[index - 1].date.slice(0, 7) !== entry.date.slice(0, 7)) && (
+                    <div className="timeline-month">
+                      <span>{dateLabel(entry.date, { month: 'long', year: 'numeric' })}</span>
                     </div>
                   )}
-                  <div className="journal-entry-actions">
-                    {entry.album ? (
-                      <button className="text-button" onClick={() => onOpenAlbum(entry.album!)}>
-                        Xem album: {entry.album.title}
-                        <ArrowUpRight size={13} />
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          className="text-button"
-                          aria-label={'Sửa dấu mốc ' + entry.title}
-                          onClick={() => setEditing(entry)}
-                        >
-                          Chỉnh sửa
-                        </button>
-                        <button
-                          className="text-button"
-                          aria-label={'Xóa dấu mốc ' + entry.title}
-                          onClick={() => void remove(entry)}
-                        >
-                          <Trash2 size={13} />
-                          Xóa
-                        </button>
-                      </>
-                    )}
+                <article
+                  className={'journal-entry ' + entry.kind + (index % 2 ? ' entry-right' : '')}
+                >
+                  <div className="journal-date">
+                    <strong>{entry.date.slice(-2)}</strong>
+                    <small>{dateLabel(entry.date, { month: 'short', year: 'numeric' })}</small>
                   </div>
-                </div>
-              </article>
+                  <div className="journal-entry-body">
+                    <div className="journal-entry-meta">
+                      <span>{journalKindNames[entry.kind]}</span>
+                      {entry.annual && (
+                        <small>
+                          <Repeat2 size={12} />
+                          Mỗi năm
+                        </small>
+                      )}
+                    </div>
+                    <h3>{entry.title}</h3>
+                    {entry.note && <p>{entry.note}</p>}
+                    {entry.assets.length > 0 && (
+                      <div className={'journal-photos photos-' + entry.assets.length}>
+                        {entry.assets.map((asset) => (
+                          <a href={asset.url} key={asset.id} target="_blank" rel="noreferrer">
+                            <img src={asset.url} alt={asset.name} loading="lazy" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                    <div className="journal-entry-actions">
+                      {entry.album ? (
+                        <button className="text-button" onClick={() => onOpenAlbum(entry.album!)}>
+                          Xem album: {entry.album.title}
+                          <ArrowUpRight size={13} />
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            className="text-button"
+                            aria-label={'Sửa dấu mốc ' + entry.title}
+                            onClick={() => setEditing(entry)}
+                          >
+                            Chỉnh sửa
+                          </button>
+                          <button
+                            className="text-button"
+                            aria-label={'Xóa dấu mốc ' + entry.title}
+                            onClick={() => void remove(entry)}
+                          >
+                            <Trash2 size={13} />
+                            Xóa
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              </Fragment>
             ))}
           </div>
         ) : (

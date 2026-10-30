@@ -21,6 +21,9 @@ Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → st
 - [x] Thao tác hai ngón phóng to/thu nhỏ canvas, reset 100%, hủy kéo dở khi chuyển sang pinch; zoom không sửa album/lịch sử.
 - [x] Trang chủ ưu tiên lịch, ngày quan trọng sắp tới và ghi chú; điều hướng riêng lịch/timeline.
 - [x] Timeline dấu mốc theo ngày, loại, lời nhắn và tối đa 6 ảnh; lặp hằng năm, tìm/lọc, CRUD riêng theo tài khoản.
+- [x] Timeline kiểu hành trình: mốc tháng, đường nối, thẻ giấy/ảnh lớn, thống kê thật; desktop xen kẽ và mobile một cột.
+- [x] Popup dropdown theo tông màu giấy, trạng thái chọn/hover và cuộn; fallback native khi trình duyệt chưa hỗ trợ.
+- [x] Icon xóa trong danh sách trang, xác nhận/undo và bảo vệ trang cuối; thanh thêm nhanh chữ/ảnh/sticker, tải ảnh, Ctrl+D và căn giữa.
 - [x] Journal tích hợp quota, backup/restore, cleanup và xóa tài khoản; SQLite/PostgreSQL và Cloudinary fixture đã kiểm chứng.
 - [x] Chín mẫu scrapbook chỉnh layout được, có preview trong tạo album và thêm trang; giữ mẫu cá nhân.
 - [x] Thư viện bốn bản nhạc, nghe thử/lưu lựa chọn và dùng trong preview/MP4; nhạc bổ sung tổng hợp bằng mã, đã kiểm tra âm thanh MP4 thật.
