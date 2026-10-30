@@ -74,6 +74,9 @@ function mediaKeys(dump: Dump) {
     if (row.kind === 'album')
       for (const asset of (JSON.parse(String(row.payload)) as Album).assets)
         keys.add('uploads/' + asset.id + '.webp');
+    if (row.kind === 'journal')
+      for (const asset of (JSON.parse(String(row.payload)) as Album).assets)
+        keys.add('journal/' + asset.id + '.jpg');
     if (row.kind === 'audio')
       keys.add('audio/' + (JSON.parse(String(row.payload)) as AudioAsset).id + '.mp3');
     if (row.kind === 'export') {
@@ -361,7 +364,13 @@ export async function restoreBackup(
       await store.putFile(
         key,
         await safeFile(path.resolve(source), file.path),
-        key.endsWith('.mp3') ? 'audio/mpeg' : key.endsWith('.mp4') ? 'video/mp4' : 'image/webp',
+        key.endsWith('.mp3')
+          ? 'audio/mpeg'
+          : key.endsWith('.mp4')
+            ? 'video/mp4'
+            : key.endsWith('.jpg')
+              ? 'image/jpeg'
+              : 'image/webp',
       );
     const object = await store.get(key),
       hash = createHash('sha256');

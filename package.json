@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:journal": "tsx scripts/pilot-qa.ts journal",
+    "music:generate": "node scripts/generate-music.mjs",
     "test:pilot": "tsx scripts/pilot-qa.ts",
     "test:save-recovery": "tsx scripts/pilot-qa.ts save-recovery",
     "test:gestures": "tsx scripts/pilot-qa.ts gestures",

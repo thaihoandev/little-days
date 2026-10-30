@@ -59,6 +59,12 @@ async function fixture() {
   await db.put('session', 'session', owner, { userId: owner, expires: Date.now() + 60000 });
   await db.put('share', 'share', owner, { albumId: album.id });
   await db.put('layout-template', 'template', owner, { name: 'Mẫu riêng' });
+  await db.put('journal', 'journal-fixture', owner, {
+    title: 'Ngày riêng',
+    note: 'private note',
+    assets: [{ id: 'journal-photo' }],
+  });
+  await store.put('journal/journal-photo.jpg', Buffer.from('journal photo'), 'image/jpeg');
   await db.put('album', crypto.randomUUID(), other, {
     ...album,
     id: crypto.randomUUID(),
@@ -118,6 +124,7 @@ test('deletion revokes sessions/shares immediately and erases only the confirmed
     );
     await assert.rejects(f.store.get('uploads/' + f.image + '.webp'), ObjectNotFoundError);
     await assert.rejects(f.store.get('audio/' + f.audio + '.mp3'), ObjectNotFoundError);
+    await assert.rejects(f.store.get('journal/journal-photo.jpg'), ObjectNotFoundError);
     assert.equal((await f.store.read('uploads/' + f.otherImage + '.webp')).toString(), 'other');
     assert.equal((await f.db.list('album', f.other)).length, 1);
     assert.equal((await readdir(path.join(f.root, 'mail'))).length, 1);

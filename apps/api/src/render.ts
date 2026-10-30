@@ -75,6 +75,7 @@ export class RenderQueue {
       lastSeen: await this.db.now(),
       busy: !!this.task,
       backupProtocol: 1,
+      musicCatalogVersion: 1,
     });
   }
   async start() {

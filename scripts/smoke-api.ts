@@ -63,6 +63,19 @@ try {
   await bob('/session');
   assert.equal((await (await alice('/render-capacity')).json()).available, false);
   const album: Album = await (await alice('/albums', 'POST', { title: 'Kiểm tra API' })).json();
+  const unavailableMusic = await alice('/albums/' + album.id + '/exports', 'POST', {
+    expectedRevision: album.revision,
+    idempotencyKey: crypto.randomUUID(),
+    config: {
+      seconds: 15,
+      pageIds: [album.pages[0].id],
+      opening: 'Ngày của mình',
+      closing: 'Hẹn ngày mai',
+      musicId: 'warm-piano',
+    },
+  });
+  assert.equal(unavailableMusic.status, 503, 'New music must wait for a compatible worker');
+  assert.match((await unavailableMusic.json()).message, /nhạc này chưa sẵn sàng/);
   assert.equal((await bob(`/albums/${album.id}`)).status, 404);
   assert.equal((await bob('/albums/' + album.id + '/versions')).status, 404);
   assert.equal((await bob('/albums/' + album.id + '/versions/0')).status, 404);
@@ -98,6 +111,48 @@ try {
   );
   assert.equal((await alice('/templates/' + template.id, 'DELETE')).status, 200);
   const { id, revision, assets, createdAt, updatedAt, schemaVersion, ...content } = album;
+  const journalContent = {
+    title: 'Ngày riêng của Alice',
+    date: '2026-10-30',
+    note: 'Một lời nhắn',
+    kind: 'memory',
+    annual: true,
+  };
+  let journal = await (await alice('/journal', 'POST', journalContent)).json();
+  assert.equal(
+    (await bob('/journal/' + journal.id, 'PATCH', { expectedRevision: 0, content: journalContent }))
+      .status,
+    404,
+  );
+  const journalPhoto = await sharp({
+      create: { width: 35, height: 25, channels: 3, background: '#c1b99a' },
+    })
+      .png()
+      .toBuffer(),
+    journalForm = new FormData();
+  journalForm.append('file', new Blob([journalPhoto]), 'day.png');
+  journal = await (await alice('/journal/' + journal.id + '/assets', 'POST', journalForm)).json();
+  assert.equal(
+    (await alice(journal.assets[0].url.replace('/api', ''))).headers
+      .get('content-type')
+      ?.split(';')[0],
+    'image/jpeg',
+  );
+  assert.equal((await bob(journal.assets[0].url.replace('/api', ''))).status, 404);
+  assert.equal(
+    (
+      await alice('/journal/' + journal.id, 'PATCH', {
+        expectedRevision: 0,
+        content: journalContent,
+      })
+    ).status,
+    409,
+  );
+  assert.equal(
+    (await alice('/journal/' + journal.id, 'DELETE', { expectedRevision: journal.revision }))
+      .status,
+    200,
+  );
   const updated: Album = await (
     await alice(`/albums/${id}`, 'PATCH', {
       expectedRevision: revision,

@@ -1,6 +1,7 @@
 import { audioFixture } from '../tests/audio-fixture.js';
 import { createPage, type VideoConfig } from '../packages/domain/index.js';
 import { videoDurationFrames } from '../packages/domain/video.js';
+import { builtInMusic } from '../packages/domain/music.js';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import sharp from 'sharp';
@@ -56,6 +57,11 @@ const config: VideoConfig = {
   closing: 'Cảm ơn vì đã ở đây ♡',
   musicId: 'gentle',
 };
+if (process.env.SMOKE_MUSIC_ID) {
+  const track = builtInMusic(process.env.SMOKE_MUSIC_ID);
+  if (!track) throw new Error('Invalid fixture music ID.');
+  config.musicId = track.id;
+}
 if (custom) {
   const form = new FormData();
   form.append('file', new Blob([audioFixture()]), 'original-tones.wav');
@@ -106,6 +112,7 @@ await writeFile(
       id: job.id,
       status: job.status,
       bytes: video.length,
+      musicId: config.musicId,
       seconds: videoDurationFrames(config) / 30,
       download: `${origin}/api/exports/${job.id}/download`,
     },

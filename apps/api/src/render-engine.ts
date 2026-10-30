@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { JobRenderer } from './render.js';
 import { ObjectNotFoundError, type MediaStore } from './storage.js';
+import { builtInMusic } from '../../../packages/domain/music.js';
 export class PermanentRenderError extends Error {}
 export function createRenderer(store: MediaStore): JobRenderer {
   let bundled: Promise<string> | undefined;
@@ -34,10 +35,13 @@ export function createRenderer(store: MediaStore): JobRenderer {
       }
     }
     let audioSrc: string | undefined;
-    if (job.config.musicId === 'gentle')
+    const track = builtInMusic(job.config.musicId);
+    if (track)
       audioSrc =
         'data:audio/wav;base64,' +
-        (await readFile(path.resolve('apps/web/public/audio/gentle.wav'))).toString('base64');
+        (await readFile(path.resolve('apps/web/public/audio', track.file))).toString('base64');
+    if (!track && !['none', 'custom'].includes(job.config.musicId))
+      throw new PermanentRenderError('Bản nhạc chưa được hỗ trợ.');
     if (job.config.musicId === 'custom') {
       if (
         !job.audioAsset ||

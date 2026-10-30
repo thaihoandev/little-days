@@ -12,6 +12,7 @@ import {
 import { type Album, type VideoConfig, daysTogether } from '../domain/index.js';
 import { audioEnvelope, sceneTimeline } from '../domain/video.js';
 import { PageArtwork } from '../scrapbook-renderer/index.js';
+import { builtInMusic } from '../domain/music.js';
 import '@fontsource/lora/vietnamese-400.css';
 import '@fontsource/lora/latin-400.css';
 import '@fontsource/be-vietnam-pro/vietnamese-400.css';
@@ -116,7 +117,15 @@ export function Recap({ album, config, referenceDate, assetData, audioSrc }: Rec
   const intro = fps * 2;
   const outro = fps * 3;
   const timeline = sceneTimeline(config, fps);
-  const source = audioSrc || (config.musicId === 'gentle' ? '/audio/gentle.wav' : undefined);
+  const track = builtInMusic(config.musicId);
+  const source =
+    config.musicId === 'custom'
+      ? audioSrc
+      : track
+        ? audioSrc?.startsWith('data:audio/wav;base64,')
+          ? audioSrc
+          : '/audio/' + track.file
+        : undefined;
   const audioDuration =
     config.musicId === 'custom'
       ? Math.round(((config.audioEnd ?? 0) - (config.audioStart ?? 0)) * fps)
@@ -159,7 +168,7 @@ export function Recap({ album, config, referenceDate, assetData, audioSrc }: Rec
           trimAfter={
             config.musicId === 'custom' ? Math.round((config.audioEnd ?? 0) * fps) : undefined
           }
-          loop={config.musicId === 'custom' ? config.audioLoop : false}
+          loop={config.musicId === 'custom' ? config.audioLoop : true}
           loopVolumeCurveBehavior="extend"
           volume={(frame) => audioEnvelope(frame, fadeDuration, fps, config.audioVolume ?? 0.4)}
         />

@@ -19,6 +19,12 @@ Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → st
 - [x] Runner QA pilot cô lập cho 7 luồng desktop/mobile, gồm autosave sau backup và MP4 thật; hồ sơ ghi nhận P01–P05 và tiêu chí nghiệm thu.
 - [ ] Đo công suất CPU/RAM/thời gian xuất trên hạ tầng đích và ghi bằng chứng backup/cảnh báo vào hồ sơ nghiệm thu.
 - [x] Thao tác hai ngón phóng to/thu nhỏ canvas, reset 100%, hủy kéo dở khi chuyển sang pinch; zoom không sửa album/lịch sử.
+- [x] Trang chủ ưu tiên lịch, ngày quan trọng sắp tới và ghi chú; điều hướng riêng lịch/timeline.
+- [x] Timeline dấu mốc theo ngày, loại, lời nhắn và tối đa 6 ảnh; lặp hằng năm, tìm/lọc, CRUD riêng theo tài khoản.
+- [x] Journal tích hợp quota, backup/restore, cleanup và xóa tài khoản; SQLite/PostgreSQL và Cloudinary fixture đã kiểm chứng.
+- [x] Chín mẫu scrapbook chỉnh layout được, có preview trong tạo album và thêm trang; giữ mẫu cá nhân.
+- [x] Thư viện bốn bản nhạc, nghe thử/lưu lựa chọn và dùng trong preview/MP4; nhạc bổ sung tổng hợp bằng mã, đã kiểm tra âm thanh MP4 thật.
+- [ ] Deploy bản lịch/timeline/nhạc lên API/frontend và cập nhật worker hiện có cùng phiên bản; không cần thêm biến môi trường. Xem `CALENDAR_TIMELINE.md`.
 - [ ] Đối chiếu license và nghiệm thu phát hành theo mô hình sử dụng thực tế.
 
 **Pilot 3–5 người thật được bỏ qua theo yêu cầu của người dùng ngày 30/10/2026.** Giữ các kiểm thử tự động để phát triển tiếp; không ghi nhận pilot là đã thực hiện.

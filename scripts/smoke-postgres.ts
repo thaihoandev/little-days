@@ -41,6 +41,7 @@ try {
       'tests/account-deletion.test.ts',
       'tests/resource-policy.test.ts',
       'tests/ops-monitor.test.ts',
+      'tests/journal.test.ts',
     ]),
   );
   results.push(await run('api', ['scripts/smoke-api.ts']));

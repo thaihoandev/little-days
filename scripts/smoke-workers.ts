@@ -5,6 +5,7 @@ import path from 'node:path';
 import { Repository } from '../apps/api/src/database.js';
 import { JobRepository } from '../apps/api/src/jobs.js';
 import { startStorageFixture } from './storage-fixture.js';
+import { verifyLibraryVideo } from './verify-library-video.js';
 const fixture = await startStorageFixture();
 const dataDir = path.resolve('test-results/workers', crypto.randomUUID());
 const port = 4314;
@@ -91,7 +92,13 @@ try {
   const result = JSON.parse(await readFile('test-results/render-result.json', 'utf8')) as {
     id: string;
     bytes: number;
+    musicId: string;
+    seconds: number;
   };
+  if (process.env.SMOKE_MUSIC_ID) {
+    assert.equal(result.musicId, process.env.SMOKE_MUSIC_ID);
+    await verifyLibraryVideo(result.musicId, result.seconds);
+  }
   db = new Repository({ dataDir, databaseUrl: env.DATABASE_URL });
   await db.init();
   const jobs = new JobRepository(db);

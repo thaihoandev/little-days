@@ -87,11 +87,13 @@ export async function startCloudinaryFixture() {
       const format =
         action === 'download'
           ? params.format
-          : params.public_id?.includes('/audio/')
-            ? 'mp3'
-            : resourceType === 'video'
-              ? 'mp4'
-              : 'webp';
+          : params.public_id?.includes('/journal/')
+            ? 'jpg'
+            : params.public_id?.includes('/audio/')
+              ? 'mp3'
+              : resourceType === 'video'
+                ? 'mp4'
+                : 'webp';
       const key = `${params.public_id}.${format}`;
       if (action === 'upload') {
         if (!file) {
@@ -122,7 +124,9 @@ export async function startCloudinaryFixture() {
                 ? 'audio/mpeg'
                 : resourceType === 'video'
                   ? 'video/mp4'
-                  : 'image/webp',
+                  : format === 'jpg'
+                    ? 'image/jpeg'
+                    : 'image/webp',
           });
         json(200, {
           public_id: params.public_id,

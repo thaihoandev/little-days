@@ -10,8 +10,8 @@ Giao diện hiển thị tiến độ và dừng kiểm tra khi hoàn tất. Mã
 
 ## Phạm vi
 
-- Xóa album, kỉ niệm, lịch sử phiên bản, mẫu layout cá nhân, cấu hình video và thông tin tài khoản.
-- Dọn ảnh, nhạc riêng, video đã xuất và file upload/render chưa hoàn tất đã được ghi nhận trong sổ media.
+- Xóa album, kỉ niệm, dấu mốc/ghi chú trong lịch và timeline, lịch sử phiên bản, mẫu layout cá nhân, cấu hình video và thông tin tài khoản.
+- Dọn ảnh album, ảnh dấu mốc (`journal/<uuid>.jpg`), nhạc riêng, video đã xuất và file upload/render chưa hoàn tất đã được ghi nhận trong sổ media.
 - Xóa session, share token, auth token, hàng đợi video và thư development của email đó trong `DATA_DIR/mail`.
 - Dọn bản nháp trình duyệt của người dùng hiện tại khi giao diện nhận kết quả chấp nhận. Bản nháp trên trình duyệt/thiết bị khác không thể bị server xóa từ xa.
 

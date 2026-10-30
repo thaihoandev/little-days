@@ -20,6 +20,8 @@ Với app Render + Neon + Cloudinary hiện tại, đã có workflow backup mã 
 
 Backup dành cho người vận hành ứng dụng, không nằm trong giao diện người dùng.
 
+Lịch và timeline mới cũng nằm trong backup: bản ghi `records.kind='journal'` giữ ngày/ghi chú/loại/lặp hằng năm; ảnh `journal/<uuid>.jpg` được sao lưu bytes, kiểm checksum và phục hồi cùng storage. Lịch sử khôi phục từng album ở trên không khôi phục journal riêng. Cập nhật API và worker cùng phiên bản trước khi bật tính năng mới; xem [CALENDAR_TIMELINE.md](CALENDAR_TIMELINE.md).
+
 1. Đợi các video xuất xong hoặc hủy chúng.
 2. Dừng API và toàn bộ worker. Lệnh sẽ từ chối nếu còn heartbeat worker mới hoặc job chưa kết thúc. API chưa có maintenance lock, vì vậy vẫn cần tự dừng API để tránh dữ liệu đổi trong lúc sao lưu.
 3. Chạy trong thư mục dự án, với cấu hình database/storage hiện tại:

@@ -75,6 +75,31 @@ await db.put('audio', audioId, owner, {
   url: '/api/albums/' + album.id + '/audio/' + audioId,
 });
 await store.put('uploads/' + assetId + '.webp', image, 'image/webp');
+const journalId = crypto.randomUUID(),
+  journalPhoto = crypto.randomUUID(),
+  journalBytes = await sharp(image).jpeg().toBuffer();
+await db.put('journal', journalId, owner, {
+  id: journalId,
+  title: 'Dấu mốc được phục hồi',
+  date: '2026-10-30',
+  note: 'Private journal backup',
+  annual: false,
+  kind: 'memory',
+  revision: 0,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  assets: [
+    {
+      id: journalPhoto,
+      name: 'day.jpg',
+      width: 40,
+      height: 40,
+      bytes: journalBytes.length,
+      url: '/api/journal/' + journalId + '/assets/' + journalPhoto,
+    },
+  ],
+});
+await store.put('journal/' + journalPhoto + '.jpg', journalBytes, 'image/jpeg');
 await store.put('audio/' + audioId + '.mp3', Buffer.from('audio bytes'), 'audio/mpeg');
 job.snapshot = album;
 await policy.createExport(job, owner, jobs, 15);
@@ -191,6 +216,19 @@ try {
     'opaque video bytes',
   );
   assert.equal((await fetch(base + '/shared/' + shareToken)).status, 200);
+  const restoredJournal = await fetch(base + '/journal', {
+    headers: { Cookie: 'scrapbook_session=' + token },
+  });
+  assert.equal(restoredJournal.status, 200);
+  assert.ok((await restoredJournal.json()).some((e: { id: string }) => e.id === journalId));
+  assert.equal(
+    (
+      await fetch(base + '/journal/' + journalId + '/assets/' + journalPhoto, {
+        headers: { Cookie: 'scrapbook_session=' + token },
+      })
+    ).status,
+    200,
+  );
   assert.equal((await fetch(base + '/albums/' + album.id)).status, 401);
   assert.ok(fixture.requests.every((request) => request.signed));
   const manifest = JSON.parse(await readFile(path.join(second, 'manifest.json'), 'utf8'));

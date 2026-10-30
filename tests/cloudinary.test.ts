@@ -2,6 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { CloudinaryMediaStore, cloudinaryObject } from '../apps/api/src/cloudinary-storage.js';
 test('Cloudinary keys preserve stable image/video IDs without exposing delivery URLs', () => {
+  const journalKey = 'journal/' + crypto.randomUUID() + '.jpg';
+  assert.equal(cloudinaryObject(journalKey, 'private').resourceType, 'image');
+  assert.equal(cloudinaryObject(journalKey, 'private').format, 'jpg');
   assert.deepEqual(cloudinaryObject('uploads/photo.webp'), {
     publicId: 'little-days/uploads/photo',
     format: 'webp',

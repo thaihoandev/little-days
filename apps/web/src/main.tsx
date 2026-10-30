@@ -12,6 +12,7 @@ import '@fontsource/patrick-hand/latin-400.css';
 import '@fontsource/patrick-hand/vietnamese-400.css';
 import App from './App.js';
 import './styles.css';
+import './journal.css';
 class Boundary extends React.Component<{ children: React.ReactNode }, { error: boolean }> {
   state = { error: false };
   static getDerivedStateFromError() {

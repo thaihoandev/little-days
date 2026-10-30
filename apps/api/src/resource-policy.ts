@@ -184,6 +184,9 @@ export class ResourcePolicy {
     for (const row of albums)
       for (const asset of (JSON.parse(String(row.payload)) as Album).assets)
         add('uploads/' + asset.id + '.webp', String(row.owner), asset.bytes);
+    for (const row of await this.db.query("SELECT owner,payload FROM records WHERE kind='journal'"))
+      for (const asset of (JSON.parse(String(row.payload)) as Album).assets)
+        add('journal/' + asset.id + '.jpg', String(row.owner), asset.bytes);
     for (const row of await this.db.query("SELECT owner,payload FROM records WHERE kind='audio'")) {
       const audio = JSON.parse(String(row.payload)) as AudioAsset;
       add('audio/' + audio.id + '.mp3', String(row.owner), audio.bytes);

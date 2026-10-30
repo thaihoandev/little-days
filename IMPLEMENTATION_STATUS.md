@@ -14,11 +14,15 @@ Ngày 30/10/2026, người dùng xác nhận đã bật backup theo lịch và h
 
 ## Đã triển khai
 
+**Bổ sung ngày 30/10:** lịch và timeline trở thành nội dung chính của trang chủ; dấu mốc/ghi chú độc lập kèm tối đa 6 ảnh, lặp hằng năm, tìm/lọc; chín mẫu scrapbook và bốn bản nhạc nghe thử/chọn cho video. Journal được tính quota, bảo vệ ownership, CAS, backup/restore và xóa tài khoản. Xem [hướng dẫn chức năng và cập nhật API/worker](CALENDAR_TIMELINE.md). Chưa xác nhận deploy commit bổ sung này lên dịch vụ thật; không cần thêm env hoặc worker cloud.
+
 | Hạng mục | Kết quả |
 | --- | --- |
 | Workspace | React/TypeScript/Vite, NestJS, domain schemas và Remotion composition |
 | Giao diện | Dashboard, thư viện ảnh, editor, viewer, video builder; bố cục desktop/mobile |
-| Template | Ba mẫu có sẵn và mẫu cá nhân theo tài khoản; lưu chữ/nhóm/layout/hiệu ứng, dùng ảnh album đích |
+| Template | Chín mẫu có sẵn trên ba theme và mẫu cá nhân theo tài khoản; lưu chữ/nhóm/layout/hiệu ứng, dùng ảnh album đích |
+| Lịch/timeline | Trang chủ ưu tiên lịch và ngày sắp tới; dấu mốc/ngày/lời nhắn/6 ảnh, ghi chú, lặp hằng năm, tìm/lọc; dữ liệu riêng theo tài khoản |
+| Nhạc có sẵn | Bốn track tổng hợp bằng mã nguồn, nghe thử, lưu lựa chọn, lặp/fade/âm lượng dùng chung preview và MP4; API kiểm tra worker hỗ trợ track mới |
 | Editor | Shift/marquee/checkbox chọn nhiều, nhóm/bỏ nhóm, kéo/resize/xoay nhóm; căn chỉnh, chia đều, snap guides; thứ tự lớp, ẩn/hiện/khóa; pinch zoom 60–150% và reset 100% |
 | Trang | Thêm, nhân bản, đổi màu, đổi tên, sắp xếp và xóa |
 | Lưu | Autosave/revision/409, bản nháp và undo/redo; lịch sử server 50 phiên bản, checkpoint có tên, preview và restore có CAS |
@@ -64,13 +68,17 @@ Autosave nhận diện `503 BACKUP_IN_PROGRESS`, giữ bản nháp/chỉnh sửa
 
 ## Kiểm chứng đã chạy
 
-- `npm test`: **71 tests qua**, gồm ba kiểm thử mới cho backup mã hóa nhiều MB, sai khóa/tamper/path traversal và lease fencing; cùng cảnh báo email, HTTPS mail/quota/retention/cleanup/backup/auth/domain/queue/storage trước đó.
+- `npm test`: **75 tests qua**, gồm calendar/lặp hằng năm, chín template, catalog/file nhạc, journal ownership/CAS/media/quota/backup và các kiểm thử bảo mật/vận hành trước đó. Chạy ngoài sandbox để kiểm thử directory symlink trên Windows.
 - `npm run typecheck`: qua.
 - `npm run build`: qua, có frontend production và JavaScript backend biên dịch.
 - `npm run format:check`: qua.
 - `npm run test:ops`: API biên dịch, bật giám sát opt-in, operator status có khóa, ghi thư vào hộp local, restart và CLI không gửi trùng; không gửi email thật. Năm unit test giám sát cũng qua trên PostgreSQL 17 trong database/container QA riêng.
 - `npm run test:scheduled-backup`: PostgreSQL schema QA riêng, SHARE locks chặn xóa media trong khi snapshot, Cloudinary HTTP fixture, chạy CLI mã hóa/giải mã/restore SQLite và so database/media; job bận không ghi đè archive tốt và lease được nhả. Đây là kiểm chứng fixture, chưa phải workflow chạy với Neon/Cloudinary thật.
-- `npm run test:pilot`: 7 luồng cô lập đã qua gồm editor, tự lưu sau bảo trì/giữ bản nháp khi 409 trên desktop/mobile, auth, history, audio/video, xóa tài khoản và layout/MP4 thật. Lượt QA khoảng 135 giây, MP4 1.360.658 byte. Có report/log/ảnh trong test-results/pilot; không thay thế kết quả người thật. CI bổ sung job pilot-ui riêng.
+- `npm run test:pilot`: **9 luồng cô lập qua**: journal, editor, save-recovery, gestures, auth, history, video, deletion, layout-render. Report ngày 30/10 tại `test-results/pilot/be85e2b5-0c2f-49f1-a3a2-c38f4709ac7e/report.json`; ảnh/log nằm trong test-results (gitignored). Đây là QA tự động, không phải pilot người thật. CI chạy cùng runner.
+- `npm run test:journal`: kiểm tra trang chủ lịch, tạo/sửa/xóa mốc và ghi chú, ảnh riêng tư/404 tài khoản khác, reload, tìm timeline, lịch mobile không tràn, tạo album từ mẫu mới và lưu lựa chọn nhạc.
+- API qua Cloudinary fixture và backup/restore đã chạy lại với journal: phục hồi được ghi chú và bytes ảnh JPEG; API/ảnh vẫn kiểm tra chủ sở hữu.
+- `SMOKE_STORAGE=cloudinary SMOKE_MUSIC_ID=warm-piano npm run test:workers`: MP4 15 giây **1.769.585 byte**, hai worker nhận đúng một lần, snapshot bất biến. ffprobe/ffmpeg xác nhận H.264 1080×1920/30 fps, AAC và đối chiếu nhạc nguồn tại ba vị trí bằng `scripts/verify-library-video.ts`.
+- `npm run test:postgres`: chạy lại trên PostgreSQL 17 Docker QA riêng, gồm journal; 33 unit qua/1 SQLite-only bỏ qua, API, ba video đồng thời và backup/restore qua Cloudinary fixture. Container QA được dọn sau kiểm thử.
 - `npm run test:save-recovery`: kiểm tra bổ sung trên code cuối cho cả autosave/lưu thủ công, tôn trọng Retry-After, lưu nội dung mới nhất, xóa thông báo sau phục hồi và giữ draft khi 409; qua desktop/mobile.
 - `npm run test:gestures`: touch events thực qua Chromium CDP, mobile/desktop có cảm ứng; giới hạn 60–150%, reset 100%, không tăng revision/undo, không tràn ngang ở zoom tối đa, chuyển kéo sang pinch và touchcancel không làm lệch album; kéo một ngón sau đó vẫn lưu đúng. Core editor và layout/render MP4 đã chạy lại thành công sau cập nhật viewport.
 - `npm run test:api`: qua với local storage và với `SMOKE_STORAGE=s3`; kiểm tra ownership, đăng ký/đăng nhập, CAS, xử lý ảnh thật, media riêng tư, thu hồi share, idempotency, cancel và xóa.

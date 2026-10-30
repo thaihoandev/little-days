@@ -225,6 +225,8 @@ export class AccountDeletion {
     );
     for (const album of await this.db.list<Album>('album', owner))
       for (const asset of album.assets) keys.add('uploads/' + asset.id + '.webp');
+    for (const entry of await this.db.list<{ assets: { id: string }[] }>('journal', owner))
+      for (const asset of entry.assets) keys.add('journal/' + asset.id + '.jpg');
     for (const row of await this.db.query('SELECT payload FROM album_versions WHERE owner=?', [
       owner,
     ]))

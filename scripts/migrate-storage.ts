@@ -44,6 +44,8 @@ try {
   const keys = new Set<string>();
   for (const album of await db.list<Album>('album'))
     for (const asset of album.assets) keys.add(`uploads/${asset.id}.webp`);
+  for (const entry of await db.list<{ assets: { id: string }[] }>('journal'))
+    for (const asset of entry.assets) keys.add('journal/' + asset.id + '.jpg');
   for (const audio of await db.list<AudioAsset>('audio')) keys.add('audio/' + audio.id + '.mp3');
   if (await db.hasTable('album_versions'))
     for (const row of await db.query('SELECT payload FROM album_versions'))
@@ -113,7 +115,13 @@ try {
       await target.putFile(
         key,
         file,
-        key.endsWith('.mp4') ? 'video/mp4' : key.endsWith('.mp3') ? 'audio/mpeg' : 'image/webp',
+        key.endsWith('.mp4')
+          ? 'video/mp4'
+          : key.endsWith('.mp3')
+            ? 'audio/mpeg'
+            : key.endsWith('.jpg')
+              ? 'image/jpeg'
+              : 'image/webp',
       );
       const actual = await digest(target, key);
       if (actual.hash !== expected.hash || actual.bytes !== expected.bytes)

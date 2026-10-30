@@ -1,6 +1,6 @@
 # Little Days — Couple Scrapbook
 
-Ứng dụng React + TypeScript để tạo album cho cặp đôi, tùy chỉnh trang scrapbook, lưu kỉ niệm và xuất video MP4. API NestJS xử lý tài khoản, album, ảnh và tác vụ render Remotion.
+Ứng dụng React + TypeScript cho cặp đôi: trang chủ lịch và timeline, lưu dấu mốc/ảnh/ghi chú, tùy chỉnh scrapbook và xuất video MP4. API NestJS xử lý tài khoản, dữ liệu riêng tư và tác vụ render Remotion. Xem [lịch, timeline, 9 mẫu và thư viện nhạc](CALENDAR_TIMELINE.md), gồm hướng dẫn cập nhật API/worker hiện có.
 
 ## Chạy local
 
@@ -36,7 +36,7 @@ npm run dev
 
 ## Cách dùng
 
-1. Bấm **Bắt đầu một cuốn sổ**, đặt tên và chọn một trong ba mẫu.
+1. Trang **Hôm nay** hiển thị lịch, các ngày sắp tới và ghi chú trước album. Bấm **Thêm dấu mốc** để lưu ngày, lời nhắn và tối đa 6 ảnh; mở **Dòng thời gian** để tìm/lọc hoặc **Lịch của mình** để xem theo ngày. Bấm **Bắt đầu một cuốn sổ**, đặt tên và chọn một trong chín mẫu để tạo scrapbook.
 2. Trong **Thiết lập**, nhập tên hai người, ngày bắt đầu và múi giờ.
 3. Trong **Ảnh**, tải JPEG/PNG/WebP, rồi bấm ảnh để thêm vào trang.
 4. Chọn phần tử trên canvas để kéo, resize, xoay, đổi chữ/font/màu hoặc crop. Chạm hai lần vào text để nhập lời nhắn.
@@ -53,7 +53,7 @@ npm run dev
 
 Lần đầu mở web tạo phiên khách riêng tư cho trình duyệt. Đăng ký email/mật khẩu sẽ giữ các album của phiên đó và cho phép đăng nhập lại. Mật khẩu được hash bằng scrypt bất đồng bộ; đã có xác minh email, quên/reset và đổi mật khẩu kèm thu hồi các phiên cũ. Không dùng email/mật khẩu của dịch vụ khác để chạy thử.
 
-Ảnh mẫu là tranh SVG tự tạo. Track chuông gió là audio tổng hợp bằng mã nguồn. Có thể tải thêm nhạc riêng: tối đa 20 MB/file, 1–600 giây và 10 bản/album; backend kiểm tra dữ liệu thật, chuyển về MP3 stereo 44,1 kHz/128 kbps và bỏ metadata. MP3, WAV và M4A AAC đã được kiểm thử. Các font được đóng gói local qua Fontsource, có hỗ trợ tiếng Việt.
+Ảnh mẫu là tranh SVG tự tạo. Thư viện có bốn track tổng hợp bằng mã nguồn, nghe thử và chọn trong **Tạo video → Nhạc nền**. Có thể tải thêm nhạc riêng: tối đa 20 MB/file, 1–600 giây và 10 bản/album; backend kiểm tra dữ liệu thật, chuyển về MP3 stereo 44,1 kHz/128 kbps và bỏ metadata. MP3, WAV và M4A AAC đã được kiểm thử. Các font được đóng gói local qua Fontsource, có hỗ trợ tiếng Việt.
 
 Nhạc riêng được lưu authenticated trong Cloudinary (resource video), hoặc cùng adapter S3/local đang dùng cho ảnh. Không cần thêm biến môi trường. API kiểm tra chủ sở hữu, hỗ trợ byte-range để seek, chặn xóa nhạc đang xuất và dọn nhạc khi xóa album. Migration storage bao gồm cả nhạc.
 
@@ -75,7 +75,7 @@ Có lệnh `backup:create`, `backup:verify`, `backup:restore` cho database cùng
 
 ## Phần đã triển khai
 
-- Dashboard, ba mẫu trang, viewer responsive và giao diện tiếng Việt.
+- Trang chủ lịch, timeline với ảnh/ghi chú riêng tư, chín mẫu trang, viewer responsive và giao diện tiếng Việt.
 - Text, ảnh, sticker và bộ đếm ngày; chọn nhiều, nhóm/bỏ nhóm, kéo/resize/xoay nhóm, crop, căn chỉnh, chia đều, đường dẫn căn, lớp ẩn/hiện/khóa.
 - Mẫu bố cục cá nhân lưu trên backend, tái sử dụng với ảnh album đích; trạng thái lớp và bố cục dùng chung giữa editor/viewer/MP4.
 - Thêm/nhân bản/xóa/sắp xếp trang; chỉnh màu giấy, font và chuyển động video.

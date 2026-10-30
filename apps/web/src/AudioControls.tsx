@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 
 import { type AudioAsset, type VideoConfig } from '../../../packages/domain/index.js';
 import { api } from './api.js';
 import { AudioWaveform } from './AudioWaveform.js';
+import { musicCatalog, builtInMusic } from '../../../packages/domain/music.js';
 
 export function AudioControls({
   albumId,
@@ -21,6 +22,11 @@ export function AudioControls({
   const [tracks, setTracks] = useState<AudioAsset[]>([]);
   const [busy, setBusy] = useState(false);
   const file = useRef<HTMLInputElement>(null);
+  const preview = useRef<HTMLAudioElement>(null),
+    builtIn = builtInMusic(config.musicId);
+  useEffect(() => {
+    if (preview.current) preview.current.volume = config.audioVolume ?? 0.4;
+  }, [config.audioVolume, config.musicId]);
   useEffect(() => {
     let active = true;
     api<AudioAsset[]>('/albums/' + albumId + '/audio')
@@ -74,11 +80,30 @@ export function AudioControls({
             else onChange({ ...config, musicId });
           }}
         >
-          <option value="gentle">Chuông gió dịu dàng · bản gốc</option>
+          {musicCatalog.map((track) => (
+            <option key={track.id} value={track.id}>
+              {track.name} · {track.mood}
+            </option>
+          ))}
           <option value="none">Không nhạc</option>
           <option value="custom">Nhạc của mình</option>
         </select>
       </label>
+      {builtIn && (
+        <div className="music-library-preview">
+          <span className="eyebrow">NHẠC GỐC LITTLE DAYS</span>
+          <strong>{builtIn.name}</strong>
+          <p className="muted small">{builtIn.mood} · Tự lặp để vừa thời lượng video.</p>
+          <audio
+            key={builtIn.id}
+            ref={preview}
+            controls
+            preload="none"
+            src={'/audio/' + builtIn.file}
+            aria-label={'Nghe thử ' + builtIn.name}
+          />
+        </div>
+      )}
       <input
         ref={file}
         hidden

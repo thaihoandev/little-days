@@ -21,15 +21,18 @@ export type CloudinaryOptions = {
 };
 export function cloudinaryObject(key: string, folder = 'little-days') {
   validateObjectKey(key);
-  const match = key.match(/\.(webp|mp4|mp3)$/);
-  if (!match) throw new Error('Cloudinary chỉ lưu ảnh WebP, video MP4 và nhạc MP3 của ứng dụng.');
+  const match = key.match(/\.(webp|jpg|mp4|mp3)$/);
+  if (!match)
+    throw new Error('Cloudinary chỉ lưu ảnh WebP/JPEG, video MP4 và nhạc MP3 của ứng dụng.');
+  if (match[1] === 'jpg' && !/^journal\/[a-f0-9-]{36}\.jpg$/i.test(key))
+    throw new Error('JPEG chỉ dùng cho ảnh dấu mốc của ứng dụng.');
   const prefix = folder ? `${validateObjectKey(folder.replace(/\/$/, ''))}/` : '';
   const publicId = prefix + key.slice(0, -match[0].length);
   if (publicId.length > 255) throw new Error('Cloudinary public ID vượt 255 ký tự.');
   return {
     publicId,
     format: match[1],
-    resourceType: match[1] === 'webp' ? ('image' as const) : ('video' as const),
+    resourceType: ['webp', 'jpg'].includes(match[1]) ? ('image' as const) : ('video' as const),
   };
 }
 export class CloudinaryMediaStore implements MediaStore {

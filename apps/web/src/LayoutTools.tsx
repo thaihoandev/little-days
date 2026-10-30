@@ -15,6 +15,7 @@ import {
 } from '../../../packages/domain/layout.js';
 import { api } from './api.js';
 import { PagePreview } from './Viewer.js';
+import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 
 export function SelectionTools({
   page,
@@ -278,6 +279,30 @@ export function TemplateLibrary({
   };
   return (
     <section className="personal-templates">
+      <h4>Mẫu có sẵn</h4>
+      <div className="builtin-template-library">
+        {builtInTemplates.map((template) => (
+          <button
+            key={template.id}
+            className="builtin-template-card"
+            disabled={busy || album.pages.length >= 20}
+            onClick={() =>
+              onApply(
+                templatePage(
+                  template.id,
+                  album.assets.map((a) => a.id),
+                ),
+              )
+            }
+          >
+            <PagePreview album={{ ...album, pages: [templatePage(template.id)] }} width={85} />
+            <span>
+              <strong>{template.name}</strong>
+              <small>{template.description}</small>
+            </span>
+          </button>
+        ))}
+      </div>
       <h4>Mẫu của bạn</h4>
       <p className="muted small">
         Lưu bố cục, chữ, nhóm và hiệu ứng. Khi thêm trang, ảnh được lấy lần lượt từ album hiện tại;

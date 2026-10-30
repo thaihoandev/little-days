@@ -48,6 +48,7 @@ import {
   type Theme,
   assetUrl,
   createPage,
+  createAlbumContent,
   daysTogether,
   element,
   nextAnnual,
@@ -62,6 +63,8 @@ import { useDocument } from './useDocument.js';
 import AccountDeletionStatus, { readDeletionReceipt } from './AccountDeletionStatus.js';
 import { readAuthLink } from './auth-link.js';
 import { TextOverflowWarning } from './TextOverflowWarning.js';
+import JournalDashboard from './JournalDashboard.js';
+import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 import type { PublicUser } from './AccountSettings.js';
 const AccountSettings = lazy(() => import('./AccountSettings.js'));
 const AuthLinkPage = lazy(() => import('./AuthLinkPage.js'));
@@ -144,7 +147,9 @@ export default function App() {
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
   const [modal, setModal] = useState<'create' | 'account' | 'help' | null>(null);
-  const [section, setSection] = useState<'albums' | 'photos'>('albums');
+  const [section, setSection] = useState<'home' | 'timeline' | 'calendar' | 'albums' | 'photos'>(
+    'home',
+  );
   const [shared, setShared] = useState<Album | null>(null);
   const token = new URLSearchParams(location.search).get('share');
   const notify = (message: string) => setToast(message);
@@ -156,8 +161,9 @@ export default function App() {
         return;
       }
       const session = await api<User>('/session');
+      const library = await api<Album[]>('/albums');
       setUser(session);
-      setAlbums(await api<Album[]>('/albums'));
+      setAlbums(library);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -242,6 +248,27 @@ export default function App() {
           <div className="workspace-label">GÓC NHỎ CỦA BẠN</div>
           <nav>
             <button
+              className={section === 'home' ? 'nav-item active' : 'nav-item'}
+              onClick={() => setSection('home')}
+            >
+              <Heart size={19} />
+              Hôm nay
+            </button>
+            <button
+              className={section === 'timeline' ? 'nav-item active' : 'nav-item'}
+              onClick={() => setSection('timeline')}
+            >
+              <History size={19} />
+              Dòng thời gian
+            </button>
+            <button
+              className={section === 'calendar' ? 'nav-item active' : 'nav-item'}
+              onClick={() => setSection('calendar')}
+            >
+              <CalendarDays size={19} />
+              Lịch của mình
+            </button>
+            <button
               className={section === 'albums' ? 'nav-item active' : 'nav-item'}
               onClick={() => setSection('albums')}
             >
@@ -308,10 +335,18 @@ export default function App() {
               <UserRound size={19} />
             </button>
           </header>
-          {section === 'albums' ? (
+          {user && ['home', 'timeline', 'calendar'].includes(section) && (
+            <JournalDashboard
+              key={user.id}
+              albums={albums}
+              mode={section as 'home' | 'timeline' | 'calendar'}
+              onOpenAlbum={setActive}
+            />
+          )}
+          {section === 'albums' || section === 'home' ? (
             <>
               <motion.section
-                className="welcome"
+                className={section === 'home' ? 'welcome welcome-secondary' : 'welcome'}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
               >
@@ -440,7 +475,7 @@ export default function App() {
                 </span>
               </footer>
             </>
-          ) : (
+          ) : section === 'photos' ? (
             <section className="photos-dashboard">
               <span className="eyebrow">MỖI TẤM ẢNH, MỘT CÂU CHUYỆN</span>
               <h1>Ảnh đã lưu</h1>
@@ -466,7 +501,7 @@ export default function App() {
                 </div>
               )}
             </section>
-          )}
+          ) : null}
         </main>
       </div>
       {modal === 'create' && (
@@ -545,6 +580,16 @@ function CreateModal({
 }) {
   const [title, setTitle] = useState('Ngày mình bên nhau');
   const [theme, setTheme] = useState<Theme>('polaroid');
+  const [templateId, setTemplateId] = useState('polaroid');
+  const previewAlbum: Album = {
+    ...createAlbumContent(),
+    id: 'preview',
+    revision: 0,
+    createdAt: '',
+    updatedAt: '',
+    assets: [],
+    schemaVersion: 1,
+  };
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const submit = async (e: FormEvent) => {
@@ -552,7 +597,10 @@ function CreateModal({
     setBusy(true);
     try {
       onCreated(
-        await api<Album>('/albums', { method: 'POST', body: JSON.stringify({ title, theme }) }),
+        await api<Album>('/albums', {
+          method: 'POST',
+          body: JSON.stringify({ title, theme, templateId }),
+        }),
       );
     } catch (e) {
       setError((e as Error).message);
@@ -573,18 +621,22 @@ function CreateModal({
         </label>
         <label>Chọn một phong cách</label>
         <div className="template-picker">
-          {(Object.keys(themeNames) as Theme[]).map((t, i) => (
+          {builtInTemplates.map((t) => (
             <button
               type="button"
-              key={t}
-              className={theme === t ? 'chosen' : ''}
-              onClick={() => setTheme(t)}
+              key={t.id}
+              aria-label={t.name}
+              className={templateId === t.id ? 'chosen' : ''}
+              onClick={() => {
+                setTheme(t.theme);
+                setTemplateId(t.id);
+              }}
             >
-              <span className={`template-swatch ${t}`}>
-                <span>{i === 0 ? '♡' : i === 1 ? '✉' : '✿'}</span>
+              <span className="built-in-preview">
+                <PagePreview album={{ ...previewAlbum, pages: [templatePage(t.id)] }} width={105} />
               </span>
-              {themeNames[t]}
-              {theme === t && <Check size={15} />}
+              {t.name}
+              {templateId === t.id && <Check size={15} />}
             </button>
           ))}
         </div>

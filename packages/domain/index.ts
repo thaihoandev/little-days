@@ -132,7 +132,7 @@ export const videoConfigSchema = z
     pageIds: z.array(z.string().uuid()).min(1).max(20),
     opening: z.string().max(160),
     closing: z.string().max(250),
-    musicId: z.enum(['none', 'gentle', 'custom']),
+    musicId: z.enum(['none', 'gentle', 'custom', 'warm-piano', 'little-waltz', 'evening']),
     sceneDurations: z.record(z.string().uuid(), finite.min(1).max(60).multipleOf(0.1)).optional(),
     audioId: z.string().uuid().optional(),
     audioStart: finite.min(0).max(599.9).optional(),

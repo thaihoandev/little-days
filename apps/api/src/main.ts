@@ -68,6 +68,8 @@ import { MaintenanceService } from './maintenance.js';
 import { Observability, logEvent } from './observability.js';
 import { OpsMonitor } from './ops-monitor.js';
 import { BackupLock, backupSafeStore } from './backup-lock.js';
+import { JournalService } from './journal.js';
+import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 import { videoDurationFrames } from '../../../packages/domain/video.js';
 import { createMediaStore, ObjectNotFoundError } from './storage.js';
 
@@ -85,6 +87,7 @@ const maintenance = new MaintenanceService(repository, resources, dataDir, () =>
 const mailer = createMailer(dataDir);
 const opsMonitor = new OpsMonitor(repository, mailer);
 const deletion = new AccountDeletion(repository, jobs, store, dataDir, () => backupLock.paused());
+const journal = new JournalService(repository, store, resources, deletion);
 const security = new AccountSecurity(
   repository,
   mailer,
@@ -159,6 +162,58 @@ function validateReferences(album: Album) {
 
 @Controller('api')
 class AppController {
+  @Get('journal') async journalList(@Req() req: UserRequest) {
+    return journal.list(req.userId);
+  }
+  @Post('journal') async journalCreate(@Req() req: UserRequest, @Body() body: unknown) {
+    return journal.create(req.userId, body);
+  }
+  @Patch('journal/:id') async journalSave(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return journal.save(req.userId, id, body);
+  }
+  @Delete('journal/:id') async journalDelete(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return journal.remove(req.userId, id, body);
+  }
+  @Post('journal/:id/assets')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 20 * 1048576, files: 1 },
+    }),
+  )
+  async journalUpload(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    return journal.upload(req.userId, id, file);
+  }
+  @Get('journal/:id/assets/:assetId') async journalAsset(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Param('assetId') assetId: string,
+    @Res() res: Response,
+  ) {
+    const entry = await journal.owned(req.userId, id);
+    if (!entry.assets.some((a) => a.id === assetId)) throw new NotFoundException();
+    await streamObject(res, 'journal/' + assetId + '.jpg', 'jpeg');
+  }
+  @Delete('journal/:id/assets/:assetId') async journalRemoveAsset(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Param('assetId') assetId: string,
+    @Body() body: unknown,
+  ) {
+    return journal.removeAsset(req.userId, id, assetId, body);
+  }
   @Get('render-capacity') async renderCapacity() {
     const now = await repository.now();
     const workers = await repository.list<{ lastSeen: number }>('worker');
@@ -382,6 +437,7 @@ class AppController {
       .object({
         title: z.string().trim().min(1).max(120).optional(),
         theme: z.enum(['polaroid', 'letter', 'timeline']).optional(),
+        templateId: z.enum(builtInTemplates.map((t) => t.id) as [string, ...string[]]).optional(),
       })
       .parse(body ?? {});
     if ((await repository.list('album', req.userId)).length >= 30)
@@ -392,6 +448,11 @@ class AppController {
       content.pages = [createPage(input.theme)];
     }
     if (input.title) content.title = input.title;
+    if (input.templateId) {
+      const template = builtInTemplates.find((t) => t.id === input.templateId)!;
+      content.theme = template.theme;
+      content.pages = [templatePage(template.id)];
+    }
     const album: Album = {
       ...content,
       id: randomUUID(),
@@ -796,6 +857,18 @@ class AppController {
     )
       throw new ConflictException('Album đã có một video đang xuất.');
     validateReferences(album);
+    if (['warm-piano', 'little-waltz', 'evening'].includes(input.config.musicId)) {
+      const workers = await repository.list<{ lastSeen: number; musicCatalogVersion?: number }>(
+          'worker',
+        ),
+        now = await repository.now(),
+        live = workers.filter((w) => now - w.lastSeen < 15000);
+      if (!live.length || live.some((w) => w.musicCatalogVersion !== 1))
+        throw new HttpException(
+          'Bản nhạc này chưa sẵn sàng xuất. Hãy chọn Chuông gió hoặc thử lại sau khi hệ thống xuất video được cập nhật.',
+          503,
+        );
+    }
     const audioAsset =
       input.config.musicId === 'custom'
         ? await ownedAudio(req, id, input.config.audioId!)
