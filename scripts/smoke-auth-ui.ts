@@ -61,7 +61,12 @@ try {
   await page.getByRole('button', { name: 'Tài khoản', exact: true }).click();
   await expect(page.getByText('Email chưa xác minh', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Gửi lại email xác minh', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Kiểm tra email' })).toBeVisible();
+  await expect(
+    page
+      .getByRole('dialog', { name: 'Tài khoản của bạn', exact: true })
+      .getByRole('status')
+      .filter({ hasText: 'Kiểm tra email' }),
+  ).toBeVisible();
   const verifyPage = await context.newPage();
   await verifyPage.goto(await linkFor('Xác minh'));
   await expect(
@@ -89,7 +94,12 @@ try {
   await expect(page.getByRole('alert')).toContainText('chưa khớp');
   await page.getByLabel('Nhập lại mật khẩu mới', { exact: true }).fill(changed);
   await page.getByRole('button', { name: 'Lưu mật khẩu mới', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'Đã đổi mật khẩu' })).toBeVisible();
+  await expect(
+    page
+      .getByRole('dialog', { name: 'Tài khoản của bạn', exact: true })
+      .getByRole('status')
+      .filter({ hasText: 'Đã đổi mật khẩu' }),
+  ).toBeVisible();
   assert.equal((await other.request.get(base + '/albums')).status(), 401);
   await page.screenshot({ path: 'test-results/account-security-desktop.png', fullPage: true });
   await page.getByRole('button', { name: 'Đăng xuất', exact: true }).click();
@@ -99,7 +109,9 @@ try {
   await page.getByRole('button', { name: 'Quên mật khẩu?', exact: true }).click();
   await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByRole('button', { name: 'Gửi link đặt lại mật khẩu', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('Nếu email đã được đăng ký');
+  await expect(page.getByRole('dialog').getByRole('status')).toContainText(
+    'Nếu email đã được đăng ký',
+  );
   assert.equal(
     (
       await other.request.post(base + '/auth/login', { data: { email, password: changed } })
