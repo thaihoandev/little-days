@@ -662,6 +662,21 @@ function Editor({
   const [uploading, setUploading] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [localError, setLocalError] = useState('');
+  const localMaintenanceError = useRef<string | null>(null);
+  const reportLocalError = (error: unknown) => {
+    const message = error instanceof Error ? error.message : 'Có lỗi xử lý. Vui lòng thử lại.';
+    localMaintenanceError.current =
+      error instanceof ApiError && error.status === 503 && error.code === 'BACKUP_IN_PROGRESS'
+        ? message
+        : null;
+    setLocalError(message);
+  };
+  useEffect(() => {
+    if (doc.status !== 'saved' || !localMaintenanceError.current) return;
+    const message = localMaintenanceError.current;
+    localMaintenanceError.current = null;
+    setLocalError((previous) => (previous === message ? '' : previous));
+  }, [doc.status]);
   const [editText, setEditText] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [reference, setReference] = useState(todayIn(album.timezone));
@@ -709,7 +724,7 @@ function Editor({
       }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault();
-        void doc.flush().catch((e) => setLocalError(e.message));
+        void doc.flush().catch(reportLocalError);
       }
       if (e.key === 'Delete' || e.key === 'Backspace') {
         e.preventDefault();
@@ -757,10 +772,11 @@ function Editor({
   });
   const safe = async (fn: () => Promise<void>) => {
     setLocalError('');
+    localMaintenanceError.current = null;
     try {
       await fn();
     } catch (e) {
-      setLocalError((e as Error).message);
+      reportLocalError(e);
     }
   };
   const upload = async (files: FileList | null) => {

@@ -29,6 +29,7 @@ export function useDocument(initial: Album, userId: string) {
     'saved',
   );
   const [error, setError] = useState('');
+  const [retryAt, setRetryAt] = useState<number | null>(null);
   const busy = useRef<Promise<Album> | null>(null);
   const key = `scrapbook-draft:${userId}:${initial.id}`;
   const [draft, setDraft] = useState<AlbumContent | null>(() => {
@@ -92,9 +93,12 @@ export function useDocument(initial: Album, userId: string) {
     const serialized = JSON.stringify(content);
     if (serialized === saved.current) {
       setStatus('saved');
+      setRetryAt(null);
+      setError('');
       return current.current;
     }
     setStatus('saving');
+    setRetryAt(null);
     const request = api<Album>(`/albums/${initial.id}`, {
       method: 'PATCH',
       body: JSON.stringify({ expectedRevision: revision.current, content }),
@@ -110,8 +114,17 @@ export function useDocument(initial: Album, userId: string) {
       if (JSON.stringify(contentOf(current.current)) === serialized) localStorage.removeItem(key);
     } catch (e) {
       blocked.current = e instanceof ApiError && e.status === 409;
+      const maintenance =
+        e instanceof ApiError && e.status === 503 && e.code === 'BACKUP_IN_PROGRESS';
+      setRetryAt(maintenance ? Date.now() + (e.retryAfterMs || 15000) : null);
       setStatus(blocked.current ? 'conflict' : 'error');
-      setError(e instanceof Error ? e.message : 'Không lưu được.');
+      setError(
+        maintenance
+          ? 'Đang sao lưu dữ liệu. Thay đổi vẫn được giữ trong trang này và sẽ tự lưu lại.'
+          : e instanceof Error
+            ? e.message
+            : 'Không lưu được.',
+      );
       throw e;
     } finally {
       busy.current = null;
@@ -132,11 +145,19 @@ export function useDocument(initial: Album, userId: string) {
       setError('Không lưu được bản nháp trên thiết bị. Hãy lưu về máy chủ.');
     }
     if (status !== 'dirty') return;
-    const timer = setTimeout(() => {
-      void flush().catch(() => {});
-    }, 1100);
+    const timer = setTimeout(
+      () => {
+        void flush().catch(() => {});
+      },
+      Math.max(1100, (retryAt || 0) - Date.now()),
+    );
     return () => clearTimeout(timer);
-  }, [album, flush, key, status]);
+  }, [album, flush, key, status, retryAt]);
+  useEffect(() => {
+    if (status !== 'error' || retryAt === null) return;
+    const timer = setTimeout(() => void flush().catch(() => {}), Math.max(0, retryAt - Date.now()));
+    return () => clearTimeout(timer);
+  }, [status, retryAt, flush]);
   useEffect(() => {
     const before = (e: BeforeUnloadEvent) => {
       if (JSON.stringify(contentOf(current.current)) !== saved.current) {
@@ -162,6 +183,7 @@ export function useDocument(initial: Album, userId: string) {
     revision.current = next.revision;
     saved.current = JSON.stringify(contentOf(next));
     blocked.current = false;
+    setRetryAt(null);
     publish(next);
     setStatus('saved');
     setError('');
@@ -190,6 +212,7 @@ export function useDocument(initial: Album, userId: string) {
     discardDraft,
     markConflict: (message: string) => {
       blocked.current = true;
+      setRetryAt(null);
       setStatus('conflict');
       setError(message);
     },

@@ -6,6 +6,8 @@ Ngày cập nhật: **30/10/2026**.
 
 App đã chạy công khai trên Render tại https://little-days-api.onrender.com, dùng PostgreSQL Neon và Cloudinary; người dùng xác nhận Brevo HTTPS đã gửi email thật thành công. Worker xuất video hiện vẫn chạy theo cấu hình cũ; phương án worker Northflank đã được người dùng hủy. Đây là bản MVP để chạy thử, chưa phải toàn bộ hệ thống production trong `IMPLEMENTATION_PLAN.md`.
 
+Ngày 30/10/2026, người dùng xác nhận đã bật backup theo lịch và hoàn tất phục hồi thử. Chưa ghi URL run/report kiểm chứng production vào hồ sơ; kết quả này được ghi nhận theo xác nhận của người dùng. Giai đoạn tiếp theo là pilot 3–5 người thật, theo PILOT.md và PILOT_RESULTS.md.
+
 **Bản 0.2** tách render worker khỏi API, thêm hàng đợi SQL có lease/heartbeat và adapter media local/S3. Đã kiểm chứng hai worker qua S3 fixture; PostgreSQL 17 và container production cũng đã chạy thật trong QA.
 
 **Bổ sung Cloudinary:** có adapter dùng SDK chính thức, upload authenticated cho ảnh/video, chunked video và private download qua backend. `.env` đã được tạo, chọn Cloudinary; người dùng chỉ cần điền ba thông tin tài khoản, database vẫn mặc định SQLite. S3 được giữ làm lựa chọn tương thích.
@@ -43,6 +45,8 @@ App đã chạy công khai trên Render tại https://little-days-api.onrender.c
 
 Trong lúc ảnh đang upload/lưu, editor tạm khóa tương tác để response chứa metadata mới không ghi đè thay đổi đang chỉnh. Canvas và video builder được lazy-load riêng khỏi dashboard.
 
+Autosave nhận diện `503 BACKUP_IN_PROGRESS`, giữ bản nháp/chỉnh sửa mới và thử lại theo Retry-After. Lưu thủ công/Ctrl+S cũng xóa thông báo bảo trì cũ sau khi tự lưu lại thành công. Chỉ PATCH lưu nội dung album có cơ chế này; 409 vẫn chặn để giải quyết xung đột, POST/upload/export không tự retry.
+
 ## Video và nhạc riêng
 
 - Bật **Thời lượng từng trang** trong Tạo video; các cảnh giữ thời lượng khi đổi thứ tự. Mở đầu cố định 2 giây, kết 3 giây.
@@ -66,6 +70,8 @@ Trong lúc ảnh đang upload/lưu, editor tạm khóa tương tác để respon
 - `npm run format:check`: qua.
 - `npm run test:ops`: API biên dịch, bật giám sát opt-in, operator status có khóa, ghi thư vào hộp local, restart và CLI không gửi trùng; không gửi email thật. Năm unit test giám sát cũng qua trên PostgreSQL 17 trong database/container QA riêng.
 - `npm run test:scheduled-backup`: PostgreSQL schema QA riêng, SHARE locks chặn xóa media trong khi snapshot, Cloudinary HTTP fixture, chạy CLI mã hóa/giải mã/restore SQLite và so database/media; job bận không ghi đè archive tốt và lease được nhả. Đây là kiểm chứng fixture, chưa phải workflow chạy với Neon/Cloudinary thật.
+- `npm run test:pilot`: 7 luồng cô lập đã qua gồm editor, tự lưu sau bảo trì/giữ bản nháp khi 409 trên desktop/mobile, auth, history, audio/video, xóa tài khoản và layout/MP4 thật. Lượt QA khoảng 135 giây, MP4 1.360.658 byte. Có report/log/ảnh trong test-results/pilot; không thay thế kết quả người thật. CI bổ sung job pilot-ui riêng.
+- `npm run test:save-recovery`: kiểm tra bổ sung trên code cuối cho cả autosave/lưu thủ công, tôn trọng Retry-After, lưu nội dung mới nhất, xóa thông báo sau phục hồi và giữ draft khi 409; qua desktop/mobile.
 - `npm run test:api`: qua với local storage và với `SMOKE_STORAGE=s3`; kiểm tra ownership, đăng ký/đăng nhập, CAS, xử lý ảnh thật, media riêng tư, thu hồi share, idempotency, cancel và xóa.
 - `npm run test:s3`: qua HTTP fixture local, gồm SDK ký request, kiểm tra bucket, put buffer/stream, bounded read, get, prefix và delete.
 - `npm run test:cloudinary`: qua HTTP fixture local, gồm SDK ký upload, authenticated assets, chunked video trên 6 MB, private download, bounded read và xóa.
@@ -136,6 +142,7 @@ Docker Desktop đã khởi động được; đã build image và chạy contain
 - `STAGING.md`: cấu hình HTTPS/container, PostgreSQL, backup và rollback.
 - `FREE_HOSTING.md`: Render/Neon/Cloudinary với worker local và Vercel frontend tùy chọn.
 - `PILOT.md`: kịch bản, mẫu ghi nhận và điều kiện nghiệm thu với người dùng thật.
+- `PILOT_RESULTS.md`: hồ sơ điều kiện vận hành, ma trận TC01–TC10 cho P01–P05, sổ lỗi và quyết định nghiệm thu.
 - `IMPLEMENTATION_PLAN.md`: kế hoạch đích chi tiết.
 - `skills/couple-scrapbook-editor/SKILL.md`: quy tắc layout và autosave.
 - `skills/couple-scrapbook-backend/SKILL.md`: quyền truy cập và persistence.

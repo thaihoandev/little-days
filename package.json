@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test:pilot": "tsx scripts/pilot-qa.ts",
+    "test:save-recovery": "tsx scripts/pilot-qa.ts save-recovery",
     "backup:scheduled": "node --import tsx scripts/scheduled-backup.ts",
     "test:scheduled-backup": "tsx scripts/smoke-scheduled-backup.ts",
     "backup:key": "node --import tsx scripts/backup-crypto.ts key",

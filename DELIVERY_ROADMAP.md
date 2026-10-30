@@ -15,7 +15,9 @@ Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → st
 - [x] Mã cảnh báo email opt-in, lưu trạng thái chống gửi trùng qua restart, grace/cooldown và CLI kiểm tra.
 - [x] Mã backup GitHub Actions theo lịch, snapshot nhất quán có maintenance lease/table locks, AES-256-GCM và restore drill độc lập trước khi upload artifact.
 - [ ] Bật receiver cảnh báo trên Render bằng email của người vận hành; xác nhận nhận mail cảnh báo thật.
-- [ ] Điền GitHub Secrets/Variables, bật lịch backup và xác nhận run/restore thật theo SCHEDULED_BACKUP.md; đo công suất trên hạ tầng đích.
+- [x] Bật backup và hoàn tất phục hồi thử: người dùng xác nhận ngày 30/10/2026; chưa ghi URL run/report vào hồ sơ nghiệm thu.
+- [x] Runner QA pilot cô lập cho 7 luồng desktop/mobile, gồm autosave sau backup và MP4 thật; hồ sơ ghi nhận P01–P05 và tiêu chí nghiệm thu.
+- [ ] Đo công suất CPU/RAM/thời gian xuất trên hạ tầng đích và ghi bằng chứng backup/cảnh báo vào hồ sơ nghiệm thu.
 - [ ] Pilot 3–5 người thật; đối chiếu license và nghiệm thu phát hành.
 
 Worker cloud đã được người dùng hủy; giữ worker hiện tại và không tạo tài nguyên Northflank hoặc dịch vụ tính phí. App đã chạy tại https://little-days-api.onrender.com. Email thật hoàn tất theo xác nhận của người dùng; giám sát/backup/pilot thật vẫn cần kết quả riêng. Chi tiết: OPERATIONS.md, STAGING.md và PILOT.md.

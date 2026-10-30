@@ -18,7 +18,8 @@ const context = await browser.newContext({ viewport: { width: 1600, height: 1100
 const page = await context.newPage();
 const errors: string[] = [];
 page.on('pageerror', (e) => errors.push(e.message));
-const base = 'http://127.0.0.1:5173/api';
+const origin = process.env.SMOKE_UI_ORIGIN || 'http://127.0.0.1:5173';
+const base = origin + '/api';
 try {
   await context.request.get(base + '/session');
   let album: Album = await (
@@ -82,7 +83,7 @@ try {
     });
     return read();
   };
-  await page.goto('http://127.0.0.1:5173');
+  await page.goto(origin);
   await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
   await expect(page.locator('.canvas-sheet canvas')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
