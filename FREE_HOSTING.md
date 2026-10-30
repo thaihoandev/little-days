@@ -53,6 +53,14 @@ Dùng Cloudinary cloud đã có và folder `little-days-cloud`, hoặc một clo
 
 ## 2. Deploy Render bằng Blueprint
 
+### Nếu push GitHub nhưng Render không tự build
+
+Vào service **little-days-api → Settings → Build & Deploy**: liên kết GitHub repository `thaihoandev/little-days`, chọn branch `main`, đặt **Auto-Deploy → On Commit** rồi lưu. Dịch vụ tạo từ **Public Git Repository URL** không tự deploy; cần kết nối qua tài khoản GitHub và cấp quyền repository cho Render. Không cần tạo database hoặc storage mới.
+
+`render.yaml` khai báo `branch: main` và `autoDeployTrigger: commit`. Cấu hình này được áp dụng khi Blueprint sync; push file YAML không tự sửa Settings của service được tạo thủ công. Nếu Blueprint tắt Auto Sync, dùng **Manual Sync**. Khi vừa bật auto-deploy, dùng **Manual Deploy → Deploy latest commit** một lần để cập nhật ngay; những commit mới tiếp theo sẽ tự kích hoạt.
+
+Tham khảo [Render deploys](https://render.com/docs/deploys) và [Blueprint specification](https://render.com/docs/blueprint-spec).
+
 Đưa mã nguồn vào repository Git của bạn, giữ `.env*` chứa secret, `.secrets`, `data`, `backups` và `test-results` ngoài Git. Trên Render tạo **Blueprint** từ repository; file `render.yaml` ở root chỉ tạo **một web service plan free**, không tạo database trả phí hoặc worker cloud.
 
 Điền trong Render Environment:
