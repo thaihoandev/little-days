@@ -55,9 +55,9 @@ Dùng Cloudinary cloud đã có và folder `little-days-cloud`, hoặc một clo
 
 ### Nếu push GitHub nhưng Render không tự build
 
-Vào service **little-days-api → Settings → Build & Deploy**: liên kết GitHub repository `thaihoandev/little-days`, chọn branch `main`, đặt **Auto-Deploy → On Commit** rồi lưu. Dịch vụ tạo từ **Public Git Repository URL** không tự deploy; cần kết nối qua tài khoản GitHub và cấp quyền repository cho Render. Không cần tạo database hoặc storage mới.
+Vào service **little-days-api → Settings → Build & Deploy**: liên kết GitHub repository `thaihoandev/little-days`, chọn branch `main`, đặt **Auto-Deploy → After CI Checks Pass** rồi lưu. Render đợi các kiểm tra CI của commit mới thành công trước khi deploy. Dịch vụ tạo từ **Public Git Repository URL** không tự deploy; cần kết nối qua tài khoản GitHub và cấp quyền repository cho Render. Không cần tạo database hoặc storage mới.
 
-`render.yaml` khai báo `branch: main` và `autoDeployTrigger: commit`. Cấu hình này được áp dụng khi Blueprint sync; push file YAML không tự sửa Settings của service được tạo thủ công. Nếu Blueprint tắt Auto Sync, dùng **Manual Sync**. Khi vừa bật auto-deploy, dùng **Manual Deploy → Deploy latest commit** một lần để cập nhật ngay; những commit mới tiếp theo sẽ tự kích hoạt.
+`render.yaml` khai báo `branch: main` và `autoDeployTrigger: checksPass`, theo lựa chọn giữ **After CI Checks Pass** của chủ dự án. Cấu hình này được áp dụng khi Blueprint sync; push file YAML không tự sửa Settings của service được tạo thủ công. Nếu Blueprint tắt Auto Sync, dùng **Manual Sync**. Không cần deploy thủ công khi đang chờ CI; kiểm tra GitHub Actions của commit mới nhất và đợi tất cả các kiểm tra cần thiết thành công. Nếu có kiểm tra lỗi, sửa lỗi trước khi chờ Render triển khai.
 
 Tham khảo [Render deploys](https://render.com/docs/deploys) và [Blueprint specification](https://render.com/docs/blueprint-spec).
 

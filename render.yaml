@@ -2,7 +2,7 @@ services:
   - type: web
     name: little-days-api
     branch: main
-    autoDeployTrigger: commit
+    autoDeployTrigger: checksPass
     runtime: docker
     plan: free
     dockerfilePath: ./Dockerfile
