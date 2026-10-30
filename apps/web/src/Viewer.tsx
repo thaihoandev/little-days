@@ -11,6 +11,7 @@ import {
 } from '../../../packages/domain/index.js';
 import { PageArtwork } from '../../../packages/scrapbook-renderer/index.js';
 import { useBodyScrollLock } from './Overlays.js';
+import { LegalLinks } from './LegalLinks.js';
 
 export function PagePreview({
   album,
@@ -54,7 +55,7 @@ export function Viewer({ album, onClose }: { album: Album; onClose?: () => void 
         event.key === 'Escape' &&
         onClose &&
         !event.defaultPrevented &&
-        !document.querySelector('select:open')
+        !document.querySelector('select:open,dialog[open]')
       ) {
         event.preventDefault();
         onClose();
@@ -104,6 +105,7 @@ export function Viewer({ album, onClose }: { album: Album; onClose?: () => void 
       aria-modal={!!onClose}
       aria-label="Xem album"
       onKeyDown={(e) => {
+        if ((e.target as HTMLElement).closest('dialog[open]')) return;
         const field = (e.target as HTMLElement).closest(
           'input,textarea,select,[contenteditable=true]',
         );
@@ -268,6 +270,7 @@ export function Viewer({ album, onClose }: { album: Album; onClose?: () => void 
       </div>
       <footer>
         <Heart size={13} /> Những điều bình thường, được thương thật nhiều.
+        <LegalLinks />
       </footer>
     </div>,
     document.body,

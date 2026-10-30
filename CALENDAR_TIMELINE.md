@@ -71,6 +71,12 @@ Ba bản bổ sung dài 32 giây được tổng hợp từ nốt nhạc bằng 
 
 Worker chỉ lấy file nhạc từ catalog cố định và đưa bytes vào render; không tải URL nhạc tùy ý. Preview và MP4 dùng chung cấu hình/Remotion composition. API từ chối xuất ba track mới khi chưa thấy worker hỗ trợ catalog mới; chọn Chuông gió hoặc cập nhật worker rồi thử lại.
 
+## Tạo scrapbook từ các dấu mốc
+
+Trong timeline, chọn tối đa 20 mốc rồi bấm **Tạo scrapbook**. Chọn một trong chín mẫu, nhập tên sổ/hai tên và xem trước trước khi lưu. Album mới giữ ngày, toàn bộ lời nhắn và bản sao riêng của ảnh; xóa nguồn không làm mất ảnh trong sổ. Nội dung dài được chia trang, tối đa 20 trang, và vẫn sửa layout/xuất video theo luồng hiện có. Chi tiết: [TIMELINE_SCRAPBOOK.md](TIMELINE_SCRAPBOOK.md).
+
+Không cần migration hay biến môi trường mới. API/frontend cần cùng commit; worker hiện có dùng cùng phiên bản khi xuất video.
+
 ## Dữ liệu và quyền riêng tư
 
 Dấu mốc/ghi chú lưu trong bảng **`records`**, `kind = 'journal'`, `owner` là UUID tài khoản/phiên khách. Payload gồm ngày, loại, lời nhắn, lặp hằng năm và metadata ảnh; cột revision kiểm soát cập nhật đồng thời. Không cần migration riêng hoặc biến môi trường mới.

@@ -14,3 +14,5 @@ backups/
 !.env.staging.example
 !.env.cloud.example
 data-cloud-worker/
+/apps/web/public/legal/
+/apps/web/public/legal-info.json

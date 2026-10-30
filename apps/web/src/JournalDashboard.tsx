@@ -12,6 +12,7 @@ import {
   Trash2,
   Repeat2,
   NotebookPen,
+  BookOpen,
 } from 'lucide-react';
 import { type Album, todayIn, daysTogether } from '../../../packages/domain/index.js';
 import {
@@ -24,6 +25,7 @@ import {
 } from '../../../packages/domain/journal.js';
 import { api } from './api.js';
 import { PhotoLightbox } from './Overlays.js';
+import { TimelineAlbumDialog, type TimelineChoice } from './TimelineAlbumDialog.js';
 
 type Item = JournalEntry & { album?: Album };
 const dateLabel = (
@@ -37,15 +39,19 @@ export default function JournalDashboard({
   albums,
   mode,
   onOpenAlbum,
+  onCreatedAlbum,
 }: {
   albums: Album[];
   mode: 'home' | 'timeline' | 'calendar';
   onOpenAlbum: (album: Album) => void;
+  onCreatedAlbum: (album: Album) => void;
 }) {
   const [today, setToday] = useState(() =>
     todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone),
   );
   const [newKind, setNewKind] = useState<JournalContent['kind']>('memory');
+  const [chosen, setChosen] = useState<string[]>([]),
+    [creatingAlbum, setCreatingAlbum] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<{
     photos: JournalEntry['assets'];
     index: number;
@@ -116,6 +122,19 @@ export default function JournalDashboard({
       .filter((i): i is { entry: Item; next: string } => !!i.next)
       .sort((a, b) => a.next.localeCompare(b.next))
       .slice(0, 4);
+  const choices: TimelineChoice[] = all
+    .filter((e) => chosen.includes(e.id))
+    .map((entry) => ({
+      entry,
+      source: entry.album
+        ? {
+            kind: entry.id.startsWith('start-') ? 'album-start' : 'album-memory',
+            id: entry.album.id,
+            expectedRevision: entry.album.revision,
+            ...(entry.id.startsWith('start-') ? {} : { memoryId: entry.id.split(':')[1] }),
+          }
+        : { kind: 'journal', id: entry.id, expectedRevision: entry.revision },
+    }));
   const dayItems = all.filter((item) => occursOn(item, selected)),
     filtered = all
       .filter(
@@ -352,6 +371,42 @@ export default function JournalDashboard({
           </aside>
         </div>
       )}
+      {mode === 'timeline' && all.length > 0 && (
+        <section className="timeline-import-bar" aria-label="Tạo sổ từ dấu mốc">
+          <div>
+            <BookOpen size={20} />
+            <span>
+              <strong>
+                {choices.length
+                  ? choices.length + ' dấu mốc đã chọn'
+                  : 'Gom những ngày thương thành một cuốn sổ'}
+              </strong>
+              <small>Chọn tối đa 20 mốc, rồi chọn bố cục cho scrapbook.</small>
+            </span>
+          </div>
+          <div className="import-bar-actions">
+            <button
+              className="text-button"
+              onClick={() => setChosen(visible.slice(0, 20).map((e) => e.id))}
+            >
+              Chọn mốc đang hiện
+            </button>
+            {chosen.length > 0 && (
+              <button className="text-button" onClick={() => setChosen([])}>
+                Bỏ chọn
+              </button>
+            )}
+            <button
+              className="button primary"
+              disabled={!choices.length}
+              onClick={() => setCreatingAlbum(true)}
+            >
+              <BookOpen size={16} />
+              Tạo scrapbook
+            </button>
+          </div>
+        </section>
+      )}
       <section className="journal-feed" aria-label="Các dấu mốc">
         <header className="section-heading">
           <div>
@@ -418,6 +473,24 @@ export default function JournalDashboard({
                     <small>{dateLabel(entry.date, { month: 'short', year: 'numeric' })}</small>
                   </div>
                   <div className="journal-entry-body">
+                    {mode === 'timeline' && (
+                      <label className="import-pick">
+                        <input
+                          type="checkbox"
+                          aria-label={'Chọn dấu mốc ' + entry.title}
+                          checked={chosen.includes(entry.id)}
+                          disabled={chosen.length >= 20 && !chosen.includes(entry.id)}
+                          onChange={(e) =>
+                            setChosen((ids) =>
+                              e.target.checked
+                                ? [...ids, entry.id]
+                                : ids.filter((id) => id !== entry.id),
+                            )
+                          }
+                        />
+                        <span>Chọn làm scrapbook</span>
+                      </label>
+                    )}
                     <div className="journal-entry-meta">
                       <span>{journalKindNames[entry.kind]}</span>
                       {entry.annual && (
@@ -506,6 +579,17 @@ export default function JournalDashboard({
           </button>
         )}
       </section>
+      {creatingAlbum && (
+        <TimelineAlbumDialog
+          choices={choices}
+          onClose={() => setCreatingAlbum(false)}
+          onCreated={(album) => {
+            setCreatingAlbum(false);
+            setChosen([]);
+            onCreatedAlbum(album);
+          }}
+        />
+      )}
       {photoPreview && (
         <PhotoLightbox
           {...photoPreview}

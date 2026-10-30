@@ -139,6 +139,14 @@ Kết quả screenshot và video nằm trong `test-results/` và không đưa v�
 
 Docker Desktop đã khởi động được; đã build image và chạy container/PostgreSQL 17 thật. CI có job PostgreSQL/container trong `.github/workflows/checks.yml`; kiểm tra kết quả GitHub Actions sau khi push. Kiểm thử cloud tự động dùng fixture; xác nhận email thật đến từ người dùng. Cảnh báo vận hành thật chưa được bật khi chưa có địa chỉ nhận cấu hình trên Render.
 
+## Bổ sung ngày 30/10/2026: timeline → scrapbook và giấy phép
+
+Đã có chọn dấu mốc, gallery chín mẫu và preview phân trang trong popup desktop/mobile; album mới mở ngay trong editor. Backend đọc nguồn theo quyền/revision, sao chép WebP riêng, giữ toàn bộ ghi chú, kiểm quota và tránh album trùng khi retry. Nguồn bị xóa không làm mất ảnh trong album mới. Không thêm migration hoặc biến môi trường. Xem `TIMELINE_SCRAPBOOK.md`.
+
+Chủ dự án đã chọn AGPL-3.0-only và chấp thuận ngoại lệ liên kết Remotion. Có toàn văn license, ngoại lệ, font OFL, inventory/notice dependencies và popup giấy phép/link mã nguồn theo commit build. Remotion/dependencies giữ điều kiện riêng; kiểm kê metadata không thay thế việc kiểm tra điều kiện phân phối native binaries/phiên bản Remotion cụ thể.
+
+Kiểm tra bổ sung đã qua: 12 luồng UI cô lập desktop/mobile; 8 unit test import và 2 test giấy phép; PostgreSQL có 42 test qua/1 test dành riêng SQLite được bỏ qua, API, ba người dùng render và backup/restore. Build/typecheck/format đã qua; MP4 import đã trích và xem khung mở đầu/trang ảnh/trang lời nhắn/kết. Các kết quả này dùng fixture local/Cloudinary giả, không xác nhận rollout production hoặc pilot người thật.
+
 ## Ưu tiên tiếp theo
 
 Đã bổ sung xóa tài khoản vĩnh viễn: xác nhận mật khẩu/câu xác nhận trong UI, thu hồi session/share/auth token, hủy export, hàng đợi dọn dữ liệu và media có lease/retry qua restart. Có sổ object trước upload, chặn ghi muộn, dọn thư local, trạng thái theo dõi sau reload và CLI vận hành. API Cloudinary fixture và UI desktop/mobile đã qua; dữ liệu tài khoản khác được giữ. Backup/restore chặn khi còn yêu cầu xóa. Xem `ACCOUNT_DELETION.md` về backup cũ và media mồ côi trước khi có sổ object.

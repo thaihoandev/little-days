@@ -139,6 +139,21 @@ try {
     'image/jpeg',
   );
   assert.equal((await bob(journal.assets[0].url.replace('/api', ''))).status, 404);
+  const importBody = {
+    requestId: crypto.randomUUID(),
+    title: 'Từ lịch của Alice',
+    names: ['An', 'Bình'],
+    timezone: 'Asia/Ho_Chi_Minh',
+    templateId: 'postcard',
+    sources: [{ kind: 'journal', id: journal.id, expectedRevision: journal.revision }],
+  };
+  assert.equal((await bob('/albums/from-journal', 'POST', importBody)).status, 404);
+  const importedResponse = await alice('/albums/from-journal', 'POST', importBody);
+  assert.equal(importedResponse.status, 201);
+  const imported: Album = await importedResponse.json();
+  assert.equal(imported.memories[0].body, journal.note);
+  assert.notEqual(imported.assets[0].id, journal.assets[0].id);
+  assert.equal((await bob(imported.assets[0].url.replace('/api', ''))).status, 404);
   assert.equal(
     (
       await alice('/journal/' + journal.id, 'PATCH', {
@@ -153,6 +168,12 @@ try {
       .status,
     200,
   );
+  assert.equal((await alice(imported.assets[0].url.replace('/api', ''))).status, 200);
+  assert.equal(
+    (await (await alice('/albums/from-journal', 'POST', importBody)).json()).id,
+    imported.id,
+  );
+  assert.equal((await alice('/albums/' + imported.id, 'DELETE')).status, 200);
   const updated: Album = await (
     await alice(`/albums/${id}`, 'PATCH', {
       expectedRevision: revision,

@@ -78,6 +78,7 @@ import {
 } from '../../../packages/domain/presets.js';
 import { counterStyleNames } from '../../../packages/domain/counter.js';
 import { ElementContent } from '../../../packages/scrapbook-renderer/index.js';
+import { LegalLinks } from './LegalLinks.js';
 import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 import type { PublicUser } from './AccountSettings.js';
 const AccountSettings = lazy(() => import('./AccountSettings.js'));
@@ -361,6 +362,10 @@ export default function App() {
               albums={albums}
               mode={section as 'home' | 'timeline' | 'calendar'}
               onOpenAlbum={setActive}
+              onCreatedAlbum={(album) => {
+                setAlbums((items) => [album, ...items]);
+                setActive(album);
+              }}
             />
           )}
           {section === 'albums' || section === 'home' ? (
@@ -530,6 +535,9 @@ export default function App() {
               )}
             </section>
           ) : null}
+          <div className="dashboard-legal">
+            <LegalLinks />
+          </div>
         </main>
       </div>
       {photoPreview && (
@@ -1677,6 +1685,7 @@ function Editor({
               />
             </Suspense>
             <div className="editor-bottom">
+              <LegalLinks />
               <span>
                 <Lock size={12} /> Chỉ bạn có thể chỉnh sửa
               </span>

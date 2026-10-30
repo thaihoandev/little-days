@@ -68,6 +68,7 @@ import { Observability, logEvent } from './observability.js';
 import { OpsMonitor } from './ops-monitor.js';
 import { BackupLock, backupSafeStore } from './backup-lock.js';
 import { JournalService } from './journal.js';
+import { JournalAlbumService } from './journal-album.js';
 import { normalizePhoto } from './images.js';
 import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 import { videoDurationFrames } from '../../../packages/domain/video.js';
@@ -88,6 +89,7 @@ const mailer = createMailer(dataDir);
 const opsMonitor = new OpsMonitor(repository, mailer);
 const deletion = new AccountDeletion(repository, jobs, store, dataDir, () => backupLock.paused());
 const journal = new JournalService(repository, store, resources, deletion);
+const journalAlbums = new JournalAlbumService(repository, store, resources, deletion);
 const security = new AccountSecurity(
   repository,
   mailer,
@@ -432,6 +434,9 @@ class AppController {
       b.updatedAt.localeCompare(a.updatedAt),
     );
   }
+  @Post('albums/from-journal') async fromJournal(@Req() req: UserRequest, @Body() body: unknown) {
+    return journalAlbums.create(req.userId, body);
+  }
   @Post('albums') async create(@Req() req: UserRequest, @Body() body: unknown) {
     const input = z
       .object({
@@ -462,7 +467,15 @@ class AppController {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    await repository.put('album', album.id, req.userId, album);
+    await repository.transaction(async () => {
+      if (repository.driver === 'postgresql')
+        await repository.query('SELECT pg_advisory_xact_lock(hashtext(?))', [
+          'owner-operation:' + req.userId,
+        ]);
+      if ((await repository.list('album', req.userId)).length >= 30)
+        throw new BadRequestException('Tối đa 30 album.');
+      await repository.put('album', album.id, req.userId, album);
+    });
     return album;
   }
   @Get('albums/:id') async album(@Req() req: UserRequest, @Param('id') id: string) {

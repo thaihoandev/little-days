@@ -34,7 +34,9 @@ Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → st
 - [x] Chín mẫu scrapbook chỉnh layout được, có preview trong tạo album và thêm trang; giữ mẫu cá nhân.
 - [x] Thư viện bốn bản nhạc, nghe thử/lưu lựa chọn và dùng trong preview/MP4; nhạc bổ sung tổng hợp bằng mã, đã kiểm tra âm thanh MP4 thật.
 - [ ] Deploy bản lịch/timeline/nhạc lên API/frontend và cập nhật worker hiện có cùng phiên bản; không cần thêm biến môi trường. Xem `CALENDAR_TIMELINE.md`.
-- [ ] Đối chiếu license và nghiệm thu phát hành theo mô hình sử dụng thực tế.
+- [x] Chọn mốc timeline → xem trước chín mẫu → tạo scrapbook với ngày/lời nhắn/ảnh sao chép riêng, phân trang và chỉnh layout tiếp.
+- [x] AGPL-3.0-only kèm ngoại lệ liên kết Remotion được chủ dự án chấp thuận; giấy phép/font notices, kiểm kê dependency và liên kết source theo commit build trong UI.
+- [ ] Kiểm tra điều kiện Remotion/native binaries theo phiên bản và mô hình phát hành thực tế; nghiệm thu rollout trên hạ tầng đích.
 
 **Pilot 3–5 người thật được bỏ qua theo yêu cầu của người dùng ngày 30/10/2026.** Giữ các kiểm thử tự động để phát triển tiếp; không ghi nhận pilot là đã thực hiện.
 

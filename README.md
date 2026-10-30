@@ -240,6 +240,12 @@ Muốn chạy free, không thuê VPS: xem [FREE_HOSTING.md](FREE_HOSTING.md). Đ
 
 Không công bố bản local như dịch vụ production nhiều người dùng trước khi hoàn thiện các mục này. Kiểm tra điều kiện license Remotion phù hợp mô hình sử dụng trước khi thương mại hóa.
 
+## Tạo sổ từ timeline và giấy phép
+
+Trong **Dòng thời gian**, chọn các mốc → **Tạo scrapbook** → chọn mẫu, tên sổ và hai tên → xem trước → tạo. Ngày, lời nhắn và ảnh được sao chép vào album mới để chỉnh layout; xóa nguồn không làm mất bản sao. Xem [TIMELINE_SCRAPBOOK.md](TIMELINE_SCRAPBOOK.md) về giới hạn, retry và triển khai.
+
+Mã gốc dùng **AGPL-3.0-only kèm ngoại lệ Remotion** đã được chủ dự án chấp thuận. Xem [LICENSE.md](LICENSE.md), [LICENSE](LICENSE), [ngoại lệ](LICENSE-REMOTION-EXCEPTION.md) và [third-party notices](THIRD_PARTY_NOTICES.md). Thư viện/font/native binary giữ giấy phép riêng; ảnh và lời nhắn của người dùng không tự được cấp phép theo AGPL. Giao diện có liên kết giấy phép và mã nguồn tương ứng với commit build. `npm run legal:prepare` chạy tự động trước build/dev; `npm run licenses:inventory` cập nhật kiểm kê khi đổi dependencies. Không cần thêm `.env`.
+
 ## Kế hoạch gốc
 
 Ba project skill đã được chuẩn bị trong `skills/couple-scrapbook-editor/`, `skills/couple-scrapbook-backend/` và `skills/couple-scrapbook-video/`. Chúng mô tả implementation thực tế và chưa được cài vào cấu hình skill global của Codex.

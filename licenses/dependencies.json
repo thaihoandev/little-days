@@ -1,0 +1,6875 @@
+{
+  "schemaVersion": 1,
+  "lockSha256": "8b1e50ce3a11bafe9c6442d17cdd4bbe8bc8465d8e87740ca3d763d078f1e806",
+  "platform": "win32",
+  "architecture": "x64",
+  "entries": [
+    {
+      "name": "@aws-sdk/checksums",
+      "version": "3.1001.7",
+      "location": "node_modules/@aws-sdk/checksums",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/client-s3",
+      "version": "3.1159.0",
+      "location": "node_modules/@aws-sdk/client-s3",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/core",
+      "version": "3.978.7",
+      "location": "node_modules/@aws-sdk/core",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/credential-provider-env",
+      "version": "3.972.78",
+      "location": "node_modules/@aws-sdk/credential-provider-env",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/credential-provider-http",
+      "version": "3.972.80",
+      "location": "node_modules/@aws-sdk/credential-provider-http",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@aws-sdk/credential-provider-ini",
+      "version": "3.973.23",
+      "location": "node_modules/@aws-sdk/credential-provider-ini",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/credential-provider-login",
+      "version": "3.972.85",
+      "location": "node_modules/@aws-sdk/credential-provider-login",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@aws-sdk/credential-provider-node",
+      "version": "3.972.90",
+      "location": "node_modules/@aws-sdk/credential-provider-node",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/credential-provider-process",
+      "version": "3.972.78",
+      "location": "node_modules/@aws-sdk/credential-provider-process",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/credential-provider-sso",
+      "version": "3.973.22",
+      "location": "node_modules/@aws-sdk/credential-provider-sso",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/credential-provider-web-identity",
+      "version": "3.972.84",
+      "location": "node_modules/@aws-sdk/credential-provider-web-identity",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/middleware-sdk-s3",
+      "version": "3.972.83",
+      "location": "node_modules/@aws-sdk/middleware-sdk-s3",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/nested-clients",
+      "version": "3.997.52",
+      "location": "node_modules/@aws-sdk/nested-clients",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@aws-sdk/signature-v4-multi-region",
+      "version": "3.996.50",
+      "location": "node_modules/@aws-sdk/signature-v4-multi-region",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/token-providers",
+      "version": "3.1159.0",
+      "location": "node_modules/@aws-sdk/token-providers",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/types",
+      "version": "3.975.0",
+      "location": "node_modules/@aws-sdk/types",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws-sdk/xml-builder",
+      "version": "3.972.42",
+      "location": "node_modules/@aws-sdk/xml-builder",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@aws/lambda-invoke-store",
+      "version": "0.3.0",
+      "location": "node_modules/@aws/lambda-invoke-store",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/code-frame",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/code-frame",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/compat-data",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/compat-data",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/core",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/core",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/parser",
+      "version": "7.29.11",
+      "location": "node_modules/@babel/core/node_modules/@babel/parser",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "semver",
+      "version": "6.3.1",
+      "location": "node_modules/@babel/core/node_modules/semver",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/generator",
+      "version": "7.29.8",
+      "location": "node_modules/@babel/generator",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/parser",
+      "version": "7.29.11",
+      "location": "node_modules/@babel/generator/node_modules/@babel/parser",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/helper-compilation-targets",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/helper-compilation-targets",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "semver",
+      "version": "6.3.1",
+      "location": "node_modules/@babel/helper-compilation-targets/node_modules/semver",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/helper-globals",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/helper-globals",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/helper-module-imports",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/helper-module-imports",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/helper-module-transforms",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/helper-module-transforms",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/helper-plugin-utils",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/helper-plugin-utils",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/helper-string-parser",
+      "version": "7.29.11",
+      "location": "node_modules/@babel/helper-string-parser",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/helper-validator-identifier",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/helper-validator-identifier",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/helper-validator-option",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/helper-validator-option",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/helpers",
+      "version": "7.29.10",
+      "location": "node_modules/@babel/helpers",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/parser",
+      "version": "7.24.1",
+      "location": "node_modules/@babel/parser",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/plugin-transform-react-jsx-self",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/plugin-transform-react-jsx-self",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/plugin-transform-react-jsx-source",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/plugin-transform-react-jsx-source",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/template",
+      "version": "7.29.7",
+      "location": "node_modules/@babel/template",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/parser",
+      "version": "7.29.11",
+      "location": "node_modules/@babel/template/node_modules/@babel/parser",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/traverse",
+      "version": "7.29.10",
+      "location": "node_modules/@babel/traverse",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/parser",
+      "version": "7.29.11",
+      "location": "node_modules/@babel/traverse/node_modules/@babel/parser",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@babel/types",
+      "version": "7.29.11",
+      "location": "node_modules/@babel/types",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@borewit/text-codec",
+      "version": "0.2.2",
+      "location": "node_modules/@borewit/text-codec",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@emnapi/core",
+      "version": "1.11.3",
+      "location": "node_modules/@emnapi/core",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@emnapi/runtime",
+      "version": "1.11.3",
+      "location": "node_modules/@emnapi/runtime",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@emnapi/wasi-threads",
+      "version": "1.2.3",
+      "location": "node_modules/@emnapi/wasi-threads",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/aix-ppc64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/aix-ppc64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/android-arm",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/android-arm",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/android-arm64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/android-arm64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/android-x64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/android-x64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/darwin-arm64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/darwin-arm64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/darwin-x64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/darwin-x64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/freebsd-arm64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/freebsd-arm64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/freebsd-x64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/freebsd-x64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-arm",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/linux-arm",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-arm64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/linux-arm64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-ia32",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/linux-ia32",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-loong64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/linux-loong64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-mips64el",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/linux-mips64el",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-ppc64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/linux-ppc64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-riscv64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/linux-riscv64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-s390x",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/linux-s390x",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-x64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/linux-x64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/netbsd-arm64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/netbsd-arm64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/netbsd-x64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/netbsd-x64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/openbsd-arm64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/openbsd-arm64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/openbsd-x64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/openbsd-x64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/openharmony-arm64",
+      "version": "0.28.2",
+      "location": "node_modules/@esbuild/openharmony-arm64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/sunos-x64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/sunos-x64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/win32-arm64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/win32-arm64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/win32-ia32",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/win32-ia32",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/win32-x64",
+      "version": "0.25.0",
+      "location": "node_modules/@esbuild/win32-x64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@fontsource/be-vietnam-pro",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/be-vietnam-pro",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@fontsource/caveat",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/caveat",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@fontsource/lora",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/lora",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@fontsource/patrick-hand",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/patrick-hand",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/colour",
+      "version": "1.1.0",
+      "location": "node_modules/@img/colour",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-darwin-arm64",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-darwin-arm64",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-darwin-x64",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-darwin-x64",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-libvips-darwin-arm64",
+      "version": "1.2.4",
+      "location": "node_modules/@img/sharp-libvips-darwin-arm64",
+      "license": "LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-libvips-darwin-x64",
+      "version": "1.2.4",
+      "location": "node_modules/@img/sharp-libvips-darwin-x64",
+      "license": "LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm",
+      "version": "1.2.4",
+      "location": "node_modules/@img/sharp-libvips-linux-arm",
+      "license": "LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-libvips-linux-arm64",
+      "version": "1.2.4",
+      "location": "node_modules/@img/sharp-libvips-linux-arm64",
+      "license": "LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-libvips-linux-ppc64",
+      "version": "1.2.4",
+      "location": "node_modules/@img/sharp-libvips-linux-ppc64",
+      "license": "LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-libvips-linux-riscv64",
+      "version": "1.2.4",
+      "location": "node_modules/@img/sharp-libvips-linux-riscv64",
+      "license": "LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-libvips-linux-s390x",
+      "version": "1.2.4",
+      "location": "node_modules/@img/sharp-libvips-linux-s390x",
+      "license": "LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-libvips-linux-x64",
+      "version": "1.2.4",
+      "location": "node_modules/@img/sharp-libvips-linux-x64",
+      "license": "LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-arm64",
+      "version": "1.2.4",
+      "location": "node_modules/@img/sharp-libvips-linuxmusl-arm64",
+      "license": "LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-libvips-linuxmusl-x64",
+      "version": "1.2.4",
+      "location": "node_modules/@img/sharp-libvips-linuxmusl-x64",
+      "license": "LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-linux-arm",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-linux-arm",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-linux-arm64",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-linux-arm64",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-linux-ppc64",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-linux-ppc64",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-linux-riscv64",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-linux-riscv64",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-linux-s390x",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-linux-s390x",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-linux-x64",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-linux-x64",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-linuxmusl-arm64",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-linuxmusl-arm64",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-linuxmusl-x64",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-linuxmusl-x64",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-wasm32",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-wasm32",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later AND MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-win32-arm64",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-win32-arm64",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-win32-ia32",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-win32-ia32",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@img/sharp-win32-x64",
+      "version": "0.34.5",
+      "location": "node_modules/@img/sharp-win32-x64",
+      "license": "Apache-2.0 AND LGPL-3.0-or-later",
+      "dev": false,
+      "optional": true,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@jridgewell/gen-mapping",
+      "version": "0.3.13",
+      "location": "node_modules/@jridgewell/gen-mapping",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@jridgewell/remapping",
+      "version": "2.3.5",
+      "location": "node_modules/@jridgewell/remapping",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@jridgewell/resolve-uri",
+      "version": "3.1.2",
+      "location": "node_modules/@jridgewell/resolve-uri",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@jridgewell/source-map",
+      "version": "0.3.11",
+      "location": "node_modules/@jridgewell/source-map",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@jridgewell/sourcemap-codec",
+      "version": "1.6.0",
+      "location": "node_modules/@jridgewell/sourcemap-codec",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@jridgewell/trace-mapping",
+      "version": "0.3.31",
+      "location": "node_modules/@jridgewell/trace-mapping",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@lukeed/csprng",
+      "version": "1.1.0",
+      "location": "node_modules/@lukeed/csprng",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@mediabunny/aac-encoder",
+      "version": "1.39.2",
+      "location": "node_modules/@mediabunny/aac-encoder",
+      "license": "MPL-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@mediabunny/flac-encoder",
+      "version": "1.39.2",
+      "location": "node_modules/@mediabunny/flac-encoder",
+      "license": "MPL-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@mediabunny/mp3-encoder",
+      "version": "1.39.2",
+      "location": "node_modules/@mediabunny/mp3-encoder",
+      "license": "MPL-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@module-federation/error-codes",
+      "version": "0.22.0",
+      "location": "node_modules/@module-federation/error-codes",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@module-federation/runtime",
+      "version": "0.22.0",
+      "location": "node_modules/@module-federation/runtime",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@module-federation/runtime-core",
+      "version": "0.22.0",
+      "location": "node_modules/@module-federation/runtime-core",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@module-federation/runtime-tools",
+      "version": "0.22.0",
+      "location": "node_modules/@module-federation/runtime-tools",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@module-federation/sdk",
+      "version": "0.22.0",
+      "location": "node_modules/@module-federation/sdk",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@module-federation/webpack-bundler-runtime",
+      "version": "0.22.0",
+      "location": "node_modules/@module-federation/webpack-bundler-runtime",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@napi-rs/lzma-linux-x64-gnu",
+      "version": "1.5.1",
+      "location": "node_modules/@napi-rs/lzma-linux-x64-gnu",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@napi-rs/wasm-runtime",
+      "version": "1.0.7",
+      "location": "node_modules/@napi-rs/wasm-runtime",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@nestjs/common",
+      "version": "11.2.8",
+      "location": "node_modules/@nestjs/common",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@nestjs/core",
+      "version": "11.2.8",
+      "location": "node_modules/@nestjs/core",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@nestjs/platform-express",
+      "version": "11.2.8",
+      "location": "node_modules/@nestjs/platform-express",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "content-disposition",
+      "version": "1.1.0",
+      "location": "node_modules/@nestjs/platform-express/node_modules/content-disposition",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "content-type",
+      "version": "1.0.5",
+      "location": "node_modules/@nestjs/platform-express/node_modules/content-type",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "cookie-signature",
+      "version": "1.2.2",
+      "location": "node_modules/@nestjs/platform-express/node_modules/cookie-signature",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "express",
+      "version": "5.2.1",
+      "location": "node_modules/@nestjs/platform-express/node_modules/express",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "media-typer",
+      "version": "0.3.0",
+      "location": "node_modules/@nestjs/platform-express/node_modules/media-typer",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "mime-db",
+      "version": "1.52.0",
+      "location": "node_modules/@nestjs/platform-express/node_modules/mime-db",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "multer",
+      "version": "2.4.0",
+      "location": "node_modules/@nestjs/platform-express/node_modules/multer",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "mime-types",
+      "version": "2.1.35",
+      "location": "node_modules/@nestjs/platform-express/node_modules/multer/node_modules/mime-types",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "type-is",
+      "version": "1.6.18",
+      "location": "node_modules/@nestjs/platform-express/node_modules/multer/node_modules/type-is",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@playwright/test",
+      "version": "1.64.1",
+      "location": "node_modules/@playwright/test",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE",
+        "NOTICE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@remotion/bundler",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/bundler",
+      "license": "SEE LICENSE IN LICENSE.md",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "custom-license-review"
+    },
+    {
+      "name": "mime-db",
+      "version": "1.52.0",
+      "location": "node_modules/@remotion/bundler/node_modules/mime-db",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "mime-types",
+      "version": "2.1.35",
+      "location": "node_modules/@remotion/bundler/node_modules/mime-types",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "webpack",
+      "version": "5.105.0",
+      "location": "node_modules/@remotion/bundler/node_modules/webpack",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@remotion/cli",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/cli",
+      "license": "SEE LICENSE IN LICENSE.md",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "custom-license-review"
+    },
+    {
+      "name": "@remotion/compositor-darwin-arm64",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/compositor-darwin-arm64",
+      "license": null,
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "missing-license-metadata"
+    },
+    {
+      "name": "@remotion/compositor-darwin-x64",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/compositor-darwin-x64",
+      "license": null,
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "missing-license-metadata"
+    },
+    {
+      "name": "@remotion/compositor-linux-arm64-gnu",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/compositor-linux-arm64-gnu",
+      "license": null,
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "missing-license-metadata"
+    },
+    {
+      "name": "@remotion/compositor-linux-arm64-musl",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/compositor-linux-arm64-musl",
+      "license": null,
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "missing-license-metadata"
+    },
+    {
+      "name": "@remotion/compositor-linux-x64-gnu",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/compositor-linux-x64-gnu",
+      "license": null,
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "missing-license-metadata"
+    },
+    {
+      "name": "@remotion/compositor-linux-x64-musl",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/compositor-linux-x64-musl",
+      "license": null,
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "missing-license-metadata"
+    },
+    {
+      "name": "@remotion/compositor-win32-x64-msvc",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/compositor-win32-x64-msvc",
+      "license": null,
+      "dev": false,
+      "optional": true,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "missing-license-metadata"
+    },
+    {
+      "name": "@remotion/licensing",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/licensing",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@remotion/media-parser",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/media-parser",
+      "license": "Remotion License https://remotion.dev/license",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "custom-license-review"
+    },
+    {
+      "name": "@remotion/media-utils",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/media-utils",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@remotion/player",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/player",
+      "license": "SEE LICENSE IN LICENSE.md",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "custom-license-review"
+    },
+    {
+      "name": "@remotion/renderer",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/renderer",
+      "license": "SEE LICENSE IN LICENSE.md",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "custom-license-review"
+    },
+    {
+      "name": "source-map",
+      "version": "0.8.0",
+      "location": "node_modules/@remotion/renderer/node_modules/source-map",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@remotion/streaming",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/streaming",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@remotion/studio",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/studio",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@remotion/studio-server",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/studio-server",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "prettier",
+      "version": "3.8.1",
+      "location": "node_modules/@remotion/studio-server/node_modules/prettier",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@remotion/studio-shared",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/studio-shared",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@remotion/zod-types",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/studio/node_modules/@remotion/zod-types",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@remotion/web-renderer",
+      "version": "4.0.440",
+      "location": "node_modules/@remotion/web-renderer",
+      "license": "UNLICENSED",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@rolldown/pluginutils",
+      "version": "1.0.0-beta.27",
+      "location": "node_modules/@rolldown/pluginutils",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-android-arm-eabi",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-android-arm-eabi",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-android-arm64",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-android-arm64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-darwin-arm64",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-darwin-arm64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-darwin-x64",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-darwin-x64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-freebsd-arm64",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-freebsd-arm64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-freebsd-x64",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-freebsd-x64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-arm-gnueabihf",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-arm-gnueabihf",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-arm-musleabihf",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-arm-musleabihf",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-arm64-gnu",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-arm64-gnu",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-arm64-musl",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-arm64-musl",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-loong64-gnu",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-loong64-gnu",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-loong64-musl",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-loong64-musl",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-ppc64-gnu",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-ppc64-gnu",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-ppc64-musl",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-ppc64-musl",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-riscv64-gnu",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-riscv64-gnu",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-riscv64-musl",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-riscv64-musl",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-s390x-gnu",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-s390x-gnu",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-x64-gnu",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-x64-gnu",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-linux-x64-musl",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-linux-x64-musl",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-openbsd-x64",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-openbsd-x64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-openharmony-arm64",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-openharmony-arm64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-win32-arm64-msvc",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-win32-arm64-msvc",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-win32-ia32-msvc",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-win32-ia32-msvc",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rollup/rollup-win32-x64-gnu",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-win32-x64-gnu",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@rollup/rollup-win32-x64-msvc",
+      "version": "4.65.1",
+      "location": "node_modules/@rollup/rollup-win32-x64-msvc",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@rspack/binding",
+      "version": "1.7.6",
+      "location": "node_modules/@rspack/binding",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/binding-darwin-arm64",
+      "version": "1.7.6",
+      "location": "node_modules/@rspack/binding-darwin-arm64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/binding-darwin-x64",
+      "version": "1.7.6",
+      "location": "node_modules/@rspack/binding-darwin-x64",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/binding-linux-arm64-gnu",
+      "version": "1.7.6",
+      "location": "node_modules/@rspack/binding-linux-arm64-gnu",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/binding-linux-arm64-musl",
+      "version": "1.7.6",
+      "location": "node_modules/@rspack/binding-linux-arm64-musl",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/binding-linux-x64-gnu",
+      "version": "1.7.6",
+      "location": "node_modules/@rspack/binding-linux-x64-gnu",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/binding-linux-x64-musl",
+      "version": "1.7.6",
+      "location": "node_modules/@rspack/binding-linux-x64-musl",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/binding-wasm32-wasi",
+      "version": "1.7.6",
+      "location": "node_modules/@rspack/binding-wasm32-wasi",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/binding-win32-arm64-msvc",
+      "version": "1.7.6",
+      "location": "node_modules/@rspack/binding-win32-arm64-msvc",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/binding-win32-ia32-msvc",
+      "version": "1.7.6",
+      "location": "node_modules/@rspack/binding-win32-ia32-msvc",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/binding-win32-x64-msvc",
+      "version": "1.7.6",
+      "location": "node_modules/@rspack/binding-win32-x64-msvc",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/core",
+      "version": "1.7.6",
+      "location": "node_modules/@rspack/core",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/lite-tapable",
+      "version": "1.1.0",
+      "location": "node_modules/@rspack/lite-tapable",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@rspack/plugin-react-refresh",
+      "version": "1.6.1",
+      "location": "node_modules/@rspack/plugin-react-refresh",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@smithy/core",
+      "version": "3.37.0",
+      "location": "node_modules/@smithy/core",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@smithy/credential-provider-imds",
+      "version": "4.5.2",
+      "location": "node_modules/@smithy/credential-provider-imds",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@smithy/fetch-http-handler",
+      "version": "5.8.0",
+      "location": "node_modules/@smithy/fetch-http-handler",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@smithy/node-http-handler",
+      "version": "4.13.0",
+      "location": "node_modules/@smithy/node-http-handler",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@smithy/signature-v4",
+      "version": "5.7.4",
+      "location": "node_modules/@smithy/signature-v4",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@smithy/types",
+      "version": "4.19.0",
+      "location": "node_modules/@smithy/types",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@tokenizer/inflate",
+      "version": "0.4.1",
+      "location": "node_modules/@tokenizer/inflate",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@tokenizer/token",
+      "version": "0.3.0",
+      "location": "node_modules/@tokenizer/token",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "@tybys/wasm-util",
+      "version": "0.10.4",
+      "location": "node_modules/@tybys/wasm-util",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/babel__core",
+      "version": "7.20.5",
+      "location": "node_modules/@types/babel__core",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/babel__generator",
+      "version": "7.27.0",
+      "location": "node_modules/@types/babel__generator",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/babel__template",
+      "version": "7.4.4",
+      "location": "node_modules/@types/babel__template",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/babel__traverse",
+      "version": "7.28.0",
+      "location": "node_modules/@types/babel__traverse",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/body-parser",
+      "version": "1.19.6",
+      "location": "node_modules/@types/body-parser",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/connect",
+      "version": "3.4.38",
+      "location": "node_modules/@types/connect",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/cookie-parser",
+      "version": "1.4.10",
+      "location": "node_modules/@types/cookie-parser",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/dom-mediacapture-transform",
+      "version": "0.1.12",
+      "location": "node_modules/@types/dom-mediacapture-transform",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/dom-webcodecs",
+      "version": "0.1.13",
+      "location": "node_modules/@types/dom-webcodecs",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/eslint",
+      "version": "9.6.1",
+      "location": "node_modules/@types/eslint",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/eslint-scope",
+      "version": "3.7.7",
+      "location": "node_modules/@types/eslint-scope",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/estree",
+      "version": "1.0.9",
+      "location": "node_modules/@types/estree",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/express",
+      "version": "5.0.6",
+      "location": "node_modules/@types/express",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/express-serve-static-core",
+      "version": "5.1.3",
+      "location": "node_modules/@types/express-serve-static-core",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/http-errors",
+      "version": "2.0.5",
+      "location": "node_modules/@types/http-errors",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/json-schema",
+      "version": "7.0.15",
+      "location": "node_modules/@types/json-schema",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/multer",
+      "version": "2.3.0",
+      "location": "node_modules/@types/multer",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/node",
+      "version": "22.20.5",
+      "location": "node_modules/@types/node",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/nodemailer",
+      "version": "8.0.2",
+      "location": "node_modules/@types/nodemailer",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/pg",
+      "version": "8.23.1",
+      "location": "node_modules/@types/pg",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/qs",
+      "version": "6.15.1",
+      "location": "node_modules/@types/qs",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/range-parser",
+      "version": "1.2.7",
+      "location": "node_modules/@types/range-parser",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/react",
+      "version": "19.3.0",
+      "location": "node_modules/@types/react",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/react-dom",
+      "version": "19.3.0",
+      "location": "node_modules/@types/react-dom",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/react-reconciler",
+      "version": "0.34.0",
+      "location": "node_modules/@types/react-reconciler",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/send",
+      "version": "1.2.1",
+      "location": "node_modules/@types/send",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/serve-static",
+      "version": "2.2.0",
+      "location": "node_modules/@types/serve-static",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/yauzl",
+      "version": "2.10.3",
+      "location": "node_modules/@types/yauzl",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@vitejs/plugin-react",
+      "version": "4.7.0",
+      "location": "node_modules/@vitejs/plugin-react",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "react-refresh",
+      "version": "0.17.0",
+      "location": "node_modules/@vitejs/plugin-react/node_modules/react-refresh",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/ast",
+      "version": "1.14.1",
+      "location": "node_modules/@webassemblyjs/ast",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/floating-point-hex-parser",
+      "version": "1.13.2",
+      "location": "node_modules/@webassemblyjs/floating-point-hex-parser",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/helper-api-error",
+      "version": "1.13.2",
+      "location": "node_modules/@webassemblyjs/helper-api-error",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/helper-buffer",
+      "version": "1.14.1",
+      "location": "node_modules/@webassemblyjs/helper-buffer",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/helper-numbers",
+      "version": "1.13.2",
+      "location": "node_modules/@webassemblyjs/helper-numbers",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/helper-wasm-bytecode",
+      "version": "1.13.2",
+      "location": "node_modules/@webassemblyjs/helper-wasm-bytecode",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/helper-wasm-section",
+      "version": "1.14.1",
+      "location": "node_modules/@webassemblyjs/helper-wasm-section",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/ieee754",
+      "version": "1.13.2",
+      "location": "node_modules/@webassemblyjs/ieee754",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/leb128",
+      "version": "1.13.2",
+      "location": "node_modules/@webassemblyjs/leb128",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/utf8",
+      "version": "1.13.2",
+      "location": "node_modules/@webassemblyjs/utf8",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/wasm-edit",
+      "version": "1.14.1",
+      "location": "node_modules/@webassemblyjs/wasm-edit",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/wasm-gen",
+      "version": "1.14.1",
+      "location": "node_modules/@webassemblyjs/wasm-gen",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/wasm-opt",
+      "version": "1.14.1",
+      "location": "node_modules/@webassemblyjs/wasm-opt",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/wasm-parser",
+      "version": "1.14.1",
+      "location": "node_modules/@webassemblyjs/wasm-parser",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@webassemblyjs/wast-printer",
+      "version": "1.14.1",
+      "location": "node_modules/@webassemblyjs/wast-printer",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@xtuc/ieee754",
+      "version": "1.2.0",
+      "location": "node_modules/@xtuc/ieee754",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@xtuc/long",
+      "version": "4.2.2",
+      "location": "node_modules/@xtuc/long",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "accepts",
+      "version": "2.0.0",
+      "location": "node_modules/accepts",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "acorn",
+      "version": "8.19.0",
+      "location": "node_modules/acorn",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "acorn-import-phases",
+      "version": "1.0.4",
+      "location": "node_modules/acorn-import-phases",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "ajv",
+      "version": "8.20.0",
+      "location": "node_modules/ajv",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "ajv-formats",
+      "version": "3.0.1",
+      "location": "node_modules/ajv-formats",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "ajv-keywords",
+      "version": "5.1.0",
+      "location": "node_modules/ajv-keywords",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "ansi-regex",
+      "version": "5.0.1",
+      "location": "node_modules/ansi-regex",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "ansi-styles",
+      "version": "4.3.0",
+      "location": "node_modules/ansi-styles",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "append-field",
+      "version": "1.0.0",
+      "location": "node_modules/append-field",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "ast-types",
+      "version": "0.16.3",
+      "location": "node_modules/ast-types",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "baseline-browser-mapping",
+      "version": "2.11.34",
+      "location": "node_modules/baseline-browser-mapping",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "big.js",
+      "version": "5.2.2",
+      "location": "node_modules/big.js",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENCE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "body-parser",
+      "version": "2.4.0",
+      "location": "node_modules/body-parser",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "bowser",
+      "version": "2.15.0",
+      "location": "node_modules/bowser",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "browserslist",
+      "version": "4.29.5",
+      "location": "node_modules/browserslist",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "buffer-crc32",
+      "version": "0.2.13",
+      "location": "node_modules/buffer-crc32",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "buffer-from",
+      "version": "1.1.2",
+      "location": "node_modules/buffer-from",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "busboy",
+      "version": "1.6.0",
+      "location": "node_modules/busboy",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "missing-license-metadata"
+    },
+    {
+      "name": "bytes",
+      "version": "3.1.2",
+      "location": "node_modules/bytes",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "call-bind-apply-helpers",
+      "version": "1.0.2",
+      "location": "node_modules/call-bind-apply-helpers",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "call-bound",
+      "version": "1.0.4",
+      "location": "node_modules/call-bound",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "caniuse-lite",
+      "version": "1.0.30001819",
+      "location": "node_modules/caniuse-lite",
+      "license": "CC-BY-4.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "chalk",
+      "version": "4.1.2",
+      "location": "node_modules/chalk",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "supports-color",
+      "version": "7.2.0",
+      "location": "node_modules/chalk/node_modules/supports-color",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "chrome-trace-event",
+      "version": "1.0.4",
+      "location": "node_modules/chrome-trace-event",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "cliui",
+      "version": "8.0.1",
+      "location": "node_modules/cliui",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "cloudinary",
+      "version": "2.11.0",
+      "location": "node_modules/cloudinary",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "color-convert",
+      "version": "2.0.1",
+      "location": "node_modules/color-convert",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "color-name",
+      "version": "1.1.4",
+      "location": "node_modules/color-name",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "commander",
+      "version": "2.20.3",
+      "location": "node_modules/commander",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "concurrently",
+      "version": "9.2.5",
+      "location": "node_modules/concurrently",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "content-disposition",
+      "version": "2.0.1",
+      "location": "node_modules/content-disposition",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "content-type",
+      "version": "2.1.0",
+      "location": "node_modules/content-type",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "convert-source-map",
+      "version": "2.0.0",
+      "location": "node_modules/convert-source-map",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "cookie",
+      "version": "0.7.2",
+      "location": "node_modules/cookie",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "cookie-parser",
+      "version": "1.4.7",
+      "location": "node_modules/cookie-parser",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "cookie-signature",
+      "version": "1.0.6",
+      "location": "node_modules/cookie-signature",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "cors",
+      "version": "2.8.6",
+      "location": "node_modules/cors",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "cross-spawn",
+      "version": "7.0.6",
+      "location": "node_modules/cross-spawn",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "csstype",
+      "version": "3.2.3",
+      "location": "node_modules/csstype",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "debug",
+      "version": "4.4.3",
+      "location": "node_modules/debug",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "define-lazy-prop",
+      "version": "2.0.0",
+      "location": "node_modules/define-lazy-prop",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "depd",
+      "version": "2.0.0",
+      "location": "node_modules/depd",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "detect-libc",
+      "version": "2.1.2",
+      "location": "node_modules/detect-libc",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "dotenv",
+      "version": "17.3.1",
+      "location": "node_modules/dotenv",
+      "license": "BSD-2-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "dunder-proto",
+      "version": "1.0.1",
+      "location": "node_modules/dunder-proto",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "ee-first",
+      "version": "1.1.1",
+      "location": "node_modules/ee-first",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "electron-to-chromium",
+      "version": "1.5.467",
+      "location": "node_modules/electron-to-chromium",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "emoji-regex",
+      "version": "8.0.0",
+      "location": "node_modules/emoji-regex",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE-MIT.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "emojis-list",
+      "version": "3.0.0",
+      "location": "node_modules/emojis-list",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "encodeurl",
+      "version": "2.0.0",
+      "location": "node_modules/encodeurl",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "end-of-stream",
+      "version": "1.4.5",
+      "location": "node_modules/end-of-stream",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "enhanced-resolve",
+      "version": "5.26.0",
+      "location": "node_modules/enhanced-resolve",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "error-stack-parser",
+      "version": "2.1.4",
+      "location": "node_modules/error-stack-parser",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "es-define-property",
+      "version": "1.0.1",
+      "location": "node_modules/es-define-property",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "es-errors",
+      "version": "1.3.0",
+      "location": "node_modules/es-errors",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "es-module-lexer",
+      "version": "2.3.2",
+      "location": "node_modules/es-module-lexer",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "es-object-atoms",
+      "version": "1.1.2",
+      "location": "node_modules/es-object-atoms",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "esbuild",
+      "version": "0.25.0",
+      "location": "node_modules/esbuild",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "escalade",
+      "version": "3.2.0",
+      "location": "node_modules/escalade",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "escape-html",
+      "version": "1.0.3",
+      "location": "node_modules/escape-html",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "eslint-scope",
+      "version": "5.1.1",
+      "location": "node_modules/eslint-scope",
+      "license": "BSD-2-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "esprima",
+      "version": "4.0.1",
+      "location": "node_modules/esprima",
+      "license": "BSD-2-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.BSD"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "esrecurse",
+      "version": "4.3.0",
+      "location": "node_modules/esrecurse",
+      "license": "BSD-2-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "estraverse",
+      "version": "5.3.0",
+      "location": "node_modules/esrecurse/node_modules/estraverse",
+      "license": "BSD-2-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.BSD"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "estraverse",
+      "version": "4.3.0",
+      "location": "node_modules/estraverse",
+      "license": "BSD-2-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.BSD"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "etag",
+      "version": "1.8.1",
+      "location": "node_modules/etag",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "events",
+      "version": "3.3.0",
+      "location": "node_modules/events",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "execa",
+      "version": "5.1.1",
+      "location": "node_modules/execa",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "express",
+      "version": "5.3.0",
+      "location": "node_modules/express",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "cookie-signature",
+      "version": "1.2.2",
+      "location": "node_modules/express/node_modules/cookie-signature",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "extract-zip",
+      "version": "2.0.1",
+      "location": "node_modules/extract-zip",
+      "license": "BSD-2-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "get-stream",
+      "version": "5.2.0",
+      "location": "node_modules/extract-zip/node_modules/get-stream",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "location": "node_modules/fast-deep-equal",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "fast-safe-stringify",
+      "version": "2.1.1",
+      "location": "node_modules/fast-safe-stringify",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "fast-uri",
+      "version": "3.1.9",
+      "location": "node_modules/fast-uri",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "fd-slicer",
+      "version": "1.1.0",
+      "location": "node_modules/fd-slicer",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "fdir",
+      "version": "6.5.0",
+      "location": "node_modules/fdir",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "file-type",
+      "version": "21.3.4",
+      "location": "node_modules/file-type",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "finalhandler",
+      "version": "2.1.1",
+      "location": "node_modules/finalhandler",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "forwarded",
+      "version": "0.2.0",
+      "location": "node_modules/forwarded",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "framer-motion",
+      "version": "12.43.0",
+      "location": "node_modules/framer-motion",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "fresh",
+      "version": "2.0.0",
+      "location": "node_modules/fresh",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "fs-monkey",
+      "version": "1.0.3",
+      "location": "node_modules/fs-monkey",
+      "license": "Unlicense",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "fsevents",
+      "version": "2.3.3",
+      "location": "node_modules/fsevents",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "function-bind",
+      "version": "1.1.2",
+      "location": "node_modules/function-bind",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "gensync",
+      "version": "1.0.0-beta.2",
+      "location": "node_modules/gensync",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "get-caller-file",
+      "version": "2.0.5",
+      "location": "node_modules/get-caller-file",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "get-intrinsic",
+      "version": "1.3.0",
+      "location": "node_modules/get-intrinsic",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "get-proto",
+      "version": "1.0.1",
+      "location": "node_modules/get-proto",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "get-stream",
+      "version": "6.0.1",
+      "location": "node_modules/get-stream",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "glob-to-regexp",
+      "version": "0.4.1",
+      "location": "node_modules/glob-to-regexp",
+      "license": "BSD-2-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "gopd",
+      "version": "1.2.0",
+      "location": "node_modules/gopd",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "graceful-fs",
+      "version": "4.2.11",
+      "location": "node_modules/graceful-fs",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "has-flag",
+      "version": "4.0.0",
+      "location": "node_modules/has-flag",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "has-symbols",
+      "version": "1.1.0",
+      "location": "node_modules/has-symbols",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "hasown",
+      "version": "2.0.4",
+      "location": "node_modules/hasown",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "html-entities",
+      "version": "2.6.0",
+      "location": "node_modules/html-entities",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "http-errors",
+      "version": "2.0.1",
+      "location": "node_modules/http-errors",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "human-signals",
+      "version": "2.1.0",
+      "location": "node_modules/human-signals",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "iconv-lite",
+      "version": "0.7.3",
+      "location": "node_modules/iconv-lite",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "ieee754",
+      "version": "1.2.1",
+      "location": "node_modules/ieee754",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "inherits",
+      "version": "2.0.4",
+      "location": "node_modules/inherits",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "ipaddr.js",
+      "version": "1.9.1",
+      "location": "node_modules/ipaddr.js",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "is-docker",
+      "version": "2.2.1",
+      "location": "node_modules/is-docker",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "is-fullwidth-code-point",
+      "version": "3.0.0",
+      "location": "node_modules/is-fullwidth-code-point",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "is-promise",
+      "version": "4.0.0",
+      "location": "node_modules/is-promise",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "is-stream",
+      "version": "2.0.1",
+      "location": "node_modules/is-stream",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "is-wsl",
+      "version": "2.2.0",
+      "location": "node_modules/is-wsl",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "isexe",
+      "version": "2.0.0",
+      "location": "node_modules/isexe",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "iterare",
+      "version": "1.2.1",
+      "location": "node_modules/iterare",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "its-fine",
+      "version": "2.1.1",
+      "location": "node_modules/its-fine",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/react-reconciler",
+      "version": "0.28.9",
+      "location": "node_modules/its-fine/node_modules/@types/react-reconciler",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "jest-worker",
+      "version": "27.5.1",
+      "location": "node_modules/jest-worker",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "js-tokens",
+      "version": "4.0.0",
+      "location": "node_modules/js-tokens",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "jsesc",
+      "version": "3.1.0",
+      "location": "node_modules/jsesc",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE-MIT.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "json-parse-even-better-errors",
+      "version": "2.3.1",
+      "location": "node_modules/json-parse-even-better-errors",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "json-schema-traverse",
+      "version": "1.0.0",
+      "location": "node_modules/json-schema-traverse",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "json5",
+      "version": "2.2.3",
+      "location": "node_modules/json5",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "kleur",
+      "version": "3.0.3",
+      "location": "node_modules/kleur",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "konva",
+      "version": "10.9.0",
+      "location": "node_modules/konva",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "load-esm",
+      "version": "1.0.3",
+      "location": "node_modules/load-esm",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "loader-runner",
+      "version": "4.3.2",
+      "location": "node_modules/loader-runner",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "loader-utils",
+      "version": "2.0.2",
+      "location": "node_modules/loader-utils",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "lodash",
+      "version": "4.18.1",
+      "location": "node_modules/lodash",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "lru-cache",
+      "version": "5.1.1",
+      "location": "node_modules/lru-cache",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "lucide-react",
+      "version": "0.468.0",
+      "location": "node_modules/lucide-react",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "math-intrinsics",
+      "version": "1.1.0",
+      "location": "node_modules/math-intrinsics",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "media-typer",
+      "version": "1.1.1",
+      "location": "node_modules/media-typer",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "mediabunny",
+      "version": "1.39.2",
+      "location": "node_modules/mediabunny",
+      "license": "MPL-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "memfs",
+      "version": "3.4.3",
+      "location": "node_modules/memfs",
+      "license": "Unlicense",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "merge-descriptors",
+      "version": "2.0.0",
+      "location": "node_modules/merge-descriptors",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "merge-stream",
+      "version": "2.0.0",
+      "location": "node_modules/merge-stream",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "mime-db",
+      "version": "1.54.0",
+      "location": "node_modules/mime-db",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "mime-types",
+      "version": "3.0.2",
+      "location": "node_modules/mime-types",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "mimic-fn",
+      "version": "2.1.0",
+      "location": "node_modules/mimic-fn",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "minimist",
+      "version": "1.2.6",
+      "location": "node_modules/minimist",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "minimizer-webpack-plugin",
+      "version": "5.13.1",
+      "location": "node_modules/minimizer-webpack-plugin",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "motion",
+      "version": "12.43.0",
+      "location": "node_modules/motion",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "motion-dom",
+      "version": "12.43.0",
+      "location": "node_modules/motion-dom",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "motion-utils",
+      "version": "12.39.0",
+      "location": "node_modules/motion-utils",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "ms",
+      "version": "2.1.3",
+      "location": "node_modules/ms",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "multer",
+      "version": "2.5.0",
+      "location": "node_modules/multer",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "media-typer",
+      "version": "0.3.0",
+      "location": "node_modules/multer/node_modules/media-typer",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "mime-db",
+      "version": "1.52.0",
+      "location": "node_modules/multer/node_modules/mime-db",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "mime-types",
+      "version": "2.1.35",
+      "location": "node_modules/multer/node_modules/mime-types",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "type-is",
+      "version": "1.6.18",
+      "location": "node_modules/multer/node_modules/type-is",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "nanoid",
+      "version": "3.3.20",
+      "location": "node_modules/nanoid",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "negotiator",
+      "version": "1.1.0",
+      "location": "node_modules/negotiator",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "neo-async",
+      "version": "2.6.2",
+      "location": "node_modules/neo-async",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "node-releases",
+      "version": "2.0.60",
+      "location": "node_modules/node-releases",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "nodemailer",
+      "version": "10.2.1",
+      "location": "node_modules/nodemailer",
+      "license": "MIT-0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "npm-run-path",
+      "version": "4.0.1",
+      "location": "node_modules/npm-run-path",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "object-assign",
+      "version": "4.1.1",
+      "location": "node_modules/object-assign",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "object-inspect",
+      "version": "1.13.4",
+      "location": "node_modules/object-inspect",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "on-finished",
+      "version": "2.4.2",
+      "location": "node_modules/on-finished",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "once",
+      "version": "1.4.0",
+      "location": "node_modules/once",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "onetime",
+      "version": "5.1.2",
+      "location": "node_modules/onetime",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "open",
+      "version": "8.4.2",
+      "location": "node_modules/open",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "parseurl",
+      "version": "1.3.3",
+      "location": "node_modules/parseurl",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "path-key",
+      "version": "3.1.1",
+      "location": "node_modules/path-key",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "path-to-regexp",
+      "version": "8.4.2",
+      "location": "node_modules/path-to-regexp",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "pend",
+      "version": "1.2.0",
+      "location": "node_modules/pend",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "pg",
+      "version": "8.23.1",
+      "location": "node_modules/pg",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "pg-cloudflare",
+      "version": "1.4.1",
+      "location": "node_modules/pg-cloudflare",
+      "license": "MIT",
+      "dev": false,
+      "optional": true,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "pg-connection-string",
+      "version": "2.14.1",
+      "location": "node_modules/pg-connection-string",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "pg-int8",
+      "version": "1.0.1",
+      "location": "node_modules/pg-int8",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "pg-pool",
+      "version": "3.14.0",
+      "location": "node_modules/pg-pool",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "pg-protocol",
+      "version": "1.16.1",
+      "location": "node_modules/pg-protocol",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "pg-types",
+      "version": "2.2.0",
+      "location": "node_modules/pg-types",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "pgpass",
+      "version": "1.0.5",
+      "location": "node_modules/pgpass",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "picocolors",
+      "version": "1.1.1",
+      "location": "node_modules/picocolors",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "picomatch",
+      "version": "4.0.7",
+      "location": "node_modules/picomatch",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "playwright",
+      "version": "1.64.1",
+      "location": "node_modules/playwright",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE",
+        "NOTICE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "playwright-core",
+      "version": "1.64.1",
+      "location": "node_modules/playwright-core",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE",
+        "NOTICE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "postcss",
+      "version": "8.5.1",
+      "location": "node_modules/postcss",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "postcss-value-parser",
+      "version": "4.2.0",
+      "location": "node_modules/postcss-value-parser",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "postgres-array",
+      "version": "2.0.0",
+      "location": "node_modules/postgres-array",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "postgres-bytea",
+      "version": "1.0.1",
+      "location": "node_modules/postgres-bytea",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "postgres-date",
+      "version": "1.0.7",
+      "location": "node_modules/postgres-date",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "postgres-interval",
+      "version": "1.2.0",
+      "location": "node_modules/postgres-interval",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "prettier",
+      "version": "3.9.10",
+      "location": "node_modules/prettier",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "prompts",
+      "version": "2.4.2",
+      "location": "node_modules/prompts",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "proxy-addr",
+      "version": "2.0.8",
+      "location": "node_modules/proxy-addr",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "pump",
+      "version": "3.0.4",
+      "location": "node_modules/pump",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "qs",
+      "version": "6.17.0",
+      "location": "node_modules/qs",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "range-parser",
+      "version": "1.3.0",
+      "location": "node_modules/range-parser",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "raw-body",
+      "version": "3.0.2",
+      "location": "node_modules/raw-body",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "react",
+      "version": "19.3.1",
+      "location": "node_modules/react",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "react-dom",
+      "version": "19.3.1",
+      "location": "node_modules/react-dom",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "react-konva",
+      "version": "19.3.2",
+      "location": "node_modules/react-konva",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "react-reconciler",
+      "version": "0.34.0",
+      "location": "node_modules/react-reconciler",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "react-refresh",
+      "version": "0.18.0",
+      "location": "node_modules/react-refresh",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "recast",
+      "version": "0.23.11",
+      "location": "node_modules/recast",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "source-map",
+      "version": "0.6.1",
+      "location": "node_modules/recast/node_modules/source-map",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "reflect-metadata",
+      "version": "0.2.2",
+      "location": "node_modules/reflect-metadata",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "remotion",
+      "version": "4.0.440",
+      "location": "node_modules/remotion",
+      "license": "SEE LICENSE IN LICENSE.md",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "custom-license-review"
+    },
+    {
+      "name": "require-directory",
+      "version": "2.1.1",
+      "location": "node_modules/require-directory",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "require-from-string",
+      "version": "2.0.2",
+      "location": "node_modules/require-from-string",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "rollup",
+      "version": "4.65.1",
+      "location": "node_modules/rollup",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "router",
+      "version": "2.2.0",
+      "location": "node_modules/router",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "rxjs",
+      "version": "7.8.2",
+      "location": "node_modules/rxjs",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "safer-buffer",
+      "version": "2.1.2",
+      "location": "node_modules/safer-buffer",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "scheduler",
+      "version": "0.28.0",
+      "location": "node_modules/scheduler",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "schema-utils",
+      "version": "4.8.1",
+      "location": "node_modules/schema-utils",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "semver",
+      "version": "7.5.3",
+      "location": "node_modules/semver",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "lru-cache",
+      "version": "6.0.0",
+      "location": "node_modules/semver/node_modules/lru-cache",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "yallist",
+      "version": "4.0.0",
+      "location": "node_modules/semver/node_modules/yallist",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "send",
+      "version": "1.2.1",
+      "location": "node_modules/send",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "serve-static",
+      "version": "2.2.1",
+      "location": "node_modules/serve-static",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "setprototypeof",
+      "version": "1.2.0",
+      "location": "node_modules/setprototypeof",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "sharp",
+      "version": "0.34.5",
+      "location": "node_modules/sharp",
+      "license": "Apache-2.0",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "semver",
+      "version": "7.8.5",
+      "location": "node_modules/sharp/node_modules/semver",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "shebang-command",
+      "version": "2.0.0",
+      "location": "node_modules/shebang-command",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "shebang-regex",
+      "version": "3.0.0",
+      "location": "node_modules/shebang-regex",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "shell-quote",
+      "version": "1.12.0",
+      "location": "node_modules/shell-quote",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "side-channel",
+      "version": "1.1.1",
+      "location": "node_modules/side-channel",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "side-channel-list",
+      "version": "1.0.1",
+      "location": "node_modules/side-channel-list",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "side-channel-map",
+      "version": "1.0.1",
+      "location": "node_modules/side-channel-map",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "side-channel-weakmap",
+      "version": "1.0.2",
+      "location": "node_modules/side-channel-weakmap",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "signal-exit",
+      "version": "3.0.7",
+      "location": "node_modules/signal-exit",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "sisteransi",
+      "version": "1.0.5",
+      "location": "node_modules/sisteransi",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "source-map",
+      "version": "0.7.3",
+      "location": "node_modules/source-map",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "source-map-js",
+      "version": "1.2.2",
+      "location": "node_modules/source-map-js",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "source-map-support",
+      "version": "0.5.21",
+      "location": "node_modules/source-map-support",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "source-map",
+      "version": "0.6.1",
+      "location": "node_modules/source-map-support/node_modules/source-map",
+      "license": "BSD-3-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "split2",
+      "version": "4.2.0",
+      "location": "node_modules/split2",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "stackframe",
+      "version": "1.3.4",
+      "location": "node_modules/stackframe",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "statuses",
+      "version": "2.0.2",
+      "location": "node_modules/statuses",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "streamsearch",
+      "version": "1.1.0",
+      "location": "node_modules/streamsearch",
+      "license": null,
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "missing-license-metadata"
+    },
+    {
+      "name": "string-width",
+      "version": "4.2.3",
+      "location": "node_modules/string-width",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "strip-ansi",
+      "version": "6.0.1",
+      "location": "node_modules/strip-ansi",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "strip-final-newline",
+      "version": "2.0.0",
+      "location": "node_modules/strip-final-newline",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "strtok3",
+      "version": "10.6.3",
+      "location": "node_modules/strtok3",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "style-loader",
+      "version": "4.0.0",
+      "location": "node_modules/style-loader",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "supports-color",
+      "version": "8.1.1",
+      "location": "node_modules/supports-color",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "tapable",
+      "version": "2.3.3",
+      "location": "node_modules/tapable",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "terser",
+      "version": "5.51.2",
+      "location": "node_modules/terser",
+      "license": "BSD-2-Clause",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "terser-webpack-plugin",
+      "version": "5.6.1",
+      "location": "node_modules/terser-webpack-plugin",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "tiny-invariant",
+      "version": "1.3.3",
+      "location": "node_modules/tiny-invariant",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "tinyglobby",
+      "version": "0.2.17",
+      "location": "node_modules/tinyglobby",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "toidentifier",
+      "version": "1.0.1",
+      "location": "node_modules/toidentifier",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "token-types",
+      "version": "6.1.2",
+      "location": "node_modules/token-types",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "tree-kill",
+      "version": "1.2.2",
+      "location": "node_modules/tree-kill",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "tslib",
+      "version": "2.8.1",
+      "location": "node_modules/tslib",
+      "license": "0BSD",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "tsx",
+      "version": "4.23.15",
+      "location": "node_modules/tsx",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/aix-ppc64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/aix-ppc64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/android-arm",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/android-arm",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/android-arm64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/android-arm64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/android-x64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/android-x64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/darwin-arm64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/darwin-arm64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/darwin-x64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/darwin-x64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/freebsd-arm64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/freebsd-arm64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/freebsd-x64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/freebsd-x64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-arm",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/linux-arm",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-arm64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/linux-arm64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-ia32",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/linux-ia32",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-loong64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/linux-loong64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-mips64el",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/linux-mips64el",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-ppc64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/linux-ppc64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-riscv64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/linux-riscv64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-s390x",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/linux-s390x",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/linux-x64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/linux-x64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/netbsd-arm64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/netbsd-arm64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/netbsd-x64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/netbsd-x64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/openbsd-arm64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/openbsd-arm64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/openbsd-x64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/openbsd-x64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/sunos-x64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/sunos-x64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/win32-arm64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/win32-arm64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/win32-ia32",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/win32-ia32",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": false,
+      "noticeFiles": [],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@esbuild/win32-x64",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/@esbuild/win32-x64",
+      "license": "MIT",
+      "dev": true,
+      "optional": true,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
+    },
+    {
+      "name": "esbuild",
+      "version": "0.28.2",
+      "location": "node_modules/tsx/node_modules/esbuild",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "type-is",
+      "version": "2.1.0",
+      "location": "node_modules/type-is",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "typescript",
+      "version": "5.9.3",
+      "location": "node_modules/typescript",
+      "license": "Apache-2.0",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "uid",
+      "version": "2.0.2",
+      "location": "node_modules/uid",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "uint8array-extras",
+      "version": "1.6.0",
+      "location": "node_modules/uint8array-extras",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "undici-types",
+      "version": "6.21.0",
+      "location": "node_modules/undici-types",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "unpipe",
+      "version": "1.0.0",
+      "location": "node_modules/unpipe",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "update-browserslist-db",
+      "version": "1.3.4",
+      "location": "node_modules/update-browserslist-db",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "vary",
+      "version": "1.1.2",
+      "location": "node_modules/vary",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "vite",
+      "version": "6.4.5",
+      "location": "node_modules/vite",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "postcss",
+      "version": "8.5.32",
+      "location": "node_modules/vite/node_modules/postcss",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "watchpack",
+      "version": "2.6.3",
+      "location": "node_modules/watchpack",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "webpack",
+      "version": "5.112.2",
+      "location": "node_modules/webpack",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "webpack-sources",
+      "version": "3.6.0",
+      "location": "node_modules/webpack-sources",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "which",
+      "version": "2.0.2",
+      "location": "node_modules/which",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "wrap-ansi",
+      "version": "7.0.0",
+      "location": "node_modules/wrap-ansi",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "wrappy",
+      "version": "1.0.2",
+      "location": "node_modules/wrappy",
+      "license": "ISC",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "ws",
+      "version": "8.17.1",
+      "location": "node_modules/ws",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "xtend",
+      "version": "4.0.2",
+      "location": "node_modules/xtend",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "y18n",
+      "version": "5.0.8",
+      "location": "node_modules/y18n",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "yallist",
+      "version": "3.1.1",
+      "location": "node_modules/yallist",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "yargs",
+      "version": "17.7.2",
+      "location": "node_modules/yargs",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "yargs-parser",
+      "version": "21.1.1",
+      "location": "node_modules/yargs-parser",
+      "license": "ISC",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.txt"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "yauzl",
+      "version": "2.10.0",
+      "location": "node_modules/yauzl",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "zod",
+      "version": "4.3.6",
+      "location": "node_modules/zod",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    }
+  ]
+}

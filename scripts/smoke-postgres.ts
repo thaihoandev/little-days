@@ -42,6 +42,7 @@ try {
       'tests/resource-policy.test.ts',
       'tests/ops-monitor.test.ts',
       'tests/journal.test.ts',
+      'tests/journal-album.test.ts',
     ]),
   );
   results.push(await run('api', ['scripts/smoke-api.ts']));

@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY . .
+ARG RENDER_GIT_COMMIT
 RUN npm run build && npm run video:browser
 RUN mkdir -p /app/data && chown -R node:node /app/data /app/node_modules/.remotion
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3001 DATA_DIR=/app/data

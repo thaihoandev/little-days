@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from './api.js';
+import { LegalLinks } from './LegalLinks.js';
 
 import type { AuthLink } from './auth-link.js';
 
@@ -113,6 +114,9 @@ export default function AuthLinkPage({
             </button>
           </form>
         )}
+        <div className="auth-legal">
+          <LegalLinks />
+        </div>
       </section>
     </main>
   );

@@ -2,9 +2,20 @@
   "name": "our-little-days",
   "version": "0.2.0",
   "private": true,
+  "license": "SEE LICENSE IN LICENSE.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thaihoandev/little-days.git"
+  },
   "type": "module",
   "scripts": {
+    "licenses:inventory": "node scripts/license-inventory.mjs",
+    "legal:prepare": "node scripts/prepare-legal.mjs",
+    "prebuild": "npm run legal:prepare",
+    "prebuild:web": "npm run legal:prepare",
+    "predev": "npm run legal:prepare",
     "test:journal": "tsx scripts/pilot-qa.ts journal",
+    "test:timeline-album": "tsx scripts/pilot-qa.ts journal-album",
     "test:design": "tsx scripts/pilot-qa.ts design",
     "test:templates": "tsx scripts/pilot-qa.ts templates",
     "music:generate": "node scripts/generate-music.mjs",
