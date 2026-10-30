@@ -194,6 +194,34 @@ try {
       await b.reload();
       await expect(b.getByRole('heading', { name: entry.title, exact: true })).toHaveCount(0);
       await ad.getByRole('button', { name: 'Xong', exact: true }).click();
+      let album = await (
+        await alice.request.post(origin + '/api/albums', {
+          data: { title: 'Album đường dẫn ' + mobile, templateId: 'minimal' },
+        })
+      ).json();
+      await a.goto(origin + '/albums');
+      await a.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
+      await expect(a).toHaveURL(origin + '/albums/' + album.id);
+      await expect(a.locator('.canvas-sheet canvas')).toBeVisible();
+      await a.goBack();
+      await expect(a).toHaveURL(origin + '/albums');
+      const newestTitle = 'Bản mới nhất từ máy chủ ' + mobile;
+      const patched = await alice.request.patch(origin + '/api/albums/' + album.id, {
+        data: { expectedRevision: album.revision, content: { ...album, title: newestTitle } },
+      });
+      assert.equal(patched.status(), 200);
+      album = await patched.json();
+      await a.goForward();
+      await expect(a.getByRole('button', { name: 'Đổi tên sổ', exact: true })).toContainText(
+        newestTitle,
+      );
+      await a.reload();
+      await expect(a.getByRole('button', { name: 'Đổi tên sổ', exact: true })).toContainText(
+        newestTitle,
+      );
+      await b.goto(origin + '/albums/' + album.id);
+      await expect(b.locator('.error-banner').first()).toContainText('Không tìm thấy album');
+      await expect(b.locator('.canvas-sheet canvas')).toHaveCount(0);
       await a.goto(origin + '/today');
       await a.screenshot({ path: 'test-results/today-focus-' + mobile + '.png', fullPage: true });
       assert.ok(await a.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));

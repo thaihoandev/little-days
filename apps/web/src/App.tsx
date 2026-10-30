@@ -171,6 +171,8 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [active, setActive] = useState<Album | null>(null);
+  const [openingAlbum, setOpeningAlbum] = useState(false);
+  const [albumOpenVersion, setAlbumOpenVersion] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
@@ -179,7 +181,9 @@ export default function App() {
   const section = route.section;
   const setSection = (section: AppSection) => navigate(sectionPaths[section]);
   const openAlbum = (album: Album) => {
-    setActive(album);
+    setActive(null);
+    setOpeningAlbum(true);
+    setAlbumOpenVersion((version) => version + 1);
     navigate('/albums/' + album.id);
   };
   const [shared, setShared] = useState<Album | null>(null);
@@ -211,18 +215,30 @@ export default function App() {
   }, []);
   useEffect(() => {
     if (token || authLink || loading) return;
+    let current = true;
     if (pathname === '/') navigate('/today', true);
     if (route.albumId) {
-      const album = albums.find((a) => a.id === route.albumId);
-      if (album && active?.id !== album.id) {
-        setActive(album);
-        setError('');
-      } else if (!album) {
-        setActive(null);
-        setError('Không tìm thấy album hoặc bạn chưa có quyền truy cập.');
-      }
-    } else setActive(null);
-  }, [pathname, loading, user?.id]);
+      setActive(null);
+      setOpeningAlbum(true);
+      setError('');
+      void api<Album>('/albums/' + route.albumId)
+        .then((album) => {
+          if (current) setActive(album);
+        })
+        .catch((error) => {
+          if (current) setError(error.message);
+        })
+        .finally(() => {
+          if (current) setOpeningAlbum(false);
+        });
+    } else {
+      setActive(null);
+      setOpeningAlbum(false);
+    }
+    return () => {
+      current = false;
+    };
+  }, [pathname, loading, user?.id, albumOpenVersion]);
   useEffect(() => {
     if (!token && !authLink)
       document.title = `${active?.title || { home: 'Hôm nay', timeline: 'Dòng thời gian', calendar: 'Lịch của mình', albums: 'Album của mình', photos: 'Ảnh đã lưu' }[section]} · Little Days`;
@@ -247,7 +263,7 @@ export default function App() {
         />
       </Suspense>
     );
-  if (loading)
+  if (loading || openingAlbum)
     return (
       <div className="loading-screen">
         <span className="wordmark">
