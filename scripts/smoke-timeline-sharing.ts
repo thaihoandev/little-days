@@ -76,6 +76,23 @@ try {
           multipart: { file: { name: 'anh-chung.png', mimeType: 'image/png', buffer: image } },
         })
       ).json();
+      await a.route('**/api/timeline-sharing', (route) =>
+        route.fulfill({
+          status: 404,
+          contentType: 'application/json',
+          body: JSON.stringify({ message: 'Legacy API fixture' }),
+        }),
+      );
+      await a.goto(origin + '/today');
+      await expect(a.getByRole('heading', { name: entry.title, exact: true })).toBeVisible();
+      await expect(
+        a.getByRole('button', { name: 'Chia sẻ dòng thời gian', exact: true }),
+      ).toBeDisabled();
+      await a.unroute('**/api/timeline-sharing');
+      await a.evaluate(() => window.dispatchEvent(new Event('focus')));
+      await expect(
+        a.getByRole('button', { name: 'Chia sẻ dòng thời gian', exact: true }),
+      ).toBeEnabled();
       await a.goto(origin + '/timeline');
       await expect(a.getByRole('heading', { name: entry.title, exact: true })).toBeVisible();
       await a.getByRole('button', { name: 'Chia sẻ dòng thời gian', exact: true }).click();

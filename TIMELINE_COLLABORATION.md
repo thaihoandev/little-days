@@ -36,6 +36,8 @@ URL hỗ trợ tải lại, mở trực tiếp, Back/Forward và tiêu đề tab
 
 Không thêm biến môi trường hoặc dịch vụ mới. Deploy frontend và API cùng commit; không cần đổi worker MP4 cho tính năng này. Quyền được lưu trong bảng `records` qua hai kind `timeline-grant` (chủ dòng thời gian) và `timeline-member-index` (tra cứu theo người nhận, không sao chép dữ liệu mốc). Backup/restore hiện có giữ cả hai loại record.
 
+Nếu Vercel cập nhật trước API Render, lịch riêng và dấu mốc cũ vẫn mở bình thường; nút chia sẻ chỉ bật khi API hỗ trợ đã sẵn sàng. Trang kiểm tra lại khi quay về tab hoặc theo chu kỳ tải dữ liệu.
+
 Ảnh và mốc do thành viên thêm vẫn thuộc chủ dòng thời gian; dung lượng tính vào quota của chủ. Thu hồi quyền chặn các lần đọc ảnh và chỉnh sửa mới; upload đang chạy phải kiểm tra lại quyền trước khi gắn ảnh vào dấu mốc, nếu bị thu hồi sẽ dọn bản tải lên. Giao dịch và khóa theo chủ/thành viên dùng chung cho SQLite/PostgreSQL, giữ compare-and-swap. Xóa tài khoản thu hồi các quan hệ liên quan, không xóa nhầm mốc thuộc người khác.
 
 Kiểm chứng: `tests/timeline-sharing.test.ts` cho đồng thuận, CAS đồng thời, ảnh/quota, thu hồi trong lúc upload, backup và xóa thành viên; cùng bộ test đó chạy trên PostgreSQL trong CI. `npm run test:pilot -- timeline-sharing` dùng hai tài khoản giả, outbox email local và trình duyệt desktop/mobile để kiểm tra quyền, lịch chung, tỷ lệ 3:1 và điều hướng. Không gửi email thật hoặc tạo tài nguyên trả phí.

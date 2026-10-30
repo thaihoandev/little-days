@@ -25,13 +25,21 @@ import {
   occursOn,
   nextOccurrence,
 } from '../../../packages/domain/journal.js';
-import { api } from './api.js';
+import { api, ApiError } from './api.js';
 import { PhotoLightbox, ConfirmDialog } from './Overlays.js';
 import { TimelineSharingPanel } from './TimelineSharingPanel.js';
 import { TimelineAlbumDialog, type TimelineChoice } from './TimelineAlbumDialog.js';
 import { TimelineHeading } from './TimelineHeading.js';
 
 type Item = JournalEntry & { album?: Album };
+async function readSharing() {
+  try {
+    return await api<TimelineSharingState>('/timeline-sharing');
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  }
+}
 const dateLabel = (
   date: string,
   options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' },
@@ -59,6 +67,7 @@ export default function JournalDashboard({
   );
   const [newKind, setNewKind] = useState<JournalContent['kind']>('memory');
   const loadVersion = useRef(0);
+  const [sharingReady, setSharingReady] = useState(false);
   const [sharing, setSharing] = useState<TimelineSharingState>({ ownId: userId, grants: [] }),
     [sharingOpen, setSharingOpen] = useState(false),
     [selectedTimeline, setSelectedTimeline] = useState('all'),
@@ -95,11 +104,12 @@ export default function JournalDashboard({
   useEffect(() => {
     let active = true;
     const version = ++loadVersion.current;
-    Promise.all([api<JournalEntry[]>('/journal'), api<TimelineSharingState>('/timeline-sharing')])
+    Promise.all([api<JournalEntry[]>('/journal'), readSharing()])
       .then(([data, state]) => {
         if (active && version === loadVersion.current) {
           setEntries(data);
-          setSharing(state);
+          setSharingReady(!!state);
+          setSharing(state || { ownId: userId, grants: [] });
         }
       })
       .catch((e) => {
@@ -115,18 +125,16 @@ export default function JournalDashboard({
   }, []);
   const refresh = async () => {
     const version = ++loadVersion.current;
-    const [data, state] = await Promise.all([
-      api<JournalEntry[]>('/journal'),
-      api<TimelineSharingState>('/timeline-sharing'),
-    ]);
+    const [data, state] = await Promise.all([api<JournalEntry[]>('/journal'), readSharing()]);
     if (version !== loadVersion.current) return;
     setEntries(data);
-    setSharing(state);
+    setSharingReady(!!state);
+    setSharing(state || { ownId: userId, grants: [] });
     setError('');
     if (
       selectedTimeline !== 'all' &&
       selectedTimeline !== userId &&
-      !state.grants.some(
+      !state?.grants.some(
         (g) =>
           g.memberId === userId && g.timelineOwner === selectedTimeline && g.state === 'active',
       )
@@ -270,8 +278,13 @@ export default function JournalDashboard({
         <div className="journal-primary-actions">
           <button
             className="button quiet journal-share-action"
+            disabled={!sharingReady}
             aria-label="Chia sẻ dòng thời gian"
-            title="Chia sẻ dòng thời gian"
+            title={
+              sharingReady
+                ? 'Chia sẻ dòng thời gian'
+                : 'Chia sẻ tạm thời chưa sẵn sàng; lịch riêng vẫn sử dụng bình thường.'
+            }
             onClick={() => setSharingOpen(true)}
           >
             <UsersRound size={17} />
