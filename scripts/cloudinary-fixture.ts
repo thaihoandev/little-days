@@ -9,7 +9,13 @@ export async function startCloudinaryFixture() {
     secret = 'fixture-secret';
   const objects = new Map<string, { bytes: Buffer; type: string }>();
   const chunks = new Map<string, Buffer[]>();
-  const requests: { method: string; path: string; signed: boolean }[] = [];
+  const requests: {
+    method: string;
+    path: string;
+    signed: boolean;
+    chunked?: boolean;
+    publicId?: string;
+  }[] = [];
   function signature(params: Record<string, string>) {
     const canonical = Object.keys(params)
       .filter(
@@ -79,7 +85,13 @@ export async function startCloudinaryFixture() {
         }
       }
       const signed = verify(params);
-      requests.push({ method: req.method || '', path: pathname, signed });
+      requests.push({
+        method: req.method || '',
+        path: pathname,
+        signed,
+        chunked: !!req.headers['content-range'],
+        publicId: params.public_id,
+      });
       if (!signed || params.type !== 'authenticated') {
         json(401, { error: { message: 'Authenticated, signed requests required' } });
         return;

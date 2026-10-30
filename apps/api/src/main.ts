@@ -64,7 +64,7 @@ import { RenderQueue } from './render.js';
 import { JobRepository } from './jobs.js';
 import { ResourcePolicy } from './resource-policy.js';
 import { MaintenanceService } from './maintenance.js';
-import { Observability, logEvent } from './observability.js';
+import { Observability, logEvent, errorDiagnostics } from './observability.js';
 import { OpsMonitor } from './ops-monitor.js';
 import { BackupLock, backupSafeStore } from './backup-lock.js';
 import { JournalService } from './journal.js';
@@ -1068,6 +1068,7 @@ app.useGlobalFilters({
     logEvent('http_error', {
       requestId: String(res.getHeader('X-Request-Id') || ''),
       category: 'unexpected',
+      ...errorDiagnostics(exception),
     });
     res.status(500).json({ message: 'Có lỗi xử lý. Vui lòng thử lại.' });
   },

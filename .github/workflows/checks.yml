@@ -15,7 +15,8 @@ jobs:
       - run: npm ci
       - run: npm run format:check
       - run: npm test
-      - run: npm run test:api
+      - name: API with local media
+        run: npm run test:api
       - run: npm run test:auth
       - run: npm run test:deletion
       - run: npm run test:smtp
@@ -23,14 +24,16 @@ jobs:
       - run: npm run test:s3
       - run: npm run test:cloudinary
       - run: npm run test:backup
-      - run: npm run test:api
+      - name: API with Cloudinary HTTP fixture
+        run: npm run test:api
         env:
           SMOKE_STORAGE: cloudinary
       - run: npm run test:migration
         env:
           SMOKE_STORAGE: cloudinary
       - run: npm run test:migration
-      - run: npm run test:api
+      - name: API with S3 HTTP fixture
+        run: npm run test:api
         env:
           SMOKE_STORAGE: s3
       - run: npm run build
@@ -101,6 +104,7 @@ jobs:
           name: pilot-ui-verification
           path: |
             test-results/pilot/**/report.json
+            test-results/pilot/**/*.log
             test-results/pilot/**/screenshots/
           retention-days: 3
   containers:

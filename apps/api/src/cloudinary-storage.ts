@@ -116,6 +116,7 @@ export class CloudinaryMediaStore implements MediaStore {
             reject(
               new Error(
                 'Cloudinary không nhận được file. Kiểm tra cấu hình, định dạng và hạn mức tài khoản.',
+                { cause: error },
               ),
             );
             return;
@@ -131,7 +132,7 @@ export class CloudinaryMediaStore implements MediaStore {
           resolve(response);
         };
         stream =
-          object.resourceType === 'video'
+          object.format === 'mp4'
             ? cloudinary.uploader.upload_chunked_stream(options, callback)
             : cloudinary.uploader.upload_stream(options, callback);
         abort = () => {

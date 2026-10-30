@@ -247,7 +247,11 @@ try {
   const audioForm = new FormData();
   audioForm.append('file', new Blob([audioFixture()]), 'tone.wav');
   const audioResponse = await alice('/albums/' + id + '/audio', 'POST', audioForm);
-  assert.equal(audioResponse.status, 201);
+  assert.equal(
+    audioResponse.status,
+    201,
+    `Audio upload failed; requestId=${audioResponse.headers.get('x-request-id')}; response=${await audioResponse.clone().text()}`,
+  );
   const audio = await audioResponse.json();
   assert.ok(audio.duration >= 7.9 && audio.duration <= 8.1);
   assert.equal((await bob(audio.url.replace('/api', ''))).status, 404);

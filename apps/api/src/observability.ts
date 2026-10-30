@@ -4,6 +4,45 @@ import type { Request, Response, NextFunction } from 'express';
 import { Repository } from './database.js';
 import { BackupLock } from './backup-lock.js';
 type Fields = Record<string, string | number | boolean>;
+/** Only fixed identifiers/statuses: never log messages, paths, bodies or SDK responses. */
+export function errorDiagnostics(error: unknown): Fields {
+  const allowed = [
+    'ENOENT',
+    'EACCES',
+    'EPERM',
+    'ENOSPC',
+    'ECONNRESET',
+    'ECONNREFUSED',
+    'ETIMEDOUT',
+    'EPIPE',
+    'ABORT_ERR',
+    'ERR_STREAM_PREMATURE_CLOSE',
+    'ERR_INVALID_ARG_TYPE',
+    'SQLITE_BUSY',
+    'SQLITE_LOCKED',
+  ];
+  const value =
+    error && typeof error === 'object'
+      ? (error as { name?: unknown; code?: unknown; cause?: unknown; http_code?: unknown })
+      : {};
+  const cause =
+    value.cause && typeof value.cause === 'object'
+      ? (value.cause as { code?: unknown; http_code?: unknown })
+      : {};
+  const code = [value.code, cause.code].find((c) => typeof c === 'string' && allowed.includes(c));
+  const status = [value.http_code, cause.http_code].find(
+    (c) => typeof c === 'number' && Number.isInteger(c) && c >= 100 && c <= 599,
+  );
+  return {
+    errorType: ['TypeError', 'RangeError', 'AbortError', 'TimeoutError', 'AggregateError'].includes(
+      String(value.name),
+    )
+      ? String(value.name)
+      : 'Error',
+    ...(code ? { errorCode: String(code) } : {}),
+    ...(status ? { upstreamStatus: Number(status) } : {}),
+  };
+}
 export function logEvent(event: string, fields: Fields = {}) {
   console.log(JSON.stringify({ time: new Date().toISOString(), event, ...fields }));
 }

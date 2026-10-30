@@ -18,6 +18,24 @@ try {
   assert.ok(fixture.requests.length > 5);
   assert.ok(fixture.requests.every((r) => r.signed));
   assert.ok(fixture.requests.some((r) => r.path.includes('/video/upload')));
+  const audioUploads = fixture.requests.filter(
+    (r) => r.path.endsWith('/video/upload') && r.publicId === 'contract-test/audio/track',
+  );
+  assert.equal(audioUploads.length, 1);
+  assert.equal(
+    audioUploads[0].chunked,
+    false,
+    'Bounded MP3 uploads use a single authenticated stream',
+  );
+  assert.ok(
+    fixture.requests.some(
+      (r) =>
+        r.path.endsWith('/video/upload') &&
+        r.publicId === 'contract-test/exports/job/lease' &&
+        r.chunked,
+    ),
+    'MP4 exports retain chunked uploads',
+  );
   assert.ok(fixture.requests.some((r) => r.path.includes('/image/download')));
   assert.equal(
     fixture.objects.get('contract-test/exports/job/lease.mp4')?.bytes.length,
