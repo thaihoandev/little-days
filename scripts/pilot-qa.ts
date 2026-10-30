@@ -122,8 +122,17 @@ async function run(name: string, file: string) {
     });
     checks.push({ name, passed: code === 0, elapsedMs: Date.now() - start });
     await writeFile(path.join(root, name + '.log'), output, { mode: 0o600 });
-    if (code !== 0)
+    if (code !== 0) {
+      // These suites use isolated fixtures only; expose their failure without requiring artifact access.
+      const diagnostic =
+        output.slice(-6000) || 'Fixture process exited without output (possibly timed out).';
+      console.error(diagnostic);
+      if (process.env.GITHUB_ACTIONS === 'true')
+        console.log(
+          `::error title=Pilot QA ${name}::${diagnostic.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A')}`,
+        );
       throw new Error('Pilot QA failed: ' + name + '. See fixture logs under ' + root);
+    }
   } finally {
     clearTimeout(timeout);
   }
