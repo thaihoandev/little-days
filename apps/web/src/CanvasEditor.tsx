@@ -4,6 +4,7 @@ import type Konva from 'konva';
 import { bounds, expandSelection } from '../../../packages/domain/layout.js';
 import { elementSchema } from '../../../packages/domain/index.js';
 import { decoration } from '../../../packages/domain/decorations.js';
+import { counterAppearance } from '../../../packages/domain/counter.js';
 import {
   type Album,
   type Page,
@@ -33,6 +34,47 @@ function useImage(src?: string) {
 function DecorationArt({ e }: { e: ScrapElement }) {
   const image = useImage(decoration(e.decorationId)?.src);
   return <KonvaImage image={image} width={e.width} height={e.height} />;
+}
+function CounterArt({
+  e,
+  album,
+  referenceDate,
+}: {
+  e: ScrapElement;
+  album: Album;
+  referenceDate: string;
+}) {
+  const style = counterAppearance(e.counterStyle)!;
+  return (
+    <Group>
+      <Rect
+        width={e.width}
+        height={e.height}
+        fill={style.fill}
+        stroke={style.stroke}
+        strokeWidth={1}
+        cornerRadius={Math.min(style.radius, e.width / 2, e.height / 2)}
+        dash={style.dash}
+      />
+      {style.header > 0 && (
+        <Rect width={e.width} height={style.header} fill="#ad7b6b" cornerRadius={[12, 12, 0, 0]} />
+      )}
+      <Text
+        x={style.padding}
+        y={style.padding + style.header}
+        width={Math.max(1, e.width - style.padding * 2)}
+        height={Math.max(1, e.height - style.padding * 2 - style.header)}
+        text={displayedText(e, album, referenceDate)}
+        fontFamily={fonts[e.font]}
+        fontSize={e.fontSize}
+        fill={e.color}
+        align="center"
+        verticalAlign="middle"
+        lineHeight={1.3}
+        wrap="word"
+      />
+    </Group>
+  );
 }
 function Photo({ e, album }: { e: ScrapElement; album: Album }) {
   const image = useImage(assetUrl(e.assetId, album));
@@ -446,6 +488,8 @@ export function CanvasEditor({
                   <Photo e={e} album={album} />
                 ) : e.type === 'sticker' && e.decorationId ? (
                   <DecorationArt e={e} />
+                ) : e.type === 'anniversary' && counterAppearance(e.counterStyle) ? (
+                  <CounterArt e={e} album={album} referenceDate={referenceDate} />
                 ) : (
                   <Text
                     text={displayedText(e, album, referenceDate)}

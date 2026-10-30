@@ -431,14 +431,24 @@ export default function JournalDashboard({
                     {entry.note && <p>{entry.note}</p>}
                     {entry.assets.length > 0 && (
                       <div className={'journal-photos photos-' + entry.assets.length}>
-                        {entry.assets.map((asset, index) => (
+                        {entry.assets.slice(0, 3).map((asset, index) => (
                           <button
                             className="journal-photo-button"
                             aria-label={'Xem ảnh ' + asset.name}
                             key={asset.id}
                             onClick={() => setPhotoPreview({ photos: entry.assets, index })}
                           >
-                            <img src={asset.url} alt={asset.name} loading="lazy" />
+                            <img
+                              src={asset.url}
+                              alt={asset.name}
+                              loading="lazy"
+                              decoding="async"
+                              width={asset.width}
+                              height={asset.height}
+                            />
+                            {index === 2 && entry.assets.length > 3 && (
+                              <span className="photo-overflow">+{entry.assets.length - 3} ảnh</span>
+                            )}
                           </button>
                         ))}
                       </div>

@@ -27,6 +27,9 @@ Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → st
 - [x] Popup xác nhận xóa trang trong app; xem ảnh timeline/thư viện trong lightbox, không mở tab mới.
 - [x] Viewer album co theo cả hai chiều, giữ nút chuyển trang trong một màn hình; scrollbar sage đồng bộ.
 - [x] 18 trang trí SVG trong 5 bộ, dùng chung canvas/viewer/video; 9 mẫu có minh họa và gallery xem trước, thêm trang trống.
+- [x] 6 mẫu chữ và 6 mẫu bộ đếm/5 giao diện; chỉnh giao diện độc lập với elapsed/annual/milestone, giữ khi lưu và xuất MP4.
+- [x] Viewer có ba kiểu gáy/bìa, ba hiệu ứng chuyển trang, vuốt ngang và hỗ trợ giảm chuyển động.
+- [x] Ảnh mới tối đa cạnh 1600px, chuẩn hóa/nén thích ứng, bỏ EXIF; timeline chỉ hiện cụm ba thumbnail gọn và mở đủ ảnh qua popup.
 - [x] Journal tích hợp quota, backup/restore, cleanup và xóa tài khoản; SQLite/PostgreSQL và Cloudinary fixture đã kiểm chứng.
 - [x] Chín mẫu scrapbook chỉnh layout được, có preview trong tạo album và thêm trang; giữ mẫu cá nhân.
 - [x] Thư viện bốn bản nhạc, nghe thử/lưu lựa chọn và dùng trong preview/MP4; nhạc bổ sung tổng hợp bằng mã, đã kiểm tra âm thanh MP4 thật.

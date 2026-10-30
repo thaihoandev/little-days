@@ -1,6 +1,6 @@
 import { chromium, expect, type Locator } from '@playwright/test';
 import assert from 'node:assert/strict';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
 import sharp from 'sharp';
 const origin = process.env.SMOKE_UI_ORIGIN!;
 if (!origin || new URL(origin).hostname !== '127.0.0.1')
@@ -65,11 +65,26 @@ try {
       await form
         .getByLabel('Lời nhắn / ghi chú', { exact: true })
         .fill('Hôm ấy, chúng mình đã cùng nhau đi qua một ngày thật đẹp.');
-      await form.getByLabel('Ảnh dấu mốc').setInputFiles('test-results/journal-photo.png');
+      const photoBytes = await readFile('test-results/journal-photo.png');
+      await form.getByLabel('Ảnh dấu mốc').setInputFiles(
+        [1, 2, 3, 4].map((i) => ({
+          name: i === 1 ? 'journal-photo.png' : 'journal-extra-' + i + '.png',
+          mimeType: 'image/png',
+          buffer: photoBytes,
+        })),
+      );
       await form.getByRole('button', { name: 'Lưu dấu mốc', exact: true }).click();
       await expect(form).not.toBeVisible({ timeout: 20000 });
       await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
       await expect(page.getByRole('img', { name: 'journal-photo.png', exact: true })).toBeVisible();
+      const photos = page.locator('.journal-photos').first();
+      await expect(photos.locator('button')).toHaveCount(3);
+      await expect(photos.getByText('+1 ảnh', { exact: true })).toBeVisible();
+      const photoBounds = await photos.boundingBox();
+      assert.ok(
+        photoBounds && photoBounds.height <= 170,
+        'Timeline photo cluster should stay compact',
+      );
       const tabsBefore = context.pages().length;
       await page.getByRole('button', { name: 'Xem ảnh journal-photo.png', exact: true }).click();
       const lightbox = page.getByRole('dialog', { name: 'Xem ảnh kỉ niệm', exact: true });
@@ -81,6 +96,12 @@ try {
       await page.screenshot({ path: 'test-results/photo-lightbox-' + device + '.png' });
       await page.keyboard.press('Escape');
       await expect(lightbox).not.toBeVisible();
+      await page.getByRole('button', { name: 'Xem ảnh journal-extra-3.png', exact: true }).click();
+      await lightbox.getByRole('button', { name: 'Ảnh sau', exact: true }).click();
+      await expect(
+        lightbox.getByRole('img', { name: 'journal-extra-4.png', exact: true }),
+      ).toBeVisible();
+      await page.keyboard.press('Escape');
       const entries = await (await context.request.get(origin + '/api/journal')).json();
       const entry = entries.find((e: { title: string }) => e.title === title);
       assert.ok(entry.assets[0].url.startsWith('/api/journal/'));

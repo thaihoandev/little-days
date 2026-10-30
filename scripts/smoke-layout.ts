@@ -4,6 +4,7 @@ import path from 'node:path';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { type Album, type JobView, element } from '../packages/domain/index.js';
 import { bounds } from '../packages/domain/layout.js';
+import { counterPreset } from '../packages/domain/presets.js';
 
 await mkdir('test-results', { recursive: true });
 const browser = await chromium.launch({
@@ -197,6 +198,31 @@ try {
   await page.getByRole('button', { name: 'Thêm trang trí Cúc nhỏ', exact: true }).click();
   album = await saved();
   assert.equal(album.pages[0].elements.at(-1)!.decorationId, 'daisy');
+  const nextCounter = counterPreset('calendar');
+  nextCounter.x = 360;
+  nextCounter.y = 570;
+  const {
+    id: renderId,
+    revision: renderRevision,
+    assets: renderAssets,
+    createdAt: renderCreated,
+    updatedAt: renderUpdated,
+    schemaVersion: renderSchema,
+    ...renderContent
+  } = album;
+  const patched = await context.request.patch(base + '/albums/' + id, {
+    data: {
+      expectedRevision: album.revision,
+      content: {
+        ...renderContent,
+        pages: album.pages.map((p, i) =>
+          i === 0 ? { ...p, elements: [...p.elements, nextCounter] } : p,
+        ),
+      },
+    },
+  });
+  assert.equal(patched.status(), 200);
+  album = await patched.json();
   const response = await context.request.post(base + '/albums/' + id + '/exports', {
     data: {
       expectedRevision: album.revision,

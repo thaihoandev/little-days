@@ -6,6 +6,7 @@ import {
   displayedText,
   todayIn,
 } from '../../../packages/domain/index.js';
+import { counterAppearance } from '../../../packages/domain/counter.js';
 export function TextOverflowWarning({
   element: e,
   album,
@@ -16,6 +17,7 @@ export function TextOverflowWarning({
   const ref = useRef<HTMLDivElement>(null),
     [overflow, setOverflow] = useState(false);
   const text = displayedText(e, album, todayIn(album.timezone));
+  const counter = e.type === 'anniversary' && counterAppearance(e.counterStyle);
   useEffect(() => {
     let active = true;
     const check = () => {
@@ -30,7 +32,7 @@ export function TextOverflowWarning({
     return () => {
       active = false;
     };
-  }, [text, e.width, e.height, e.font, e.fontSize, e.type]);
+  }, [text, e.width, e.height, e.font, e.fontSize, e.type, e.counterStyle]);
   if (!['text', 'anniversary', 'image'].includes(e.type)) return null;
   return (
     <>
@@ -43,8 +45,11 @@ export function TextOverflowWarning({
           top: 0,
           pointerEvents: 'none',
           visibility: 'hidden',
-          width: e.type === 'image' ? e.width - 12 : e.width,
-          height: e.type === 'image' ? 28 : e.height,
+          width: e.type === 'image' ? e.width - 12 : e.width - (counter ? counter.padding * 2 : 0),
+          height:
+            e.type === 'image'
+              ? 28
+              : e.height - (counter ? counter.padding * 2 + counter.header : 0),
           overflow: 'hidden',
           whiteSpace: e.type === 'image' ? 'nowrap' : 'pre-wrap',
           overflowWrap: 'anywhere',

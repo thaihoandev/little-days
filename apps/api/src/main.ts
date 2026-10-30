@@ -31,7 +31,6 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { mkdir } from 'node:fs/promises';
 import { pipeline } from 'node:stream/promises';
 import path from 'node:path';
-import sharp from 'sharp';
 import { z, ZodError } from 'zod';
 import {
   type Album,
@@ -69,6 +68,7 @@ import { Observability, logEvent } from './observability.js';
 import { OpsMonitor } from './ops-monitor.js';
 import { BackupLock, backupSafeStore } from './backup-lock.js';
 import { JournalService } from './journal.js';
+import { normalizePhoto } from './images.js';
 import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 import { videoDurationFrames } from '../../../packages/domain/video.js';
 import { createMediaStore, ObjectNotFoundError } from './storage.js';
@@ -606,20 +606,12 @@ class AppController {
     const before = await ownedAlbum(req, id);
     if (!file) throw new BadRequestException('Chọn một ảnh JPEG, PNG hoặc WebP.');
     if (before.assets.length >= 100) throw new BadRequestException('Album đã đạt 100 ảnh.');
-    const processor = sharp(file.buffer, { limitInputPixels: 40000000, animated: false });
-    let metadata: sharp.Metadata;
+    let result: Awaited<ReturnType<typeof normalizePhoto>>;
     try {
-      metadata = await processor.metadata();
+      result = await normalizePhoto(file.buffer, 'webp');
     } catch {
-      throw new BadRequestException('File không phải ảnh hợp lệ.');
+      throw new BadRequestException('Ảnh không hợp lệ; hỗ trợ JPEG/PNG/WebP tối đa 40 megapixel.');
     }
-    if (!['jpeg', 'png', 'webp'].includes(metadata.format || ''))
-      throw new BadRequestException('Chỉ hỗ trợ ảnh JPEG, PNG và WebP.');
-    const result = await processor
-      .rotate()
-      .resize({ width: 2000, height: 2400, fit: 'inside', withoutEnlargement: true })
-      .webp({ quality: 88 })
-      .toBuffer({ resolveWithObject: true });
     const assetId = randomUUID();
     const key = `uploads/${assetId}.webp`;
     const operation = await deletion.begin(req.userId, key);

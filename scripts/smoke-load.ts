@@ -113,9 +113,26 @@ try {
     })
       .png()
       .toBuffer(),
-    form = new FormData();
-  form.append('file', new Blob([huge]), 'large-fixture.png');
-  assert.equal((await users[0]('/albums/' + albums[0].id + '/assets', 'POST', form)).status, 413);
+    quotaAlbum = await (await users[0]('/albums', 'POST', { title: 'Quota fixture' })).json();
+  let rejected = false;
+  for (let i = 0; i < 8; i++) {
+    const before = (await (await users[0]('/usage')).json()).storageBytes;
+    const form = new FormData();
+    form.append('file', new Blob([huge]), 'large-fixture.png');
+    const response = await users[0]('/albums/' + quotaAlbum.id + '/assets', 'POST', form);
+    if (response.status === 413) {
+      rejected = true;
+      assert.equal(
+        (await (await users[0]('/usage')).json()).storageBytes,
+        before,
+        'Rejected normalized image must not consume quota',
+      );
+      break;
+    }
+    assert.equal(response.status, 201);
+  }
+  assert.ok(rejected, 'Repeated normalized images must still respect the byte quota');
+  assert.equal((await users[0]('/albums/' + quotaAlbum.id, 'DELETE')).status, 200);
   assert.equal((await (await users[0]('/usage')).json()).storageBytes, 0);
   const ids: string[] = [];
   for (const [i, user] of users.entries()) {

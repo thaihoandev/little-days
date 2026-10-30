@@ -6,9 +6,10 @@ Cập nhật 30/10/2026. Trang **Hôm nay** mở mặc định: lịch tháng, n
 
 - Chọn ngày trên lịch, bấm **Thêm dấu mốc** hoặc **Ghi chú cho ngày…**.
 - Nhập tên, ngày, lời nhắn và loại: kỉ niệm, ngày đặc biệt, kế hoạch hoặc ghi chú. Có thể đánh dấu lặp hằng năm; ngày 29/2 hiện vào 28/2 trong năm không nhuận.
-- Mỗi dấu mốc có tối đa **6 ảnh**, JPEG/PNG/WebP, **20 MB/ảnh**, tối đa 40 megapixel. Backend xoay ảnh đúng chiều, thu nhỏ tối đa 2000×2400, bỏ metadata và lưu JPEG.
+- Mỗi dấu mốc có tối đa **6 ảnh**, JPEG/PNG/WebP, **20 MB/ảnh**, tối đa 40 megapixel. Backend xoay ảnh đúng chiều, chuẩn hóa cạnh dài tối đa **1600px**, không phóng ảnh nhỏ, bỏ metadata và lưu JPEG. Ảnh album dùng WebP với cùng quy trình chuẩn hóa.
 - Bấm **Lưu dấu mốc** để lưu trên backend. Ghi chú tối đa 5.000 ký tự; tối đa 500 dấu mốc/ghi chú mỗi tài khoản. Đóng biểu mẫu trước khi lưu sẽ bỏ phần đang nhập.
 - **Dòng thời gian** có tìm theo tên/nội dung và lọc loại. **Lịch của mình** xem từng ngày; **Sắp đến những ngày đẹp** hiển thị bốn mốc gần nhất và số ngày còn lại.
+- Ảnh trên thẻ timeline dùng cụm nhỏ: một ảnh có chiều cao tối đa 165px trên desktop/145px trên mobile; nhiều ảnh xếp mosaic, chỉ hiện ba thumbnail và số ảnh còn lại. Popup vẫn xem đủ toàn bộ ảnh.
 - Ngày bắt đầu và kỉ niệm đã có trong album cũng xuất hiện. Bấm **Xem album** để sửa các mục này trong album nguồn.
 - Timeline có mốc tháng, đường nối hành trình, thẻ giấy và ảnh lớn; desktop xếp xen kẽ, mobile chuyển về một cột. Các con số ở đầu trang tính từ dữ liệu thật của tài khoản.
 
@@ -36,6 +37,10 @@ Các mẫu đã được làm lại bằng giấy xé, washi tape, hoa lá, tem,
 
 ## Thao tác thiết kế nhanh
 
+Panel **Trang trí** có 6 mẫu chữ: tiêu đề trang sách, lời nhắn viết tay, trích dẫn, chú thích ảnh, nhãn nhỏ và lá thư ngắn. Mỗi mẫu là phần tử chỉnh được, có font/kích thước/màu/bố cục ban đầu riêng.
+
+Bộ đếm có 6 mẫu bấm thêm nhanh, dùng 5 giao diện **Dòng chữ tối giản / Thẻ giấy / Vé bên nhau / Dấu tròn / Tờ lịch**. Chọn một bộ đếm để đổi **Giao diện bộ đếm** hoặc **Kiểu ngày kỉ niệm** độc lập: số ngày đã bên nhau, đếm ngược hằng năm hoặc mốc số ngày tùy chỉnh. Khi chuyển sang giao diện có khung, editor tăng kích thước tối thiểu để nội dung không bị ép vào khung cũ quá nhỏ. Bộ đếm cũ không có `counterStyle` vẫn dùng cách hiển thị cũ; schema thêm trường tùy chọn, không cần migration.
+
 - Mỗi thumbnail trong **Trang sổ** có icon nhân bản và thùng rác. Xóa cần xác nhận; **Hoàn tác** phục hồi trang. Trang cuối cùng không thể xóa. Xóa trang khác vẫn giữ trang đang xem; xóa trang đang xem chuyển sang trang bên cạnh.
 - Xác nhận xóa trang dùng popup trong ứng dụng, mặc định focus **Giữ lại**, có Escape để hủy; không dùng confirm của trình duyệt cho thao tác này.
 - Thanh phía trên canvas thêm nhanh chữ, khung ảnh, sticker và tải ảnh. Khung ảnh dùng ảnh đầu tiên đã tải; có thể đổi ảnh trong thuộc tính. Khi chưa có ảnh, tạo khung trống để điền sau.
@@ -43,9 +48,11 @@ Các mẫu đã được làm lại bằng giấy xé, washi tape, hoa lá, tem,
 - **Căn giữa** đặt lựa chọn vào giữa trang; phần tử khóa được bảo vệ. Mỗi thao tác là một bước undo/redo và được autosave như chỉnh sửa thông thường. Phím tắt không chạy khi đang nhập trong form.
 - Dropdown có popup màu giấy, bo góc, trạng thái chọn/hover và vùng bấm lớn trên trình duyệt hỗ trợ `appearance: base-select`; trình duyệt khác giữ menu native. Bàn phím và label của select được giữ nguyên.
 
-**Xem album** tự tính kích thước trang từ cả chiều rộng và chiều cao còn lại, giữ nút chuyển trang trong một màn hình, kể cả màn hình ngang thấp. Có phím mũi tên chuyển trang và Escape để đóng; nền phía sau được khóa tương tác/cuộn khi xem. Thanh cuộn ở các khu vực cần cuộn dùng tông sage, mảnh và bo tròn.
+**Xem album** tự tính kích thước trang từ cả chiều rộng và chiều cao còn lại, giữ nút chuyển trang trong một màn hình, kể cả màn hình ngang thấp. Chọn **Sổ khâu chỉ / Sổ gáy xoắn / Sổ bìa vải** và **Lật trang sổ / Trượt giấy / Mờ nhẹ**. Có thể vuốt ngang, dùng nút hoặc phím mũi tên để chuyển trang; Escape để đóng. Khi hệ điều hành yêu cầu giảm chuyển động, hiệu ứng được tắt. Đây là tùy chọn cách xem, không ghi đè layout hay hiệu ứng xuất video. Nền phía sau được khóa tương tác/cuộn khi xem. Thanh cuộn ở các khu vực cần cuộn dùng tông sage, mảnh và bo tròn.
 
 Ảnh trong timeline và **Ảnh đã lưu** mở bằng popup ngay trên trang. Có tên ảnh, số thứ tự, nút trước/sau, phím mũi tên và Escape; không mở tab mới. Ảnh vẫn đọc từ API riêng tư, không tạo URL chia sẻ công khai.
+
+Ảnh mới được mã hóa ở chất lượng 80, cạnh tối đa 1600px; nếu còn lớn hơn mục tiêu 700 KiB, backend thử 1280px/chất lượng 72, sau đó 1024px/chất lượng 66. Giới hạn tối đa ba lượt mã hóa, không xử lý lặp vô hạn. JPEG được flatten lên nền kem; WebP giữ alpha. Mục đích là giảm dung lượng lưu và tải xuống; file đầu vào vẫn có giới hạn 20 MB/40 MP. Ảnh đã lưu trước bản cập nhật được giữ nguyên; không tự tái nén dữ liệu cũ.
 
 Kiểm tra riêng editor: `npm run test:design`; kiểm tra và chụp cả 9 mẫu: `npm run test:templates`. Runner dùng dữ liệu giả để kiểm tra Ctrl+D, thêm ảnh/chữ/sticker/vector, căn giữa/undo, popup xóa trang, viewer desktop/mobile/landscape, reload và bố cục mobile. `npm run test:pilot` hiện bao gồm 11 luồng QA tự động; pilot người thật vẫn được bỏ qua theo yêu cầu.
 
@@ -77,6 +84,8 @@ Backup toàn bộ bao gồm bản ghi journal và bytes ảnh, có checksum và 
 Không đổi `.env` và không tạo worker cloud. Cần cập nhật **cả API lẫn worker hiện có** vì cleanup/backup cũng cần hiểu ảnh journal và catalog nhạc mới. Không vận hành lâu dài với API/worker khác phiên bản.
 
 Bản trang trí vector cũng cần API/worker cùng commit: API phải lưu trường `decorationId`, worker phải có catalog SVG và renderer tương ứng. Không cần biến môi trường hay migration database mới.
+
+Bản bộ đếm mới cũng cần API/worker cùng commit để giữ trường `counterStyle` và hiển thị đúng khung của bộ đếm trong MP4. Canvas, viewer và video dùng chung thông số giao diện/cách tính ngày.
 
 1. Dừng worker cũ và các lệnh cleanup/backup offline trong lúc cập nhật.
 2. Deploy API trên Render từ commit mới; giữ nguyên Neon, Cloudinary và cấu hình mail. Nếu frontend ở Vercel riêng, deploy frontend cùng commit.

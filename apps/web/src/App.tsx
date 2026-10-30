@@ -70,6 +70,14 @@ import { TextOverflowWarning } from './TextOverflowWarning.js';
 import JournalDashboard from './JournalDashboard.js';
 import { ConfirmDialog, PhotoLightbox } from './Overlays.js';
 import { decorationCatalog } from '../../../packages/domain/decorations.js';
+import {
+  counterPresets,
+  counterPreset,
+  textPresets,
+  textPreset,
+} from '../../../packages/domain/presets.js';
+import { counterStyleNames } from '../../../packages/domain/counter.js';
+import { ElementContent } from '../../../packages/scrapbook-renderer/index.js';
 import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 import type { PublicUser } from './AccountSettings.js';
 const AccountSettings = lazy(() => import('./AccountSettings.js'));
@@ -1299,30 +1307,43 @@ function Editor({
             )}
             {panel === 'decorations' && (
               <>
-                <button
-                  className="text-add"
-                  onClick={() =>
-                    add(
-                      element('text', { font: 'serif', fontSize: 36, text: 'Chuyện của hai đứa' }),
-                    )
-                  }
-                >
-                  <Type size={20} />
-                  <span>Thêm tiêu đề</span>
-                  <Plus size={15} />
-                </button>
-                <button className="text-add hand" onClick={() => add(element('text'))}>
-                  Một lời nhắn viết tay <Plus size={15} />
-                </button>
-                <button
-                  className="text-add"
-                  onClick={() =>
-                    add(element('anniversary', { font: 'sans', fontSize: 24, color: '#6b7452' }))
-                  }
-                >
-                  <CalendarDays size={18} />
-                  Bộ đếm ngày bên nhau
-                </button>
+                <h4 className="preset-heading">Chữ & lời nhắn</h4>
+                <div className="creative-presets text-presets">
+                  {textPresets.map((p) => (
+                    <button key={p.id} aria-label={p.label} onClick={() => add(textPreset(p.id))}>
+                      <span className={'text-preset-sample ' + p.font}>
+                        {p.id === 'quote'
+                          ? '“cùng nhau”'
+                          : p.id === 'label'
+                            ? 'LITTLE DAYS'
+                            : p.id === 'letter'
+                              ? 'Gửi người thương,'
+                              : 'một chút thương'}
+                      </span>
+                      <strong>{p.name}</strong>
+                    </button>
+                  ))}
+                </div>
+                <h4>Bộ đếm & ngày kỉ niệm</h4>
+                <div className="creative-presets counter-presets">
+                  {counterPresets.map((p) => {
+                    const e = counterPreset(p.id);
+                    return (
+                      <button
+                        key={p.id}
+                        aria-label={'Thêm bộ đếm ' + p.name}
+                        onClick={() => add(counterPreset(p.id))}
+                      >
+                        <span className="counter-preset-art">
+                          <span style={{ width: e.width, height: e.height }}>
+                            <ElementContent element={e} album={album} referenceDate={reference} />
+                          </span>
+                        </span>
+                        <strong>{p.name}</strong>
+                      </button>
+                    );
+                  })}
+                </div>
                 <h4>Một chút trang trí</h4>
                 <div className="decoration-collections" role="group" aria-label="Bộ trang trí">
                   {['Tất cả', ...new Set(decorationCatalog.map((d) => d.collection))].map(
@@ -1983,8 +2004,33 @@ function ElementProperties({
       {e.type === 'anniversary' && (
         <>
           <label>
+            Giao diện bộ đếm
+            <select
+              aria-label="Giao diện bộ đếm"
+              value={e.counterStyle || 'plain'}
+              onChange={(ev) => {
+                const style = ev.target.value as NonNullable<ScrapElement['counterStyle']>;
+                patch({
+                  counterStyle: style,
+                  ...(style === 'plain'
+                    ? {}
+                    : style === 'seal'
+                      ? { width: 230, height: 230 }
+                      : { height: Math.max(e.height, 170), width: Math.max(e.width, 300) }),
+                });
+              }}
+            >
+              {Object.entries(counterStyleNames).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
             Kiểu ngày kỉ niệm
             <select
+              aria-label="Kiểu ngày kỉ niệm"
               value={e.dateMode || 'elapsed'}
               onChange={(ev) => patch({ dateMode: ev.target.value as ScrapElement['dateMode'] })}
             >

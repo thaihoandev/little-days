@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdir, readFile } from 'node:fs/promises';
 import sharp from 'sharp';
 import { builtInTemplates } from '../packages/domain/templates.js';
+import { counterPresets, counterPreset } from '../packages/domain/presets.js';
+import { element, type Album } from '../packages/domain/index.js';
 const origin = process.env.SMOKE_UI_ORIGIN!;
 if (!origin || new URL(origin).hostname !== '127.0.0.1') throw new Error('Use isolated QA runner');
 await mkdir('test-results', { recursive: true });
@@ -66,6 +68,84 @@ try {
     )
     .png()
     .toFile('test-results/templates-contact-sheet.png');
+  const poster: Album = await (
+    await context.request.post(origin + '/api/albums', { data: { title: 'Các kiểu ngày kỉ niệm' } })
+  ).json();
+  const pieces = counterPresets.flatMap((spec, i) => {
+    const counter = counterPreset(spec.id),
+      y = [130, 370, 650][Math.floor(i / 2)];
+    counter.x = i % 2 ? 375 : 45;
+    counter.y = y;
+    counter.width = spec.style === 'seal' ? 230 : 300;
+    return [
+      counter,
+      element('text', {
+        text: spec.name,
+        font: 'sans',
+        fontSize: 17,
+        color: '#8d826c',
+        x: counter.x,
+        y: y + counter.height + 7,
+        width: 300,
+        height: 30,
+      }),
+    ];
+  });
+  const {
+    id: posterId,
+    revision: posterRevision,
+    assets: posterAssets,
+    createdAt: posterCreated,
+    updatedAt: posterUpdated,
+    schemaVersion: posterSchema,
+    ...posterContent
+  } = poster;
+  const posterResponse = await context.request.patch(origin + '/api/albums/' + poster.id, {
+    data: {
+      expectedRevision: poster.revision,
+      content: {
+        ...posterContent,
+        pages: [
+          {
+            ...poster.pages[0],
+            elements: [
+              element('text', {
+                text: 'Những kiểu ngày thương',
+                font: 'serif',
+                fontSize: 35,
+                x: 50,
+                y: 45,
+                width: 620,
+                height: 60,
+              }),
+              ...pieces,
+            ],
+          },
+        ],
+      },
+    },
+  });
+  assert.equal(posterResponse.status(), 200);
+  await page.goto(origin);
+  await page.getByRole('button', { name: 'Mở ' + poster.title, exact: true }).click();
+  await page.getByRole('button', { name: 'Xem album', exact: true }).click();
+  const posterViewer = page.getByRole('dialog', { name: 'Xem album', exact: true });
+  await expect(posterViewer.locator('[data-counter-style]')).toHaveCount(5);
+  assert.ok(
+    await posterViewer
+      .locator('[data-counter-style]')
+      .evaluateAll((nodes) =>
+        nodes.every(
+          (node) =>
+            node.scrollWidth <= node.clientWidth + 1 && node.scrollHeight <= node.clientHeight + 1,
+        ),
+      ),
+    'Styled counters must fit their own boxes',
+  );
+  await posterViewer
+    .locator('.viewer-page > div')
+    .screenshot({ path: 'test-results/counter-designs.png' });
+  await page.getByRole('button', { name: 'Đóng album', exact: true }).click();
   assert.deepEqual(errors, []);
   console.log(
     'PASS templates: all 9 illustrated layouts persist via API, SVG/photos decode in viewer, screenshots and contact sheet, scroll lock restored.',

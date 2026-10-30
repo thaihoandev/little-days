@@ -73,6 +73,29 @@ try {
       current = await saved();
       assert.equal(current.pages[0].elements.at(-1)!.type, 'sticker');
       await page.getByRole('button', { name: 'Trang trí', exact: true }).click();
+      await expect(page.locator('.counter-presets > button')).toHaveCount(6);
+      await expect(page.locator('.text-presets > button')).toHaveCount(6);
+      for (const name of [
+        'Thẻ đếm ngày',
+        'Vé bên nhau',
+        'Dấu tròn kỉ niệm',
+        'Lịch ngày kỉ niệm',
+        'Mốc 1.000 ngày',
+        'Ngày bên nhau tối giản',
+      ]) {
+        await page.getByRole('button', { name: 'Thêm bộ đếm ' + name, exact: true }).click();
+        current = await saved();
+        assert.equal(current.pages[0].elements.at(-1)!.type, 'anniversary');
+      }
+      await page.getByLabel('Giao diện bộ đếm', { exact: true }).selectOption('ticket');
+      await page.getByLabel('Kiểu ngày kỉ niệm', { exact: true }).selectOption('milestone');
+      current = await saved();
+      assert.equal(current.pages[0].elements.at(-1)!.counterStyle, 'ticket');
+      assert.equal(current.pages[0].elements.at(-1)!.dateMode, 'milestone');
+      await page.screenshot({
+        path: 'test-results/creative-presets-' + (mobile ? 'mobile' : 'desktop') + '.png',
+        fullPage: true,
+      });
       await page
         .getByRole('group', { name: 'Bộ trang trí', exact: true })
         .getByRole('button', { name: 'Khu vườn', exact: true })
@@ -90,6 +113,21 @@ try {
       );
       await page.getByRole('button', { name: 'Xem album', exact: true }).click();
       const viewer = page.getByRole('dialog', { name: 'Xem album', exact: true });
+      await viewer.getByLabel('Phong cách cuốn sổ').selectOption('spiral');
+      await expect(viewer.locator('.book-shell')).toHaveClass(/book-spiral/);
+      const binding = viewer.getByLabel('Phong cách cuốn sổ');
+      if (await page.evaluate(() => CSS.supports('appearance', 'base-select'))) {
+        await binding.focus();
+        await binding.press('Space');
+        await expect.poll(() => binding.evaluate((e) => e.matches(':open'))).toBe(true);
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('Escape');
+        await expect(viewer).toBeVisible();
+        await expect(viewer.locator('.viewer-controls')).toContainText('1 / 2');
+      }
+      await binding.selectOption('linen');
+      await expect(viewer.locator('.book-shell')).toHaveClass(/book-linen/);
+      await viewer.getByLabel('Hiệu ứng lật trang').selectOption('slide');
       for (const viewport of [
         mobile ? { width: 390, height: 844 } : { width: 1600, height: 1100 },
         { width: 640, height: 360 },
@@ -112,6 +150,7 @@ try {
       }
       await page.getByRole('button', { name: 'Trang sau', exact: true }).click();
       await expect(viewer.locator('.viewer-controls')).toContainText('2 / 2');
+      await viewer.getByLabel('Hiệu ứng lật trang').selectOption('soft');
       await page.keyboard.press('Escape');
       await expect(viewer).not.toBeVisible();
       await page.setViewportSize(

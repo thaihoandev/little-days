@@ -15,6 +15,7 @@ import './styles.css';
 import './journal.css';
 import './design.css';
 import './polish.css';
+import './creative.css';
 class Boundary extends React.Component<{ children: React.ReactNode }, { error: boolean }> {
   state = { error: false };
   static getDerivedStateFromError() {

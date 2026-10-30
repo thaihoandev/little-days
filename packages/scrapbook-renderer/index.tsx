@@ -1,5 +1,6 @@
 import React from 'react';
 import { decoration } from '../domain/decorations.js';
+import { counterAppearance } from '../domain/counter.js';
 import {
   type Album,
   type Page,
@@ -116,6 +117,49 @@ export function ElementContent({
       </div>
     );
   }
+  const counter = e.type === 'anniversary' && counterAppearance(e.counterStyle);
+  if (counter)
+    return (
+      <div
+        data-counter-style={e.counterStyle}
+        style={{
+          width: '100%',
+          height: '100%',
+          boxSizing: 'border-box',
+          position: 'relative',
+          overflow: 'hidden',
+          background: counter.fill,
+          border: `1px ${counter.dash.length ? 'dashed' : 'solid'} ${counter.stroke}`,
+          borderRadius: counter.radius,
+          padding: counter.padding,
+          paddingTop: counter.padding + counter.header,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: e.color,
+          fontFamily: fonts[e.font],
+          fontSize: e.fontSize,
+          lineHeight: 1.3,
+          textAlign: 'center',
+          whiteSpace: 'pre-wrap',
+          overflowWrap: 'anywhere',
+        }}
+      >
+        {counter.header > 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: counter.header,
+              background: '#ad7b6b',
+            }}
+          />
+        )}
+        {displayedText(e, album, referenceDate)}
+      </div>
+    );
   return (
     <div
       style={{

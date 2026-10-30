@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { decorationIds } from './decorations.js';
+import { counterStyleIds } from './counter.js';
 
 const finite = z.number().finite();
 export const dateString = z
@@ -45,6 +46,7 @@ export const elementSchema = z.object({
     .refine((c) => c.x + c.width <= 1.001 && c.y + c.height <= 1.001),
   animation: z.enum(['none', 'fade', 'rise', 'drop']),
   dateMode: z.enum(['elapsed', 'annual', 'milestone']).optional(),
+  counterStyle: z.enum(counterStyleIds).optional(),
   milestoneDays: z.number().int().min(1).max(50000).optional(),
 });
 export type ScrapElement = z.infer<typeof elementSchema>;

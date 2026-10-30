@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import sharp from 'sharp';
+import { normalizePhoto } from './images.js';
 import { z } from 'zod';
 import { journalContentSchema, type JournalEntry } from '../../../packages/domain/journal.js';
 import { Repository } from './database.js';
@@ -106,20 +106,9 @@ export class JournalService {
     await this.owned(owner, id);
     if (!file || file.size > 20 * 1048576)
       throw new BadRequestException('Chọn ảnh JPEG/PNG/WebP tối đa 20 MB.');
-    const image = sharp(file.buffer, { limitInputPixels: 40000000 });
-    let result: Awaited<ReturnType<typeof normalize>>;
-    async function normalize() {
-      const metadata = await image.metadata();
-      if (!['jpeg', 'png', 'webp'].includes(metadata.format || '')) throw new Error('format');
-      return image
-        .rotate()
-        .resize({ width: 2000, height: 2400, fit: 'inside', withoutEnlargement: true })
-        .flatten({ background: '#fffdf7' })
-        .jpeg({ quality: 86 })
-        .toBuffer({ resolveWithObject: true });
-    }
+    let result: Awaited<ReturnType<typeof normalizePhoto>>;
     try {
-      result = await normalize();
+      result = await normalizePhoto(file.buffer, 'jpeg');
     } catch {
       throw new BadRequestException(
         'Ảnh không hợp lệ; chỉ hỗ trợ JPEG/PNG/WebP tối đa 40 megapixel.',
