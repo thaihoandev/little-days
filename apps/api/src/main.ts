@@ -67,6 +67,7 @@ import { ResourcePolicy } from './resource-policy.js';
 import { MaintenanceService } from './maintenance.js';
 import { Observability, logEvent } from './observability.js';
 import { OpsMonitor } from './ops-monitor.js';
+import { BackupLock, backupSafeStore } from './backup-lock.js';
 import { videoDurationFrames } from '../../../packages/domain/video.js';
 import { createMediaStore, ObjectNotFoundError } from './storage.js';
 
@@ -74,13 +75,16 @@ const dataDir = path.resolve(process.env.DATA_DIR || 'data');
 const repository = new Repository();
 const jobs = new JobRepository(repository);
 const history = new AlbumHistory(repository);
-const store = createMediaStore(dataDir);
+const store = backupSafeStore(repository, createMediaStore(dataDir));
+const backupLock = new BackupLock(repository);
 const resources = new ResourcePolicy(repository, store, dataDir);
 const observability = new Observability();
-const maintenance = new MaintenanceService(repository, resources, dataDir);
+const maintenance = new MaintenanceService(repository, resources, dataDir, () =>
+  backupLock.paused(),
+);
 const mailer = createMailer(dataDir);
 const opsMonitor = new OpsMonitor(repository, mailer);
-const deletion = new AccountDeletion(repository, jobs, store, dataDir);
+const deletion = new AccountDeletion(repository, jobs, store, dataDir, () => backupLock.paused());
 const security = new AccountSecurity(
   repository,
   mailer,
@@ -180,6 +184,7 @@ class AppController {
       storage: store.kind,
       workers: workers.filter((w) => now - w.lastSeen < 15000).length,
       version: '0.2.0',
+      backupProtocol: 1,
     };
   }
   @Get('health/ready') async ready() {
@@ -512,13 +517,13 @@ class AppController {
       for (const asset of album.assets) await resources.remove(`uploads/${asset.id}.webp`);
       for (const audio of await repository.list<AudioAsset>('audio', req.userId)) {
         if (audio.albumId !== id) continue;
-        await resources.remove('audio/' + audio.id + '.mp3');
         await repository.remove('audio', audio.id);
+        await resources.remove('audio/' + audio.id + '.mp3');
       }
       for (const job of await jobs.list(req.userId)) {
         if (job.albumId !== id) continue;
-        if (job.outputKey) await resources.remove(job.outputKey);
         await jobs.remove(job.id, req.userId);
+        if (job.outputKey) await resources.remove(job.outputKey);
       }
       return { ok: true };
     } finally {
@@ -749,8 +754,8 @@ class AppController {
       )
     )
       throw new ConflictException('Nhạc đang được dùng để xuất video. Hãy đợi hoặc hủy tác vụ.');
-    await resources.remove('audio/' + audioId + '.mp3');
     await repository.remove('audio', audioId);
+    await resources.remove('audio/' + audioId + '.mp3');
     return { ok: true };
   }
   @Get('albums/:id/exports') async exports(@Req() req: UserRequest, @Param('id') id: string) {
@@ -881,6 +886,7 @@ class AppController {
 @Module({ controllers: [AppController] })
 class AppModule {}
 await repository.init();
+await backupLock.init();
 await history.init();
 await jobs.init();
 await security.init();
@@ -905,6 +911,16 @@ app.use('/api', async (req: UserRequest, res: Response, next: NextFunction) => {
   try {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Cache-Control', 'no-store');
+    if (
+      (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) ||
+        req.path === '/session' ||
+        req.path.startsWith('/auth/')) &&
+      (await backupLock.paused())
+    )
+      return res.status(503).set('Retry-After', '15').json({
+        message: 'Đang sao lưu dữ liệu. Vui lòng thử lưu lại sau ít phút.',
+        code: 'BACKUP_IN_PROGRESS',
+      });
     const origin = req.headers.origin;
     const allowed = new Set([
       process.env.APP_ORIGIN || 'http://127.0.0.1:5173',
@@ -978,6 +994,7 @@ if (process.env.NODE_ENV === 'production') {
   );
 }
 const queue = new RenderQueue(repository, jobs, store, dataDir, {
+  paused: () => backupLock.paused(),
   operations: deletion,
   resources,
 });

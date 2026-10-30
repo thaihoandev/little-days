@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "backup:scheduled": "node --import tsx scripts/scheduled-backup.ts",
+    "test:scheduled-backup": "tsx scripts/smoke-scheduled-backup.ts",
+    "backup:key": "node --import tsx scripts/backup-crypto.ts key",
+    "backup:seal": "node --env-file-if-exists=.env --import tsx scripts/backup-crypto.ts seal",
+    "backup:open": "node --env-file-if-exists=.env --import tsx scripts/backup-crypto.ts open",
     "ops:monitor": "node --env-file-if-exists=.env --import tsx scripts/monitor-ops.ts",
     "test:ops": "tsx scripts/smoke-ops.ts",
     "setup:env": "node scripts/setup-env.mjs",

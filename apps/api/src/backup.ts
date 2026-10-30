@@ -175,8 +175,38 @@ export async function createBackup(
   db: Repository,
   store: MediaStore,
   output: string,
+  options: { online?: boolean; maxBytes?: number; signal?: AbortSignal } = {},
 ): Promise<BackupManifest> {
+  if (options.online) {
+    if (db.driver !== 'postgresql') throw new Error('Online backup requires PostgreSQL.');
+    return db.transaction(async () => {
+      await db.query("SET LOCAL lock_timeout = '5s'");
+      const names: string[] = [];
+      for (const name of [
+        ...Object.keys(tables),
+        'maintenance_locks',
+        'account_deletions',
+        'owner_operations',
+      ])
+        if (await db.hasTable(name)) names.push(name);
+      await db.query('LOCK TABLE ' + names.sort().join(',') + ' IN SHARE MODE');
+      return writeBackup(db, store, output, options);
+    });
+  }
   await assertNoWorkers(db);
+  if (await db.hasTable('backup_lease'))
+    if (
+      (await db.query('SELECT id FROM backup_lease WHERE lease_until>?', [await db.now()])).length
+    )
+      throw new Error('Another backup is active.');
+  return writeBackup(db, store, output, options);
+}
+async function writeBackup(
+  db: Repository,
+  store: MediaStore,
+  output: string,
+  options: { maxBytes?: number; signal?: AbortSignal },
+): Promise<BackupManifest> {
   await assertNoCleanup(db);
   const dump = await db.maintenanceTransaction(async () => {
     const result: Dump = {
@@ -210,7 +240,11 @@ export async function createBackup(
   const files: BackupManifest['files'] = [
     { path: 'database.json', ...(await digestFile(database)) },
   ];
+  let total = Buffer.byteLength(serialized);
+  if (total > (options.maxBytes ?? Number.MAX_SAFE_INTEGER))
+    throw new Error('Backup byte limit exceeded.');
   for (const key of [...keys].sort()) {
+    options.signal?.throwIfAborted();
     const relative = 'media/' + key,
       outputFile = path.resolve(root, ...relative.split('/'));
     if (!outputFile.startsWith(root + path.sep)) throw new Error('Media nằm ngoài backup.');
@@ -222,6 +256,11 @@ export async function createBackup(
       transform(chunk, _encoding, done) {
         hash.update(chunk);
         bytes += chunk.length;
+        total += chunk.length;
+        if (total > (options.maxBytes ?? Number.MAX_SAFE_INTEGER)) {
+          done(new Error('Backup byte limit exceeded.'));
+          return;
+        }
         done(null, chunk);
       },
     });
@@ -229,6 +268,7 @@ export async function createBackup(
       object.stream,
       meter,
       createWriteStream(outputFile, { flags: 'wx', mode: 0o600 }),
+      { signal: options.signal },
     );
     files.push({ path: relative, bytes, sha256: hash.digest('hex') });
   }
@@ -293,6 +333,11 @@ export async function restoreBackup(
   await assertNoWorkers(db);
   await assertNoCleanup(db);
   await assertEmpty(db);
+  if (await db.hasTable('backup_lease'))
+    if (
+      (await db.query('SELECT id FROM backup_lease WHERE lease_until>?', [await db.now()])).length
+    )
+      throw new Error('Another backup is active.');
   if (!execute)
     return { executed: false, files: manifest.files.length, records: dump.tables.records.length };
   for (const file of manifest.files.filter((file) => file.path.startsWith('media/'))) {

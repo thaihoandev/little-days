@@ -29,6 +29,8 @@ Máy bạn tắt thì web cloud vẫn dùng được, còn video chờ worker. �
 
 ## Phương án đã chuẩn bị
 
+Backup theo lịch không cần thêm host: cấu hình GitHub Actions theo [SCHEDULED_BACKUP.md](SCHEDULED_BACKUP.md). Chỉ nhập secrets/variables trên GitHub, không thêm file `.env`. Cập nhật API và worker local trước khi bật; lịch chưa tự kích hoạt.
+
 | Thành phần | Chạy ở đâu |
 | --- | --- |
 | Frontend + API | Một Render Free Web Service, build từ Dockerfile hiện có |

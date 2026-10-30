@@ -76,6 +76,7 @@ jobs:
       - run: npm ci
       - run: npm run video:browser
       - run: npm run test:postgres
+      - run: npm run test:scheduled-backup
       - uses: actions/upload-artifact@v4
         if: always()
         with:

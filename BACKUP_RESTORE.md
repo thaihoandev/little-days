@@ -16,6 +16,8 @@ Lưu lịch sử và cập nhật album chạy trong cùng câu lệnh database 
 
 ## Tạo backup toàn bộ dữ liệu
 
+Với app Render + Neon + Cloudinary hiện tại, đã có workflow backup mã hóa theo lịch trên GitHub Actions, kèm phục hồi thử tự động: xem [SCHEDULED_BACKUP.md](SCHEDULED_BACKUP.md). Cách thủ công/offline bên dưới vẫn được giữ nguyên; không tự chạy lệnh offline khi API đang nhận ghi.
+
 Backup dành cho người vận hành ứng dụng, không nằm trong giao diện người dùng.
 
 1. Đợi các video xuất xong hoặc hủy chúng.
@@ -41,7 +43,7 @@ Backup gồm:
 
 Không đưa `.env`, API secret, hộp thư development local, token xác minh/reset tạm, rate-limit, tiến trình worker, cache hay file staging vào backup. Các token/rate-limit cũ ở database đích được xóa trong transaction restore; cần yêu cầu link xác minh/reset mới sau phục hồi. Dữ liệu tài khoản và media cá nhân vẫn là dữ liệu riêng tư: giữ thư mục backup ở nơi chỉ người vận hành được truy cập. `backups/` được loại khỏi Git và Docker build context; chỉ thư mục backup mặc định này được ignore tự động.
 
-Backup hiện không nén/mã hóa và chưa tự chạy theo lịch. `database.json` được giới hạn 512 MB; media được stream riêng. Không chạy đồng thời nhiều lệnh restore hoặc khởi động dịch vụ giữa quá trình restore.
+Thư mục backup thủ công là plaintext; có thể mã hóa bằng `backup:seal` hoặc dùng workflow đã mã hóa sẵn. `database.json` được giới hạn 512 MB; media được stream riêng. Không chạy đồng thời nhiều lệnh restore hoặc khởi động dịch vụ giữa quá trình restore.
 
 ## Restore vào bộ dữ liệu mới
 

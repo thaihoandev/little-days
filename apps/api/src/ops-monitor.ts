@@ -17,9 +17,13 @@ const descriptions: Record<string, string> = {
 };
 export function operationalAlerts(status: Snapshot) {
   const alerts: string[] = [];
-  if (status.workers === 0 && (status.jobs.queued || status.jobs.running))
+  if (
+    !status.backupInProgress &&
+    status.workers === 0 &&
+    (status.jobs.queued || status.jobs.running)
+  )
     alerts.push('worker_unavailable');
-  if (status.oldestQueuedSeconds > 600) alerts.push('queue_delayed');
+  if (!status.backupInProgress && status.oldestQueuedSeconds > 600) alerts.push('queue_delayed');
   if (status.cleanupRetries > 0) alerts.push('account_cleanup_retry');
   if (status.storageMaxOwnerRatio > 0.9) alerts.push('storage_near_quota');
   if (status.renderFailuresLast24h >= 3) alerts.push('render_failures');

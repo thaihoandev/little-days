@@ -24,6 +24,7 @@ export class AccountDeletion {
     private jobs: JobRepository,
     private store: MediaStore,
     private dataDir: string,
+    private paused?: () => Promise<boolean>,
   ) {
     const env = process.env;
     this.storageId = createHash('sha256')
@@ -289,6 +290,7 @@ export class AccountDeletion {
     await this.work;
   }
   private async consume() {
+    if (await this.paused?.()) return;
     const now = await this.db.now(),
       token = randomUUID();
     const rows = await this.db.query(

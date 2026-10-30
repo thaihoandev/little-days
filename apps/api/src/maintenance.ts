@@ -49,12 +49,14 @@ export class MaintenanceService {
     private db: Repository,
     private policy: ResourcePolicy,
     private dataDir: string,
+    private paused?: () => Promise<boolean>,
   ) {}
   start() {
     if (process.env.MAINTENANCE_ENABLED === 'false') return;
     const run = () => {
       if (this.work) return;
       this.work = (async () => {
+        if (await this.paused?.()) return;
         const result = await this.policy.cleanup(true);
         const workspaces = await cleanWorkspaces(
           this.db,

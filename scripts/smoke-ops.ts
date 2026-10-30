@@ -5,6 +5,7 @@ import path from 'node:path';
 import { Repository } from '../apps/api/src/database.js';
 import { JobRepository } from '../apps/api/src/jobs.js';
 import { makeJob } from '../tests/job-fixture.js';
+import { BackupLock } from '../apps/api/src/backup-lock.js';
 
 const root = path.resolve('test-results/ops-api', crypto.randomUUID());
 const token = 'operator-fixture-key-12345678901234567890';
@@ -86,6 +87,18 @@ async function messages() {
 }
 try {
   await start();
+  const backup = new BackupLock(db),
+    lease = await backup.acquire();
+  const paused = await fetch('http://127.0.0.1:4388/api/albums', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title: 'must not save' }),
+  });
+  assert.equal(paused.status, 503);
+  assert.equal(paused.headers.get('Retry-After'), '15');
+  assert.equal((await paused.json()).code, 'BACKUP_IN_PROGRESS');
+  assert.equal((await fetch('http://127.0.0.1:4388/api/health')).status, 200);
+  await backup.release(lease);
   assert.equal((await fetch('http://127.0.0.1:4388/api/ops/status')).status, 404);
   const jobs = new JobRepository(db);
   await jobs.init();

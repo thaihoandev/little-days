@@ -1,6 +1,6 @@
 # Trạng thái triển khai Little Days
 
-Ngày cập nhật: **29/10/2026**.
+Ngày cập nhật: **30/10/2026**.
 
 ## Kết quả hiện tại
 
@@ -20,7 +20,7 @@ App đã chạy công khai trên Render tại https://little-days-api.onrender.c
 | Editor | Shift/marquee/checkbox chọn nhiều, nhóm/bỏ nhóm, kéo/resize/xoay nhóm; căn chỉnh, chia đều, snap guides; thứ tự lớp, ẩn/hiện/khóa |
 | Trang | Thêm, nhân bản, đổi màu, đổi tên, sắp xếp và xóa |
 | Lưu | Autosave/revision/409, bản nháp và undo/redo; lịch sử server 50 phiên bản, checkpoint có tên, preview và restore có CAS |
-| Backup/restore | Database logic + media có SHA-256; restore vào đích trống, dry-run mặc định, import transaction; kiểm thử SQLite và Cloudinary fixture |
+| Backup/restore | Database logic + media có SHA-256; restore vào đích trống, dry-run mặc định, import transaction; workflow GitHub Actions snapshot có lease/table locks, AES-256-GCM và restore drill trước khi upload; lịch chưa bật khi thiếu secrets/variables |
 | Upload | JPEG/PNG/WebP, kiểm tra định dạng thực, 20 MB/40 megapixel, WebP tối ưu và bỏ EXIF |
 | Kỉ niệm | Sự kiện có ngày, text, ảnh, đánh dấu nổi bật; đưa lời nhắn lên scrapbook |
 | Ngày động | Số ngày bên nhau, countdown hằng năm, mốc số ngày tùy chỉnh; múi giờ album và 29/2 |
@@ -60,11 +60,12 @@ Trong lúc ảnh đang upload/lưu, editor tạm khóa tương tác để respon
 
 ## Kiểm chứng đã chạy
 
-- `npm test`: **68 tests qua**, gồm năm kiểm thử cảnh báo email mới: ngưỡng, grace/cooldown, restart, claim đồng thời, lỗi gửi không retry mù và cấu hình opt-in; cùng các kiểm thử HTTPS mail/quota/retention/cleanup/backup/auth/domain/queue/storage trước đó.
+- `npm test`: **71 tests qua**, gồm ba kiểm thử mới cho backup mã hóa nhiều MB, sai khóa/tamper/path traversal và lease fencing; cùng cảnh báo email, HTTPS mail/quota/retention/cleanup/backup/auth/domain/queue/storage trước đó.
 - `npm run typecheck`: qua.
 - `npm run build`: qua, có frontend production và JavaScript backend biên dịch.
 - `npm run format:check`: qua.
 - `npm run test:ops`: API biên dịch, bật giám sát opt-in, operator status có khóa, ghi thư vào hộp local, restart và CLI không gửi trùng; không gửi email thật. Năm unit test giám sát cũng qua trên PostgreSQL 17 trong database/container QA riêng.
+- `npm run test:scheduled-backup`: PostgreSQL schema QA riêng, SHARE locks chặn xóa media trong khi snapshot, Cloudinary HTTP fixture, chạy CLI mã hóa/giải mã/restore SQLite và so database/media; job bận không ghi đè archive tốt và lease được nhả. Đây là kiểm chứng fixture, chưa phải workflow chạy với Neon/Cloudinary thật.
 - `npm run test:api`: qua với local storage và với `SMOKE_STORAGE=s3`; kiểm tra ownership, đăng ký/đăng nhập, CAS, xử lý ảnh thật, media riêng tư, thu hồi share, idempotency, cancel và xóa.
 - `npm run test:s3`: qua HTTP fixture local, gồm SDK ký request, kiểm tra bucket, put buffer/stream, bounded read, get, prefix và delete.
 - `npm run test:cloudinary`: qua HTTP fixture local, gồm SDK ký upload, authenticated assets, chunked video trên 6 MB, private download, bounded read và xóa.
@@ -119,7 +120,7 @@ Docker Desktop đã khởi động được; đã build image và chạy contain
 
 1. Dùng thử album với ảnh thật và lấy phản hồi về thao tác editor/thiết kế template.
 2. Bật và xác minh receiver cảnh báo trên Render bằng hai biến trong OPERATIONS.md; giữ Brevo hiện có.
-3. Bật timer backup trên server và restore drill; cấu hình receiver cảnh báo ngoài nếu cần.
+3. Điền GitHub Secrets/Variables theo SCHEDULED_BACKUP.md, bật workflow backup, kiểm tra run thật và tải archive để drill độc lập. Không cần VPS hoặc worker cloud.
 4. Đo tải/CPU/RAM toàn container và chi phí trên hạ tầng đích, hiệu chỉnh quota.
 5. Pilot 3–5 người theo PILOT.md; thư viện nhạc tuyển chọn, gesture và nhóm lồng nhau là mở rộng sau pilot.
 6. Đối chiếu license, kiểm toán bảo mật và xác nhận rollout/rollback trước phát hành.
@@ -128,6 +129,7 @@ Docker Desktop đã khởi động được; đã build image và chạy contain
 
 - `README.md`: hướng dẫn chạy và kiểm thử.
 - `BACKUP_RESTORE.md`: lịch sử phiên bản, lệnh backup/restore, giới hạn và quy trình kiểm tra sau phục hồi.
+- `SCHEDULED_BACKUP.md`: GitHub Actions backup mã hóa theo lịch, cấu hình secrets/variables, giới hạn quota và phục hồi từ artifact.
 - `AUTH_EMAIL.md`: luồng tài khoản, hộp thư local, SMTP, hạn token và rate-limit.
 - `ACCOUNT_DELETION.md`: xóa tài khoản, dọn dữ liệu/media, retry và hướng dẫn vận hành.
 - `OPERATIONS.md`: quota/retention/cleanup, log/metrics, backup theo lịch và drill.

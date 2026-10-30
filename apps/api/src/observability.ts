@@ -2,6 +2,7 @@ import { timingSafeEqual, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import type { Request, Response, NextFunction } from 'express';
 import { Repository } from './database.js';
+import { BackupLock } from './backup-lock.js';
 type Fields = Record<string, string | number | boolean>;
 export function logEvent(event: string, fields: Fields = {}) {
   console.log(JSON.stringify({ time: new Date().toISOString(), event, ...fields }));
@@ -77,6 +78,9 @@ export class Observability {
         )[0]
       : undefined;
     return {
+      backupInProgress: (await db.hasTable('backup_lease'))
+        ? await new BackupLock(db).paused()
+        : false,
       notifications: notification
         ? {
             lastCheck: Number(notification.checked_at),

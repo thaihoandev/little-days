@@ -18,6 +18,7 @@ export type RenderContext = {
 };
 export type JobRenderer = (job: ExportJob, context: RenderContext) => Promise<string>;
 export type QueueOptions = {
+  paused?: () => Promise<boolean>;
   leaseMs?: number;
   pollMs?: number;
   maxRenderMs?: number;
@@ -42,6 +43,7 @@ export class RenderQueue {
   private renderer: JobRenderer;
   private operations?: QueueOptions['operations'];
   private resources?: ResourcePolicy;
+  private paused?: () => Promise<boolean>;
   constructor(
     private db: Repository,
     private jobs: JobRepository,
@@ -62,14 +64,17 @@ export class RenderQueue {
     this.renderer = options.renderer || createRenderer(store);
     this.operations = options.operations;
     this.resources = options.resources;
+    this.paused = options.paused;
   }
   private async announce() {
+    if (await this.paused?.()) return;
     await this.db.put('worker', this.workerId, 'system', {
       id: this.workerId,
       host: hostname(),
       pid: process.pid,
       lastSeen: await this.db.now(),
       busy: !!this.task,
+      backupProtocol: 1,
     });
   }
   async start() {
@@ -100,6 +105,7 @@ export class RenderQueue {
     await this.db.remove('worker', this.workerId);
   }
   private async consume() {
+    if (await this.paused?.()) return;
     const lease = await this.jobs.claim(this.leaseMs);
     if (!lease) return;
     if (this.stopping) {

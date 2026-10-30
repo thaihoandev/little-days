@@ -7,15 +7,18 @@ import { RenderQueue } from '../../api/src/render.js';
 import { ResourcePolicy } from '../../api/src/resource-policy.js';
 import { AlbumHistory } from '../../api/src/history.js';
 import { MaintenanceService } from '../../api/src/maintenance.js';
+import { BackupLock, backupSafeStore } from '../../api/src/backup-lock.js';
 const dataDir = path.resolve(process.env.DATA_DIR || 'data');
 const repository = new Repository();
 await repository.init();
+const backupLock = new BackupLock(repository);
+await backupLock.init();
 const jobs = new JobRepository(repository);
 await jobs.init();
 await new AlbumHistory(repository).init();
-const store = createMediaStore(dataDir);
+const store = backupSafeStore(repository, createMediaStore(dataDir));
 await store.ready();
-const deletion = new AccountDeletion(repository, jobs, store, dataDir);
+const deletion = new AccountDeletion(repository, jobs, store, dataDir, () => backupLock.paused());
 await deletion.init();
 const resources = new ResourcePolicy(repository, store, dataDir);
 await resources.init();
@@ -24,9 +27,12 @@ await deletion.start();
 const queue = new RenderQueue(repository, jobs, store, dataDir, {
   operations: deletion,
   resources,
+  paused: () => backupLock.paused(),
 });
 await queue.start();
-const maintenance = new MaintenanceService(repository, resources, dataDir);
+const maintenance = new MaintenanceService(repository, resources, dataDir, () =>
+  backupLock.paused(),
+);
 maintenance.start();
 console.log(`Render worker ready: ${queue.workerId} (${repository.driver}, ${store.kind})`);
 let shuttingDown = false;

@@ -87,6 +87,8 @@ Tham chiếu cấu hình: [Prometheus configuration](https://prometheus.io/docs/
 
 ## Backup và phục hồi
 
+**Render + Neon + Cloudinary:** dùng [SCHEDULED_BACKUP.md](SCHEDULED_BACKUP.md) để bật GitHub Actions backup mã hóa lúc 03:37 giờ Việt Nam, không cần worker cloud. Mặc định lịch tắt đến khi cấu hình secrets/variables. `/api/ops/status` có `backupInProgress`; bộ email không báo worker/queue mất heartbeat trong lúc lấy bản sao. Backup systemd bên dưới dành cho VPS và vẫn yêu cầu cửa sổ bảo trì offline.
+
 Backup mới giữ rolling export counter; không lưu auth token ngắn hạn, operator secret, `.env`, hàng đợi xóa tài khoản, sổ object hoặc metrics render. Media usage được đối soát lại từ dữ liệu phục hồi. Các yêu cầu xóa cần được đối chiếu riêng khi phục hồi backup cũ.
 
 ```powershell

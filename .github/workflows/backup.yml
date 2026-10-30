@@ -1,0 +1,47 @@
+name: Encrypted data backup
+on:
+  workflow_dispatch:
+  schedule:
+    # 03:37 Asia/Saigon (20:37 UTC on the previous day).
+    - cron: '37 20 * * *'
+permissions:
+  contents: read
+concurrency:
+  group: production-data-backup
+  cancel-in-progress: false
+jobs:
+  backup:
+    if: vars.BACKUP_SCHEDULE_ENABLED == 'true' && github.ref == 'refs/heads/main' && !github.event.repository.fork
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run backup:scheduled
+        env:
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          STORAGE_DRIVER: cloudinary
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.BACKUP_CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.BACKUP_CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.BACKUP_CLOUDINARY_API_SECRET }}
+          CLOUDINARY_FOLDER: ${{ vars.BACKUP_CLOUDINARY_FOLDER }}
+          BACKUP_API_ORIGIN: ${{ vars.BACKUP_API_ORIGIN }}
+          BACKUP_ENCRYPTION_KEY: ${{ secrets.BACKUP_ENCRYPTION_KEY }}
+      - name: Upload only the encrypted and restore-tested archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: little-days-backup-${{ github.run_id }}
+          path: backups/artifact/little-days-backup.enc
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
+      - name: Remove the runner backup workspace
+        if: always()
+        shell: bash
+        run: |
+          test "$GITHUB_WORKSPACE" = "$PWD"
+          rm -rf -- "$GITHUB_WORKSPACE/backups"
