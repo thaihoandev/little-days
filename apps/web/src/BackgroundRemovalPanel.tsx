@@ -34,7 +34,6 @@ export function BackgroundRemovalPanel({
     if (!base) return;
     let active = true;
     onProcessing(true);
-    onResult(null);
     decorateCutout(base, outline, shadow)
       .then((blob) => {
         if (active) onResult(blob);
@@ -147,12 +146,22 @@ export function BackgroundRemovalPanel({
             <input
               type="checkbox"
               checked={outline}
-              onChange={(e) => setOutline(e.target.checked)}
+              onChange={(e) => {
+                onProcessing(true);
+                setOutline(e.target.checked);
+              }}
             />
             Viền trắng
           </label>
           <label>
-            <input type="checkbox" checked={shadow} onChange={(e) => setShadow(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={shadow}
+              onChange={(e) => {
+                onProcessing(true);
+                setShadow(e.target.checked);
+              }}
+            />
             Bóng đổ nhẹ
           </label>
           <button

@@ -73,6 +73,7 @@ const env = {
   DISABLE_RENDER_WORKER: 'false',
   AUTH_RATE_LIMIT_PER_MINUTE: '200',
   SMOKE_UI_ORIGIN: origin,
+  QA_VITE_CACHE_DIR: path.join(root, 'node_modules', '.vite'),
   AUTH_UI_DATA_DIR: path.join(root, 'data'),
   BROWSER_EXECUTABLE: browser.path,
 };
@@ -125,7 +126,8 @@ async function run(name: string, file: string) {
     if (code !== 0) {
       // These suites use isolated fixtures only; expose their failure without requiring artifact access.
       const diagnostic =
-        output.slice(-6000) || 'Fixture process exited without output (possibly timed out).';
+        (output.length > 8000 ? output.slice(0, 5000) + '\n…\n' + output.slice(-3000) : output) ||
+        'Fixture process exited without output (possibly timed out).';
       console.error(diagnostic);
       if (process.env.GITHUB_ACTIONS === 'true')
         console.log(

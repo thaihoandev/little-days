@@ -7,6 +7,12 @@ export default defineConfig(({ mode }) => {
   return {
     root: fileURLToPath(new URL('.', import.meta.url)),
     plugins: [react()],
+    // Both libraries already ship bundled ESM. Discovering them inside a lazy worker
+    // must not trigger Vite's dependency-optimizer reload during image processing.
+    optimizeDeps: {
+      exclude: ['@imgly/background-removal', 'onnxruntime-web', 'onnxruntime-web/webgpu'],
+    },
+    cacheDir: process.env.QA_VITE_CACHE_DIR || undefined,
     worker: { format: 'es' },
     resolve: {
       alias: [
