@@ -390,8 +390,12 @@ export default function JournalDashboard({
                       </button>
                     ) : (
                       <>
-                        <button className="text-button" onClick={() => setEditing(entry)}>
-                          Sửa dấu mốc {entry.title}
+                        <button
+                          className="text-button"
+                          aria-label={'Sửa dấu mốc ' + entry.title}
+                          onClick={() => setEditing(entry)}
+                        >
+                          Chỉnh sửa
                         </button>
                         <button
                           className="text-button"
@@ -542,132 +546,136 @@ function JournalDialog({
         </button>
       </header>
       <form className="form-stack" onSubmit={(event) => void submit(event)}>
-        <fieldset disabled={busy}>
-          <label>
-            Tên dấu mốc
-            <input
-              required
-              maxLength={160}
-              value={content.title}
-              onChange={(e) => setContent({ ...content, title: e.target.value })}
-              placeholder="Buổi hẹn đầu tiên, sinh nhật, một lời hẹn…"
-            />
-          </label>
-          <div className="journal-form-row">
+        <div className="journal-form-fields">
+          <fieldset disabled={busy}>
             <label>
-              Ngày đáng nhớ
+              Tên dấu mốc
               <input
                 required
-                type="date"
-                min="1900-01-01"
-                max="2200-12-31"
-                value={content.date}
-                onChange={(e) => setContent({ ...content, date: e.target.value })}
+                maxLength={160}
+                value={content.title}
+                onChange={(e) => setContent({ ...content, title: e.target.value })}
+                placeholder="Buổi hẹn đầu tiên, sinh nhật, một lời hẹn…"
               />
             </label>
-            <label>
-              Loại dấu mốc
-              <select
-                aria-label="Loại dấu mốc"
-                value={content.kind}
-                onChange={(e) =>
-                  setContent({ ...content, kind: e.target.value as JournalContent['kind'] })
-                }
-              >
-                {Object.entries(journalKindNames).map(([id, name]) => (
-                  <option value={id} key={id}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <label>
-            Lời nhắn / ghi chú
-            <textarea
-              aria-label="Lời nhắn / ghi chú"
-              rows={5}
-              maxLength={5000}
-              value={content.note}
-              onChange={(e) => setContent({ ...content, note: e.target.value })}
-              placeholder="Hôm ấy có gì đặc biệt? Hay một điều mình muốn làm cùng nhau…"
-            />
-          </label>
-          <label className="check-label">
-            <input
-              type="checkbox"
-              checked={content.annual}
-              onChange={(e) => setContent({ ...content, annual: e.target.checked })}
-            />
-            Đánh dấu ngày này mỗi năm
-          </label>
-          <label className="journal-upload">
-            <ImagePlus size={19} />
-            Ảnh cho ngày này
-            <input
-              aria-label="Ảnh dấu mốc"
-              type="file"
-              accept="image/jpeg,image/png,image/webp"
-              multiple
-              onChange={(e) => {
-                const selected = Array.from(e.target.files || []);
-                if (selected.length + (entry?.assets.length || 0) > 6) {
-                  setError('Mỗi dấu mốc tối đa 6 ảnh.');
-                  return;
-                }
-                if (selected.some((f) => f.size > 20 * 1048576)) {
-                  setError('Mỗi ảnh tối đa 20 MB.');
-                  return;
-                }
-                setFiles(selected);
-                setError('');
-              }}
-            />
-            <small>JPEG/PNG/WebP · tối đa 6 ảnh, 20 MB/ảnh</small>
-          </label>
-          {files.length > 0 && (
-            <p className="muted small">Sẽ thêm: {files.map((f) => f.name).join(', ')}</p>
-          )}
-          {entry && entry.assets.length > 0 && (
-            <div className="journal-edit-photos">
-              {entry.assets.map((asset) => (
-                <div key={asset.id}>
-                  <img src={asset.url} alt={asset.name} />
-                  <button
-                    type="button"
-                    className="text-button"
-                    aria-label={'Xóa ảnh ' + asset.name}
-                    onClick={() => {
-                      if (!window.confirm('Xóa ảnh này khỏi dấu mốc?')) return;
-                      setBusy(true);
-                      api<JournalEntry>('/journal/' + entry.id + '/assets/' + asset.id, {
-                        method: 'DELETE',
-                        body: JSON.stringify({ expectedRevision: entry.revision }),
-                      })
-                        .then((value) => {
-                          setEntry(value);
-                          onUpdated(value);
-                        })
-                        .catch((e) => setError(e.message))
-                        .finally(() => setBusy(false));
-                    }}
-                  >
-                    Xóa ảnh
-                  </button>
-                </div>
-              ))}
+            <div className="journal-form-row">
+              <label>
+                Ngày đáng nhớ
+                <input
+                  required
+                  type="date"
+                  min="1900-01-01"
+                  max="2200-12-31"
+                  value={content.date}
+                  onChange={(e) => setContent({ ...content, date: e.target.value })}
+                />
+              </label>
+              <label>
+                Loại dấu mốc
+                <select
+                  aria-label="Loại dấu mốc"
+                  value={content.kind}
+                  onChange={(e) =>
+                    setContent({ ...content, kind: e.target.value as JournalContent['kind'] })
+                  }
+                >
+                  {Object.entries(journalKindNames).map(([id, name]) => (
+                    <option value={id} key={id}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
-          )}
-        </fieldset>
+            <label>
+              Lời nhắn / ghi chú
+              <textarea
+                aria-label="Lời nhắn / ghi chú"
+                rows={5}
+                maxLength={5000}
+                value={content.note}
+                onChange={(e) => setContent({ ...content, note: e.target.value })}
+                placeholder="Hôm ấy có gì đặc biệt? Hay một điều mình muốn làm cùng nhau…"
+              />
+            </label>
+            <label className="check-label">
+              <input
+                type="checkbox"
+                checked={content.annual}
+                onChange={(e) => setContent({ ...content, annual: e.target.checked })}
+              />
+              Đánh dấu ngày này mỗi năm
+            </label>
+            <label className="journal-upload">
+              <ImagePlus size={19} />
+              Ảnh cho ngày này
+              <input
+                aria-label="Ảnh dấu mốc"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={(e) => {
+                  const selected = Array.from(e.target.files || []);
+                  if (selected.length + (entry?.assets.length || 0) > 6) {
+                    setError('Mỗi dấu mốc tối đa 6 ảnh.');
+                    return;
+                  }
+                  if (selected.some((f) => f.size > 20 * 1048576)) {
+                    setError('Mỗi ảnh tối đa 20 MB.');
+                    return;
+                  }
+                  setFiles(selected);
+                  setError('');
+                }}
+              />
+              <small>JPEG/PNG/WebP · tối đa 6 ảnh, 20 MB/ảnh</small>
+            </label>
+            {files.length > 0 && (
+              <p className="muted small">Sẽ thêm: {files.map((f) => f.name).join(', ')}</p>
+            )}
+            {entry && entry.assets.length > 0 && (
+              <div className="journal-edit-photos">
+                {entry.assets.map((asset) => (
+                  <div key={asset.id}>
+                    <img src={asset.url} alt={asset.name} />
+                    <button
+                      type="button"
+                      className="text-button"
+                      aria-label={'Xóa ảnh ' + asset.name}
+                      onClick={() => {
+                        if (!window.confirm('Xóa ảnh này khỏi dấu mốc?')) return;
+                        setBusy(true);
+                        api<JournalEntry>('/journal/' + entry.id + '/assets/' + asset.id, {
+                          method: 'DELETE',
+                          body: JSON.stringify({ expectedRevision: entry.revision }),
+                        })
+                          .then((value) => {
+                            setEntry(value);
+                            onUpdated(value);
+                          })
+                          .catch((e) => setError(e.message))
+                          .finally(() => setBusy(false));
+                      }}
+                    >
+                      Xóa ảnh
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </fieldset>
+        </div>
         {error && (
           <p className="error-banner" role="alert">
             {error}
           </p>
         )}
-        <button type="submit" className="button primary full" disabled={busy}>
-          {busy ? 'Đang giữ lại…' : 'Lưu dấu mốc'}
-        </button>
-        <p className="muted small">Chỉ tài khoản của bạn xem được dấu mốc và ảnh ở đây.</p>
+        <footer className="journal-form-footer">
+          <button type="submit" className="button primary full" disabled={busy}>
+            {busy ? 'Đang giữ lại…' : 'Lưu dấu mốc'}
+          </button>
+          <p className="muted small">Chỉ tài khoản của bạn xem được dấu mốc và ảnh ở đây.</p>
+        </footer>
       </form>
     </dialog>
   );

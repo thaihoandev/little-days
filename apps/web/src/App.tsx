@@ -81,11 +81,13 @@ function Modal({
   children,
   onClose,
   wide = false,
+  className = '',
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   wide?: boolean;
+  className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -119,7 +121,7 @@ function Modal({
     <div className="modal-backdrop">
       <div
         ref={ref}
-        className={`modal ${wide ? 'wide' : ''}`}
+        className={`modal ${wide ? 'wide' : ''} ${className}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -608,42 +610,48 @@ function CreateModal({
     }
   };
   return (
-    <Modal title="Bắt đầu một cuốn sổ" onClose={onClose}>
+    <Modal title="Bắt đầu một cuốn sổ" onClose={onClose} className="create-album-modal">
       <form onSubmit={(e) => void submit(e)} className="form-stack">
-        <label>
-          Tên cuốn sổ
-          <input
-            required
-            maxLength={120}
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </label>
-        <label>Chọn một phong cách</label>
-        <div className="template-picker">
-          {builtInTemplates.map((t) => (
-            <button
-              type="button"
-              key={t.id}
-              aria-label={t.name}
-              className={templateId === t.id ? 'chosen' : ''}
-              onClick={() => {
-                setTheme(t.theme);
-                setTemplateId(t.id);
-              }}
-            >
-              <span className="built-in-preview">
-                <PagePreview album={{ ...previewAlbum, pages: [templatePage(t.id)] }} width={105} />
-              </span>
-              {t.name}
-              {templateId === t.id && <Check size={15} />}
-            </button>
-          ))}
+        <div className="create-album-fields">
+          <label>
+            Tên cuốn sổ
+            <input
+              required
+              maxLength={120}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+          </label>
+          <label>Chọn một phong cách</label>
+          <div className="template-picker">
+            {builtInTemplates.map((t) => (
+              <button
+                type="button"
+                key={t.id}
+                aria-label={t.name}
+                aria-pressed={templateId === t.id}
+                className={templateId === t.id ? 'chosen' : ''}
+                onClick={() => {
+                  setTheme(t.theme);
+                  setTemplateId(t.id);
+                }}
+              >
+                <span className="built-in-preview">
+                  <PagePreview
+                    album={{ ...previewAlbum, pages: [templatePage(t.id)] }}
+                    width={105}
+                  />
+                </span>
+                <span className="template-name">{t.name}</span>
+                {templateId === t.id && <Check size={15} />}
+              </button>
+            ))}
+          </div>
+          <p className="muted small">
+            Bạn có thể đổi ảnh, chữ và bố cục từng trang sau khi chọn mẫu.
+          </p>
+          {error && <p className="error">{error}</p>}
         </div>
-        <p className="muted small">
-          Bạn có thể đổi ảnh, chữ và bố cục từng trang sau khi chọn mẫu.
-        </p>
-        {error && <p className="error">{error}</p>}
         <button className="button primary full" disabled={busy}>
           {busy ? <LoaderCircle className="spin" size={17} /> : <Plus size={17} />}Tạo cuốn sổ của
           mình

@@ -1,4 +1,4 @@
-import { chromium, expect } from '@playwright/test';
+import { chromium, expect, type Locator } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { mkdir, writeFile } from 'node:fs/promises';
 import sharp from 'sharp';
@@ -17,9 +17,12 @@ const browser = await chromium.launch({
   headless: true,
 });
 try {
-  for (const mobile of [false, true]) {
+  for (const width of [1440, 390, 320]) {
+    const mobile = width < 600,
+      device = mobile ? 'mobile-' + width : 'desktop',
+      height = width === 320 ? 640 : mobile ? 844 : 1050;
     const context = await browser.newContext({
-        viewport: mobile ? { width: 390, height: 844 } : { width: 1440, height: 1050 },
+        viewport: { width, height },
       }),
       page = await context.newPage(),
       errors: string[] = [];
@@ -33,6 +36,30 @@ try {
       await page.getByRole('button', { name: 'Thêm dấu mốc', exact: true }).click();
       const form = page.getByRole('dialog', { name: 'Thêm dấu mốc', exact: true });
       await expect(form).toBeVisible();
+      async function visibleAction(action: Locator) {
+        const bounds = await action.boundingBox();
+        assert.ok(
+          bounds &&
+            bounds.x >= 0 &&
+            bounds.y >= 0 &&
+            bounds.x + bounds.width <= width + 1 &&
+            bounds.y + bounds.height <= height + 1,
+          'Form action must remain inside the viewport without scrolling',
+        );
+        assert.ok(bounds.height >= 40, 'Form action must have a usable touch target');
+      }
+      await visibleAction(form.getByRole('button', { name: 'Lưu dấu mốc', exact: true }));
+      const fields = await form.locator('.journal-form-fields').boundingBox(),
+        footer = await form.locator('.journal-form-footer').boundingBox();
+      assert.ok(
+        fields && footer && fields.y + fields.height <= footer.y + 1,
+        'Scrollable fields must not overlap the save action',
+      );
+      assert.ok(
+        await form.evaluate((element) => element.scrollWidth <= element.clientWidth + 1),
+        'Journal form must not scroll horizontally',
+      );
+      await page.screenshot({ path: 'test-results/journal-form-' + device + '.png' });
       const title = 'Kỉ niệm có ảnh ' + crypto.randomUUID().slice(0, 6);
       await form.getByLabel('Tên dấu mốc', { exact: true }).fill(title);
       await form
@@ -82,25 +109,55 @@ try {
       await note.getByRole('button', { name: 'Lưu dấu mốc', exact: true }).click();
       await expect(note).not.toBeVisible();
       await page.screenshot({
-        path: 'test-results/journal-home-' + (mobile ? 'mobile' : 'desktop') + '.png',
+        path: 'test-results/journal-home-' + device + '.png',
         fullPage: true,
       });
       await page.getByRole('button', { name: 'Dòng thời gian', exact: true }).click();
       await page.getByLabel('Tìm dấu mốc').fill(title);
+      const searchLayout = await page.locator('.journal-search').evaluate((label) => {
+        const icon = label.querySelector('svg')!.getBoundingClientRect(),
+          input = label.querySelector('input')!.getBoundingClientRect();
+        return {
+          aligned: Math.abs(icon.y + icon.height / 2 - input.y - input.height / 2) < 2,
+          iconRight: icon.right,
+          inputLeft: input.left,
+          overflow: label.scrollWidth > label.clientWidth + 1,
+        };
+      });
+      assert.ok(
+        searchLayout.aligned &&
+          searchLayout.iconRight < searchLayout.inputLeft &&
+          !searchLayout.overflow,
+        'Search icon and input must align in one row without overflow',
+      );
+      await page
+        .locator('.journal-filters')
+        .screenshot({ path: 'test-results/journal-search-' + device + '.png' });
+      await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
+      await page.getByLabel('Lọc loại dấu mốc').selectOption('note');
+      await expect(page.getByRole('heading', { name: title, exact: true })).not.toBeVisible();
+      await page.getByLabel('Lọc loại dấu mốc').selectOption('all');
       await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
       await page.screenshot({
-        path: 'test-results/journal-timeline-' + (mobile ? 'mobile' : 'desktop') + '.png',
+        path: 'test-results/journal-timeline-' + device + '.png',
         fullPage: true,
       });
       await page.getByRole('button', { name: 'Lịch của mình', exact: true }).click();
       await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
       await page.screenshot({
-        path: 'test-results/journal-calendar-' + (mobile ? 'mobile' : 'desktop') + '.png',
+        path: 'test-results/journal-calendar-' + device + '.png',
         fullPage: true,
       });
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
       await page.getByRole('button', { name: 'Hôm nay', exact: true }).first().click();
       await page.getByRole('button', { name: 'Bắt đầu một cuốn sổ', exact: true }).click();
+      await visibleAction(page.getByRole('button', { name: 'Tạo cuốn sổ của mình', exact: true }));
+      const create = page.getByRole('dialog', { name: 'Bắt đầu một cuốn sổ', exact: true });
+      assert.ok(
+        await create.evaluate((element) => element.scrollWidth <= element.clientWidth + 1),
+        'Album form must not scroll horizontally',
+      );
+      await page.screenshot({ path: 'test-results/album-form-' + device + '.png' });
       await page.getByRole('button', { name: 'Bưu thiếp chuyến đi', exact: true }).click();
       await page.getByRole('button', { name: 'Tạo cuốn sổ của mình', exact: true }).click();
       await expect(page.getByRole('button', { name: 'Tạo video', exact: true })).toBeVisible();
@@ -132,7 +189,7 @@ try {
       assert.deepEqual(errors, []);
     } catch (error) {
       await page.screenshot({
-        path: 'test-results/journal-failure-' + (mobile ? 'mobile' : 'desktop') + '.png',
+        path: 'test-results/journal-failure-' + device + '.png',
         fullPage: true,
       });
       console.error(
