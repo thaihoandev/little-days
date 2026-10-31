@@ -10,6 +10,7 @@ import type { TimelineGrant, TimelineSharingState } from '../../../packages/doma
 import { Repository } from './database.js';
 import { AccountDeletion } from './account-deletion.js';
 import { authHash, type Account } from './auth.js';
+import { profileView } from './profile-view.js';
 
 export class TimelineSharing {
   constructor(
@@ -55,9 +56,38 @@ export class TimelineSharing {
     }
     const visible: TimelineGrant[] = [];
     for (const grant of grants)
-      if ((await this.account(grant.timelineOwner)) && (await this.account(grant.memberId)))
-        visible.push(grant);
+      if ((await this.account(grant.timelineOwner)) && (await this.account(grant.memberId))) {
+        const owner = await profileView(this.db, grant.timelineOwner, grant.ownerLabel),
+          member = await profileView(this.db, grant.memberId, grant.memberLabel);
+        visible.push({
+          ...grant,
+          ownerLabel: owner.displayName,
+          memberLabel: member.displayName,
+          ...(grant.state === 'active'
+            ? { ownerAvatarUrl: owner.avatarUrl, memberAvatarUrl: member.avatarUrl }
+            : {}),
+        });
+      }
     return { ownId: actor, grants: visible };
+  }
+  async profileAccess(actor: string, owner: string) {
+    if ((await this.deletion.blocked(actor)) || (await this.deletion.blocked(owner)))
+      throw new NotFoundException();
+    if (actor === owner) return;
+    if (!(await this.account(actor)) || !(await this.account(owner))) throw new NotFoundException();
+    const grants = [
+      ...(await this.db.list<TimelineGrant>('timeline-grant', actor)),
+      ...(await this.db.list<TimelineGrant>('timeline-grant', owner)),
+    ];
+    if (
+      !grants.some(
+        (g) =>
+          g.state === 'active' &&
+          ((g.timelineOwner === actor && g.memberId === owner) ||
+            (g.timelineOwner === owner && g.memberId === actor)),
+      )
+    )
+      throw new NotFoundException();
   }
   async invite(actor: string, body: unknown) {
     const { email } = z

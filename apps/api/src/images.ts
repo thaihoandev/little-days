@@ -12,8 +12,7 @@ export async function normalizePhoto(input: Buffer, format: 'webp' | 'jpeg') {
       .clone()
       .rotate()
       .resize({ width: edge, height: edge, fit: 'inside', withoutEnlargement: true });
-    if (format === 'jpeg')
-      image = image.flatten({ background: '#fffdf7' }).jpeg({ quality, mozjpeg: true });
+    if (format === 'jpeg') image = image.flatten({ background: '#fffdf7' }).jpeg({ quality });
     else image = image.webp({ quality, effort: 3 });
     return image.toBuffer({ resolveWithObject: true });
   };

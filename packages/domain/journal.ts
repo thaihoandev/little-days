@@ -1,11 +1,18 @@
 import { z } from 'zod';
 import { dateString, nextAnnual, type Asset } from './index.js';
+export const locationSchema = z.object({
+  label: z.string().trim().max(200),
+  latitude: z.number().finite().min(-85).max(85),
+  longitude: z.number().finite().min(-180).max(180),
+});
+export type MilestoneLocation = z.infer<typeof locationSchema>;
 export const journalContentSchema = z.object({
   title: z.string().trim().min(1).max(160),
   date: dateString,
   note: z.string().max(5000),
   kind: z.enum(['memory', 'anniversary', 'plan', 'note']),
   annual: z.boolean(),
+  location: locationSchema.nullable().optional(),
 });
 export type JournalContent = z.infer<typeof journalContentSchema>;
 export const timelineHeadingSchema = z.object({
@@ -22,6 +29,7 @@ export type JournalEntry = JournalContent & {
   timelineId?: string;
   timelineLabel?: string;
   calendarVisible?: boolean;
+  timelineAvatarUrl?: string;
   id: string;
   revision: number;
   createdAt: string;
@@ -29,6 +37,8 @@ export type JournalEntry = JournalContent & {
   assets: Asset[];
 };
 export type TimelineGrant = {
+  ownerAvatarUrl?: string;
+  memberAvatarUrl?: string;
   id: string;
   timelineOwner: string;
   memberId: string;

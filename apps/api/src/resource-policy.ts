@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { Album, AudioAsset, ExportJob } from '../../../packages/domain/index.js';
+import type { Album, Asset, AudioAsset, ExportJob } from '../../../packages/domain/index.js';
 import { Repository } from './database.js';
 import { JobRepository } from './jobs.js';
 import { AuthError } from './auth.js';
@@ -190,6 +190,12 @@ export class ResourcePolicy {
     for (const row of await this.db.query("SELECT owner,payload FROM records WHERE kind='audio'")) {
       const audio = JSON.parse(String(row.payload)) as AudioAsset;
       add('audio/' + audio.id + '.mp3', String(row.owner), audio.bytes);
+    }
+    for (const row of await this.db.query(
+      "SELECT owner,payload FROM records WHERE kind='profile'",
+    )) {
+      const avatar = (JSON.parse(String(row.payload)) as { avatar?: Asset }).avatar;
+      if (avatar) add('uploads/' + avatar.id + '.webp', String(row.owner), avatar.bytes);
     }
     for (const row of await this.db.query(
       'SELECT owner,payload,output_key,queue_state FROM render_jobs',

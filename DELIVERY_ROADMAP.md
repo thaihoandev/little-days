@@ -2,6 +2,8 @@
 
 Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → staging/PostgreSQL → load test và pilot, cùng cải thiện editor/video và quy trình backup.
 
+- [x] Upload ảnh chuẩn hóa trước khi gửi/tiến trình/hai request đồng thời; timeline gom ngày và phân biệt album/dấu mốc; hồ sơ tên/avatar, vị trí và bản đồ miễn phí tải theo yêu cầu. Chi tiết và đề xuất tiếp theo: `UPDATE_2026_10_31.md`.
+
 - [x] Cộng tác dòng thời gian theo lời mời tài khoản; thêm/sửa/xóa mốc/ảnh, lịch chung có tùy chọn cá nhân, thu hồi/rời, CAS và backup/xóa tài khoản. Lịch 3:1, Hôm nay tập trung, URL riêng và deep link editor. Xem `TIMELINE_COLLABORATION.md`.
 
 - [x] Tách nền ảnh bằng AI trên trình duyệt, hủy/xem trước/so sánh, viền và bóng đổ; lưu bản sao riêng tư có alpha, giữ ảnh gốc và Undo/Redo; đồng bộ Canvas/viewer/MP4. Hướng dẫn trong `BACKGROUND_REMOVAL.md`.

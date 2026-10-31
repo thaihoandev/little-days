@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "lockSha256": "2d49e431e5c4e14ff353fd57689439c8765a23a28461652cb4f388c097159941",
+  "lockSha256": "2b41897ce6efba1954437399558c91076e58739ca12bd04c0f306804d2b07ad6",
   "platform": "win32",
   "architecture": "x64",
   "entries": [
@@ -2800,6 +2800,19 @@
       "review": "declared-license-not-legal-clearance"
     },
     {
+      "name": "@types/geojson",
+      "version": "7946.0.16",
+      "location": "node_modules/@types/geojson",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
       "name": "@types/http-errors",
       "version": "2.0.5",
       "location": "node_modules/@types/http-errors",
@@ -2818,6 +2831,19 @@
       "location": "node_modules/@types/json-schema",
       "license": "MIT",
       "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@types/leaflet",
+      "version": "1.9.20",
+      "location": "node_modules/@types/leaflet",
+      "license": "MIT",
+      "dev": true,
       "optional": false,
       "installed": true,
       "noticeFiles": [
@@ -4835,6 +4861,19 @@
       "version": "10.9.0",
       "location": "node_modules/konva",
       "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "leaflet",
+      "version": "1.9.4",
+      "location": "node_modules/leaflet",
+      "license": "BSD-2-Clause",
       "dev": false,
       "optional": false,
       "installed": true,

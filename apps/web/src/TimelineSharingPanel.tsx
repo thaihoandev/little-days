@@ -3,6 +3,7 @@ import { UsersRound, X } from 'lucide-react';
 import type { TimelineGrant, TimelineSharingState } from '../../../packages/domain/journal.js';
 import { api } from './api.js';
 import { ConfirmDialog, useBodyScrollLock } from './Overlays.js';
+import { UserAvatar } from './UserAvatar.js';
 
 export function TimelineSharingPanel({
   state,
@@ -146,6 +147,7 @@ export function TimelineSharingPanel({
           {outgoing.length ? (
             outgoing.map((g) => (
               <article className="timeline-member" key={g.id}>
+                <UserAvatar name={g.memberLabel} url={g.memberAvatarUrl} />
                 <div>
                   <strong>{g.memberLabel}</strong>
                   <small>{g.state === 'pending' ? 'Đang chờ chấp nhận' : 'Có thể chỉnh sửa'}</small>
@@ -169,6 +171,7 @@ export function TimelineSharingPanel({
           {incoming.length ? (
             incoming.map((g) => (
               <article className="timeline-member incoming" key={g.id}>
+                <UserAvatar name={g.ownerLabel} url={g.ownerAvatarUrl} />
                 <div>
                   <strong>{g.ownerLabel}</strong>
                   <small>

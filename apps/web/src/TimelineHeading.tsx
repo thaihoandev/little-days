@@ -20,7 +20,7 @@ export function TimelineHeading() {
   return (
     <div className="timeline-heading-edit">
       <h1>{heading.title}</h1>
-      <p>{heading.description}</p>
+      {heading.revision >= 0 && heading.description && <p>{heading.description}</p>}
     </div>
   );
 }

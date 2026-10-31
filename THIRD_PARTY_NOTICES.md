@@ -14,6 +14,10 @@ Official references: [Remotion license](https://github.com/remotion-dev/remotion
 
 The standalone image-processing worker uses IMG.LY background-removal 1.7.0 (AGPL-3.0) and ONNX Runtime Web 1.21.0 (MIT). Original notices, the model provider's declarations and provenance distinctions are preserved in [licenses/background-removal](licenses/background-removal/README.md). The pinned IS-Net resource manifest is in `packages/background-removal/resources.json`; weights are downloaded and integrity-checked during build. The worker does not import Remotion, and Little Days' Remotion exception does not extend to these third-party components. User photographs are not licensed by these notices.
 
+## Interactive maps
+
+Leaflet 1.9.4 is distributed under BSD-2-Clause; its original license is included in `licenses/THIRD-PARTY-LICENSE-TEXTS.txt`. Map data and raster tiles are supplied separately by OpenStreetMap contributors and the OpenStreetMap Foundation, with visible attribution. See the [OSM copyright and ODbL information](https://www.openstreetmap.org/copyright) and [tile usage policy](https://operations.osmfoundation.org/policies/tiles/). Tiles are loaded only when a user opens a map, with normal browser caching; bulk download and offline prefetch are not implemented. The service is best-effort and has no availability guarantee. User milestone content is not sent to a geocoding service or included in this project's code license.
+
 ## Fonts
 
 Be Vietnam Pro, Caveat, Lora and Patrick Hand are bundled through Fontsource. Their original SIL Open Font License 1.1 notices, authors and reserved names are preserved in `licenses/fonts/`. Font licensing is independent from Little Days' code license; do not remove the font notices or rename modified fonts contrary to their reserved-name requirements.

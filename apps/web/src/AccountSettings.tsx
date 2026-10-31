@@ -2,16 +2,26 @@ import { useState } from 'react';
 import { LoaderCircle, Lock, LogOut } from 'lucide-react';
 import { api } from './api.js';
 import { UsagePanel } from './UsagePanel.js';
+import { ProfileSettings, type ProfileView } from './ProfileSettings.js';
 
-export type PublicUser = { id: string; email: string | null; emailVerified?: boolean };
+export type PublicUser = {
+  id: string;
+  email: string | null;
+  emailVerified?: boolean;
+  displayName?: string;
+  avatarUrl?: string;
+  profileRevision?: number;
+};
 export default function AccountSettings({
   user,
   onChange,
   initialMode = 'register',
+  onProfileChange,
 }: {
   user: PublicUser | null;
   onChange: (message?: string, receipt?: string) => void;
   initialMode?: 'register' | 'login';
+  onProfileChange?: (value: ProfileView) => void;
 }) {
   const [deleting, setDeleting] = useState(false),
     [deletePassword, setDeletePassword] = useState(''),
@@ -41,6 +51,16 @@ export default function AccountSettings({
   if (user?.email)
     return (
       <div className="form-stack account-settings">
+        {typeof user.profileRevision === 'number' && (
+          <ProfileSettings
+            value={{
+              displayName: user.displayName || user.email.split('@')[0],
+              avatarUrl: user.avatarUrl,
+              profileRevision: user.profileRevision,
+            }}
+            onChange={(value) => onProfileChange?.(value)}
+          />
+        )}
         <UsagePanel />
         <p>
           <strong>{user.email}</strong>

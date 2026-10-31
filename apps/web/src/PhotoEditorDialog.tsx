@@ -23,12 +23,14 @@ export function PhotoEditorDialog({
   onClose,
   onApply,
   onUpload,
+  uploadStatus,
 }: {
   element: ScrapElement;
   album: Album;
   onClose: () => void;
   onApply: (patch: Partial<ScrapElement>) => void;
   onUpload: (file: File) => Promise<Asset>;
+  uploadStatus?: string;
 }) {
   useBodyScrollLock();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -299,6 +301,11 @@ export function PhotoEditorDialog({
         </div>
       </div>
       <footer>
+        {busy && uploadStatus && (
+          <p className="small muted" role="status">
+            {uploadStatus}
+          </p>
+        )}
         {error && (
           <p className="error" role="alert">
             {error}

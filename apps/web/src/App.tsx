@@ -69,6 +69,9 @@ import { readAuthLink } from './auth-link.js';
 import { TextOverflowWarning } from './TextOverflowWarning.js';
 import JournalDashboard from './JournalDashboard.js';
 import { useAppRoute, sectionPaths, type AppSection } from './useAppRoute.js';
+import { UserAvatar } from './UserAvatar.js';
+import type { ProfileView } from './ProfileSettings.js';
+import { uploadImage, uploadBatch } from './image-upload.js';
 import { ConfirmDialog, PhotoLightbox } from './Overlays.js';
 import { decorationCatalog } from '../../../packages/domain/decorations.js';
 import {
@@ -374,11 +377,11 @@ export default function App() {
               aria-label="Tài khoản cá nhân"
               onClick={() => setModal('account')}
             >
-              <span className="avatar">
-                <UserRound size={19} />
-              </span>
+              <UserAvatar name={user?.displayName} url={user?.avatarUrl} />
               <span>
-                <strong>{user?.email?.split('@')[0] || 'Góc riêng của bạn'}</strong>
+                <strong>
+                  {user?.displayName || user?.email?.split('@')[0] || 'Góc riêng của bạn'}
+                </strong>
                 <small>{user?.email ? 'Tài khoản cá nhân' : 'Đăng ký để giữ tài khoản'}</small>
               </span>
               <ChevronDown size={15} />
@@ -410,13 +413,23 @@ export default function App() {
             />
           )}
           <header className="dashboard-top">
-            <span>Mỗi ngày bên nhau đều đáng nhớ.</span>
+            <span>
+              {
+                {
+                  home: 'Hôm nay',
+                  timeline: 'Dòng thời gian',
+                  calendar: 'Lịch',
+                  albums: 'Thư viện album',
+                  photos: 'Ảnh đã lưu',
+                }[section]
+              }
+            </span>
             <button
               className="icon-button"
               aria-label="Tài khoản"
               onClick={() => setModal('account')}
             >
-              <UserRound size={19} />
+              <UserAvatar name={user?.displayName} url={user?.avatarUrl} />
             </button>
           </header>
           {user && ['home', 'timeline', 'calendar'].includes(section) && (
@@ -424,6 +437,8 @@ export default function App() {
               key={user.id}
               userId={user.id}
               verified={!!user.emailVerified}
+              displayName={user.email ? user.displayName : undefined}
+              enhancedReady={typeof user.profileRevision === 'number'}
               albums={albums}
               mode={section as 'home' | 'timeline' | 'calendar'}
               onOpenAlbum={openAlbum}
@@ -435,55 +450,6 @@ export default function App() {
           )}
           {section === 'albums' || section === 'home' ? (
             <>
-              {section === 'albums' && (
-                <motion.section
-                  className="welcome"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                >
-                  <div className="welcome-copy">
-                    <span className="eyebrow">
-                      <span className="little-line" /> CHUYỆN CỦA CHÚNG MÌNH
-                    </span>
-                    <h1>
-                      Những ngày bình thường,
-                      <br />
-                      <em>thương thật nhiều.</em>
-                    </h1>
-                    <p>
-                      Gói ghém ảnh, lời nhắn và những lần cùng nhau.
-                      <br />
-                      Một cuốn scrapbook, một câu chuyện của riêng hai bạn.
-                    </p>
-                    <button className="button primary" onClick={() => setModal('create')}>
-                      <Plus size={18} />
-                      Bắt đầu một cuốn sổ
-                    </button>
-                    <div className="welcome-foot">
-                      <Heart size={13} /> Tự tay sắp xếp. Tự mình kể chuyện.
-                    </div>
-                  </div>
-                  <div className="hero-collage" aria-label="Minh họa scrapbook">
-                    <span className="tape tape-one" />
-                    <div className="hero-photo photo-back">
-                      <img src="/illustrations/demo-2.svg" alt="Minh họa một buổi chiều bên biển" />
-                      <span>một chiều bên nhau</span>
-                    </div>
-                    <div className="hero-photo photo-front">
-                      <img src="/illustrations/demo-1.svg" alt="Minh họa một chuyến đi trên đồi" />
-                      <span>đi đâu cũng được, cùng bạn.</span>
-                    </div>
-                    <span className="hero-doodle">✿</span>
-                    <span className="hero-heart">♡</span>
-                    <span className="hero-note">
-                      our little
-                      <br />
-                      happy things
-                    </span>
-                    <span className="sample-label">Ảnh minh họa · thay bằng ảnh của hai bạn</span>
-                  </div>
-                </motion.section>
-              )}
               <section className="albums-section">
                 <div className="section-heading">
                   <div>
@@ -545,23 +511,6 @@ export default function App() {
                   </button>
                 </div>
               </section>
-              {section === 'albums' && (
-                <section className="recap-banner">
-                  <div className="recap-icon">
-                    <Film size={29} />
-                  </div>
-                  <div>
-                    <h3>Một cuốn sổ. Cả một thước phim.</h3>
-                    <p>Biến những trang kỉ niệm thành video ngắn để xem lại, gửi nhau, giữ mãi.</p>
-                  </div>
-                  <button
-                    className="text-button"
-                    onClick={() => (albums.length ? openAlbum(albums[0]) : setModal('create'))}
-                  >
-                    Khám phá <ArrowRight size={16} />
-                  </button>
-                </section>
-              )}
               <footer className="dashboard-footer">
                 <span>Made for the little things.</span>
                 <span>
@@ -630,6 +579,9 @@ export default function App() {
         <AccountModal
           user={user}
           initialMode={accountMode}
+          onProfileChange={(profile) =>
+            setUser((current) => (current ? { ...current, ...profile } : current))
+          }
           onClose={() => setModal(null)}
           onChange={(message, receipt) => {
             if (receipt) {
@@ -777,11 +729,13 @@ function AccountModal({
   onClose,
   onChange,
   initialMode,
+  onProfileChange,
 }: {
   user: User | null;
   onClose: () => void;
   onChange: (message?: string, receipt?: string) => void;
   initialMode: 'register' | 'login';
+  onProfileChange?: (value: ProfileView) => void;
 }) {
   return (
     <Modal
@@ -789,7 +743,12 @@ function AccountModal({
       onClose={onClose}
     >
       <Suspense fallback={<p>Đang mở tài khoản…</p>}>
-        <AccountSettings user={user} onChange={onChange} initialMode={initialMode} />
+        <AccountSettings
+          user={user}
+          onChange={onChange}
+          initialMode={initialMode}
+          onProfileChange={onProfileChange}
+        />
       </Suspense>
     </Modal>
   );
@@ -833,6 +792,7 @@ function Editor({
   const [video, setVideo] = useState<Album | null>(null);
   const [share, setShare] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [localError, setLocalError] = useState('');
   const localMaintenanceError = useRef<string | null>(null);
@@ -1004,17 +964,24 @@ function Editor({
   const upload = async (files: FileList | null) => {
     if (!files?.length) return;
     setUploading(true);
+    setUploadMessage('Đang lưu các thay đổi trước khi tải ảnh…');
     await safe(async () => {
       await doc.flush();
-      for (const file of Array.from(files)) {
-        const form = new FormData();
-        form.append('file', file);
-        const updated = await api<Album>(`/albums/${album.id}/assets`, {
-          method: 'POST',
-          body: form,
-        });
-        doc.accept(updated);
-      }
+      const picked = Array.from(files);
+      let completed = 0;
+      const batch = await uploadBatch<Album>(picked, async (file, index) => {
+        const updated = await uploadImage<Album>(`/albums/${album.id}/assets`, file, (p) =>
+          setUploadMessage(
+            `Đã lưu ${completed}/${picked.length} · Ảnh ${index + 1}: ${p.phase === 'prepare' ? 'đang tối ưu' : p.phase === 'save' ? 'đang lưu' : Math.round((p.loaded / Math.max(1, p.total)) * 100) + '%'}`,
+          ),
+        );
+        completed++;
+        return updated;
+      });
+      if (batch.latest) doc.accept(batch.latest);
+      const failed = batch.results.filter((r) => r.error);
+      if (failed.length)
+        throw new Error(`Đã lưu ${completed}/${picked.length} ảnh. ${failed[0].error!.message}`);
       notify('Ảnh đã được tối ưu và lưu. Chạm vào ảnh để thêm vào trang.');
     });
     setUploading(false);
@@ -2061,18 +2028,23 @@ function Editor({
       </Suspense>
       {editingPhoto && page.elements.find((e) => e.id === editingPhoto && !e.locked) && (
         <PhotoEditorDialog
+          uploadStatus={uploadMessage}
           element={page.elements.find((e) => e.id === editingPhoto)!}
           album={album}
           onClose={() => setEditingPhoto(null)}
           onApply={(p) => patch(editingPhoto, p)}
           onUpload={async (file) => {
+            setUploadMessage('Đang chuẩn bị ảnh…');
             await doc.flush();
-            const form = new FormData();
-            form.append('file', file);
-            const updated = await api<Album>(`/albums/${album.id}/assets`, {
-              method: 'POST',
-              body: form,
-            });
+            const updated = await uploadImage<Album>(`/albums/${album.id}/assets`, file, (p) =>
+              setUploadMessage(
+                p.phase === 'prepare'
+                  ? 'Đang tối ưu ảnh…'
+                  : p.phase === 'save'
+                    ? 'Đang lưu ảnh…'
+                    : `Đang tải ${Math.round((p.loaded / Math.max(1, p.total)) * 100)}%`,
+              ),
+            );
             doc.accept(updated);
             const asset = updated.assets.find((a) => !album.assets.some((old) => old.id === a.id));
             if (!asset) throw new Error('Không tìm thấy ảnh vừa tải.');
@@ -2084,7 +2056,7 @@ function Editor({
         <div className="upload-progress" role="status" aria-live="polite">
           <LoaderCircle className="spin" size={28} />
           <strong>Đang giữ lại những khoảnh khắc…</strong>
-          <span>Ảnh được tối ưu và lưu trước khi bạn chỉnh tiếp.</span>
+          <span>{uploadMessage || 'Đang chuẩn bị ảnh…'}</span>
         </div>
       )}
     </>

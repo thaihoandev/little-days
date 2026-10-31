@@ -79,6 +79,10 @@ function mediaKeys(dump: Dump) {
         keys.add('journal/' + asset.id + '.jpg');
     if (row.kind === 'audio')
       keys.add('audio/' + (JSON.parse(String(row.payload)) as AudioAsset).id + '.mp3');
+    if (row.kind === 'profile') {
+      const avatar = (JSON.parse(String(row.payload)) as { avatar?: { id: string } }).avatar;
+      if (avatar) keys.add('uploads/' + avatar.id + '.webp');
+    }
     if (row.kind === 'export') {
       const job = JSON.parse(String(row.payload)) as ExportJob;
       if (job.status === 'completed') keys.add(job.outputKey || 'exports/' + job.id + '.mp4');

@@ -4,6 +4,8 @@
 
 ## Chạy local
 
+Cập nhật 31/10: [tối ưu upload, timeline gom ngày, tên/avatar và bản đồ dấu mốc](UPDATE_2026_10_31.md). Không cần env mới; cần deploy cả FE và API.
+
 Có thể [mời người cùng xây dựng dòng thời gian và hợp nhất lịch](TIMELINE_COLLABORATION.md). Các trang có URL riêng, trang Hôm nay ưu tiên lịch/ghi chú; không cần thêm env.
 
 Tách nền ảnh thành sticker ngay trong trình duyệt, có so sánh ảnh gốc, viền trắng/bóng đổ và bản sao riêng tư. Xem [hướng dẫn tách nền và triển khai](BACKGROUND_REMOVAL.md); không cần thêm env hoặc API trả phí.

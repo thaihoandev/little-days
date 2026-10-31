@@ -1,8 +1,10 @@
 # Trạng thái triển khai Little Days
 
-Ngày cập nhật: **30/10/2026**.
+Ngày cập nhật: **31/10/2026**.
 
 ## Kết quả hiện tại
+
+Tối ưu ảnh trước upload, tiến trình thực và hai upload đồng thời; gom timeline/Hôm nay theo ngày, phân biệt bìa album và các loại dấu mốc; tên/avatar riêng tư và vị trí tùy chọn có bản đồ Leaflet/OSM tải theo yêu cầu. Rút gọn banner để ưu tiên dữ liệu cá nhân. Xem [cập nhật và nghiên cứu ngày 31/10](UPDATE_2026_10_31.md), gồm số đo dung lượng, giới hạn và đề xuất tiếp theo. Không thêm env/dịch vụ trả phí; deploy FE/API cùng commit.
 
 Bổ sung cộng tác dòng thời gian theo email tài khoản đã xác minh: lời mời/chấp nhận trong ứng dụng, cùng CRUD dấu mốc và ảnh, lịch chung có tùy chọn hiện/ẩn theo thành viên, thu hồi/rời và xử lý xóa tài khoản. Dữ liệu chia sẻ không mở quyền album riêng. Lịch desktop 3:1, trang Hôm nay ưu tiên nội dung ngày hiện tại; các trang và editor có URL riêng, hỗ trợ tải lại/Back/Forward. Hướng dẫn trong [TIMELINE_COLLABORATION.md](TIMELINE_COLLABORATION.md); cần deploy FE/API cùng commit, không thêm env.
 

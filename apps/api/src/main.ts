@@ -70,6 +70,8 @@ import { BackupLock, backupSafeStore } from './backup-lock.js';
 import { JournalService } from './journal.js';
 import { JournalAlbumService } from './journal-album.js';
 import { normalizePhoto } from './images.js';
+import { ProfileService } from './profiles.js';
+import { profileView } from './profile-view.js';
 import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 import { videoDurationFrames } from '../../../packages/domain/video.js';
 import { createMediaStore, ObjectNotFoundError } from './storage.js';
@@ -89,6 +91,7 @@ const mailer = createMailer(dataDir);
 const opsMonitor = new OpsMonitor(repository, mailer);
 const deletion = new AccountDeletion(repository, jobs, store, dataDir, () => backupLock.paused());
 const journal = new JournalService(repository, store, resources, deletion);
+const profiles = new ProfileService(repository, store, resources, deletion, journal.sharing);
 const journalAlbums = new JournalAlbumService(repository, store, resources, deletion);
 const security = new AccountSecurity(
   repository,
@@ -164,6 +167,31 @@ function validateReferences(album: Album) {
 
 @Controller('api')
 class AppController {
+  @Patch('profile') async saveProfile(@Req() req: UserRequest, @Body() body: unknown) {
+    return profiles.save(req.userId, body);
+  }
+  @Post('profile/avatar')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 20 * 1048576, files: 1 },
+    }),
+  )
+  async uploadAvatar(
+    @Req() req: UserRequest,
+    @UploadedFile() file: Express.Multer.File | undefined,
+    @Body() body: unknown,
+  ) {
+    await security.rateLimit('profile-upload:' + req.userId, 10, 60000);
+    return profiles.upload(req.userId, file, body);
+  }
+  @Get('profiles/:id/avatar') async avatar(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
+    await streamObject(res, await profiles.avatar(req.userId, id), 'webp');
+  }
   @Get('timeline-sharing') async timelineSharing(@Req() req: UserRequest) {
     return journal.sharing.state(req.userId);
   }
@@ -293,6 +321,11 @@ class AppController {
       id: req.userId,
       email: account?.email ?? null,
       emailVerified: !!account?.emailVerifiedAt,
+      ...(await profileView(
+        repository,
+        req.userId,
+        account?.email.split('@')[0] || 'Góc riêng của bạn',
+      )),
     };
   }
   @Post('auth/register') async register(
@@ -646,6 +679,7 @@ class AppController {
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File | undefined,
   ) {
+    const started = performance.now();
     const before = await ownedAlbum(req, id);
     if (!file) throw new BadRequestException('Chọn một ảnh JPEG, PNG hoặc WebP.');
     if (before.assets.length >= 100) throw new BadRequestException('Album đã đạt 100 ảnh.');
@@ -656,11 +690,13 @@ class AppController {
       throw new BadRequestException('Ảnh không hợp lệ; hỗ trợ JPEG/PNG/WebP tối đa 40 megapixel.');
     }
     const assetId = randomUUID();
+    const prepared = performance.now();
     const key = `uploads/${assetId}.webp`;
     const operation = await deletion.begin(req.userId, key);
     try {
       await resources.reserve(req.userId, key, result.data.length);
       await store.put(key, result.data, 'image/webp', AbortSignal.timeout(UPLOAD_TIMEOUT_MS));
+      const stored = performance.now();
       for (let attempt = 0; attempt < 5; attempt++) {
         const album = await ownedAlbum(req, id);
         if (album.assets.length >= 100) throw new BadRequestException('Album đã đạt 100 ảnh.');
@@ -675,7 +711,17 @@ class AppController {
         const expected = album.revision;
         album.revision++;
         album.updatedAt = new Date().toISOString();
-        if (await repository.compareAndSwap('album', id, req.userId, expected, album)) return album;
+        if (await repository.compareAndSwap('album', id, req.userId, expected, album)) {
+          logEvent('image_upload_completed', {
+            source: 'album',
+            bytesReceived: file.size,
+            bytesStored: result.data.length,
+            prepareMs: Math.round(prepared - started),
+            storageMs: Math.round(stored - prepared),
+            metadataMs: Math.round(performance.now() - stored),
+          });
+          return album;
+        }
       }
       throw new ConflictException('Album đang thay đổi, vui lòng tải ảnh lại.');
     } catch (e) {

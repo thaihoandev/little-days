@@ -15,6 +15,7 @@ import { ResourcePolicy } from './resource-policy.js';
 import { AccountDeletion, UPLOAD_TIMEOUT_MS } from './account-deletion.js';
 import { logEvent } from './observability.js';
 import { TimelineSharing } from './timeline-sharing.js';
+import { profileView } from './profile-view.js';
 
 export class JournalService {
   readonly sharing: TimelineSharing;
@@ -35,10 +36,12 @@ export class JournalService {
   private async present(actor: string, owner: string, entry: JournalEntry): Promise<JournalEntry> {
     if (actor === owner) return entry;
     const grant = (await this.sharing.access(actor, owner))!;
+    const profile = await profileView(this.db, owner, grant.ownerLabel);
     return {
       ...entry,
       timelineId: owner,
-      timelineLabel: grant.ownerLabel,
+      timelineLabel: profile.displayName,
+      timelineAvatarUrl: profile.avatarUrl,
       calendarVisible: grant.showOnCalendar,
     };
   }
@@ -74,6 +77,7 @@ export class JournalService {
           ...entry,
           timelineId: grant.timelineOwner,
           timelineLabel: grant.ownerLabel,
+          timelineAvatarUrl: grant.ownerAvatarUrl,
           calendarVisible: grant.showOnCalendar,
         })),
       );
@@ -194,6 +198,7 @@ export class JournalService {
     }
   }
   async upload(actor: string, id: string, file: Express.Multer.File | undefined) {
+    const started = performance.now();
     const owner = await this.ownerOf(actor, id);
     if (!file || file.size > 20 * 1048576)
       throw new BadRequestException('Chọn ảnh JPEG/PNG/WebP tối đa 20 MB.');
@@ -208,9 +213,11 @@ export class JournalService {
     const assetId = randomUUID(),
       key = 'journal/' + assetId + '.jpg',
       operation = await this.deletion.begin(owner, key);
+    const prepared = performance.now();
     try {
       await this.resources.reserve(owner, key, result.data.length);
       await this.store.put(key, result.data, 'image/jpeg', AbortSignal.timeout(UPLOAD_TIMEOUT_MS));
+      const stored = performance.now();
       for (let i = 0; i < 5; i++) {
         const current = await this.owned(actor, id);
         if (current.assets.length >= 6) throw new BadRequestException('Mỗi dấu mốc tối đa 6 ảnh.');
@@ -235,7 +242,17 @@ export class JournalService {
             return null;
           return this.present(actor, owner, entry);
         });
-        if (saved) return saved;
+        if (saved) {
+          logEvent('image_upload_completed', {
+            source: 'milestone',
+            bytesReceived: file.size,
+            bytesStored: result.data.length,
+            prepareMs: Math.round(prepared - started),
+            storageMs: Math.round(stored - prepared),
+            metadataMs: Math.round(performance.now() - stored),
+          });
+          return saved;
+        }
       }
       throw new ConflictException('Dấu mốc đang thay đổi. Vui lòng tải ảnh lại.');
     } catch (error) {

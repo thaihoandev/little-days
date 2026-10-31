@@ -30,7 +30,7 @@ try {
     try {
       await page.goto(origin);
       await expect(
-        page.getByRole('heading', { name: 'Hôm nay, mình giữ lại điều gì?' }),
+        page.getByRole('heading', { name: 'Hôm nay của bạn', exact: true }),
       ).toBeVisible();
       await expect(page.getByRole('region', { name: 'Lịch tháng' })).toBeVisible();
       await page.getByRole('button', { name: 'Thêm dấu mốc', exact: true }).click();

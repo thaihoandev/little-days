@@ -18,7 +18,7 @@ const errors: string[] = [];
 page.on('pageerror', (error) => errors.push(error.message));
 try {
   await page.goto(origin);
-  await expect(page.getByRole('heading', { name: 'Hôm nay, mình giữ lại điều gì?' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Hôm nay của bạn', exact: true })).toBeVisible();
   await expect(page.locator('.calendar-card')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
   await page.screenshot({ path: 'test-results/dashboard-desktop.png', fullPage: true });
