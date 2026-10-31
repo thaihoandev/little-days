@@ -16,7 +16,7 @@ The standalone image-processing worker uses IMG.LY background-removal 1.7.0 (AGP
 
 ## Interactive maps
 
-Leaflet 1.9.4 is distributed under BSD-2-Clause; its original license is included in `licenses/THIRD-PARTY-LICENSE-TEXTS.txt`. Map data and raster tiles are supplied separately by OpenStreetMap contributors and the OpenStreetMap Foundation, with visible attribution. See the [OSM copyright and ODbL information](https://www.openstreetmap.org/copyright) and [tile usage policy](https://operations.osmfoundation.org/policies/tiles/). Tiles are loaded only when a user opens a map, with normal browser caching; bulk download and offline prefetch are not implemented. The service is best-effort and has no availability guarantee. User milestone content is not sent to a geocoding service or included in this project's code license.
+Leaflet 1.9.4 is distributed under BSD-2-Clause; its original license is included in `licenses/THIRD-PARTY-LICENSE-TEXTS.txt`. Map data and raster tiles are supplied separately by OpenStreetMap contributors and the OpenStreetMap Foundation, with visible attribution. See the [OSM copyright and ODbL information](https://www.openstreetmap.org/copyright) and [tile usage policy](https://operations.osmfoundation.org/policies/tiles/). Tiles load when the timeline map, location picker or expanded map is displayed, with normal browser caching; bulk download and offline prefetch are not implemented. The service is best-effort and has no availability guarantee. User milestone content is not sent to a geocoding service or included in this project's code license.
 
 ## Fonts
 

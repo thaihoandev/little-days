@@ -61,6 +61,8 @@ try {
   for (const mobile of [false, true]) {
     const context = await browser.newContext({
         viewport: mobile ? { width: 390, height: 844 } : { width: 1600, height: 1100 },
+        geolocation: { latitude: 15.8801, longitude: 108.338 },
+        permissions: ['geolocation'],
       }),
       other = await browser.newContext(),
       page = await context.newPage(),
@@ -111,6 +113,18 @@ try {
       await context.request.post(origin + '/api/journal', {
         data: { ...base, title: 'Nhớ mang máy ảnh ' + mobile, kind: 'note' },
       });
+      for (const offset of [1, 2]) {
+        const date = new Date(today + 'T12:00:00Z');
+        date.setUTCDate(date.getUTCDate() - offset);
+        await context.request.post(origin + '/api/journal', {
+          data: {
+            ...base,
+            date: date.toISOString().slice(0, 10),
+            title: 'Một ngày đã qua ' + offset,
+            kind: 'memory',
+          },
+        });
+      }
       await page.goto(origin + '/today');
       await expect(
         page.getByRole('heading', { name: 'Những điều mình đã giữ', exact: true }),
@@ -148,24 +162,50 @@ try {
       await expect(page.locator('.account-button strong')).toHaveText('Minh An');
       await page.getByRole('button', { name: 'Dòng thời gian', exact: true }).click();
       await expect(day.locator('.album-story')).toHaveCount(1);
+      const inlineMap = page.getByRole('complementary', {
+        name: 'Bản đồ dòng thời gian',
+        exact: true,
+      });
+      await expect(inlineMap.locator('.leaflet-container')).toBeVisible();
+      await expect.poll(() => tileRequests.length).toBeGreaterThan(0);
+      await expect(page.locator('.timeline-trail .trail-thread')).toHaveAttribute('d', / C /);
+      await expect(page.locator('.timeline-trail circle')).toHaveCount(3);
+      const positions = await page
+        .locator('.journal-timeline > .journal-day-group')
+        .evaluateAll((nodes) =>
+          nodes.map((node) => ({
+            x: node.getBoundingClientRect().x,
+            width: node.getBoundingClientRect().width,
+          })),
+        );
+      if (!mobile) {
+        assert.ok(positions[1].x > positions[0].x + 100);
+        assert.ok(positions[0].width >= 280 && positions[0].width < 500);
+      } else assert.ok(Math.abs(positions[1].x - positions[0].x) < 2);
       await page.getByRole('button', { name: 'Sửa dấu mốc ' + entry.title, exact: true }).click();
       const form = page.getByRole('dialog', { name: 'Sửa dấu mốc', exact: true });
       await form.getByLabel('Tên địa điểm', { exact: true }).fill('Hội An');
-      await form.getByLabel('Vĩ độ', { exact: true }).fill('15.8801');
-      await form.getByLabel('Kinh độ', { exact: true }).fill('108.338');
-      assert.equal(tileRequests.length, 0, 'Typing a location must not contact a map provider');
-      await form.getByRole('button', { name: 'Ghim trên bản đồ', exact: true }).click();
+      await expect(form.getByLabel('Vĩ độ', { exact: true })).toHaveCount(0);
+      await expect(form.getByLabel('Kinh độ', { exact: true })).toHaveCount(0);
       await expect(form.locator('.leaflet-container')).toBeVisible();
-      await expect.poll(() => tileRequests.length).toBeGreaterThan(0);
       await form.locator('.memory-map').click({ position: { x: 120, y: 100 } });
-      await expect(form.getByLabel('Vĩ độ', { exact: true })).not.toHaveValue('15.8801');
+      await expect(form.getByRole('status').filter({ hasText: 'Đã ghim địa điểm' })).toBeVisible();
+      await form.getByRole('button', { name: 'Vị trí hiện tại', exact: true }).click();
+      await expect(
+        form.getByRole('button', { name: 'Vị trí hiện tại', exact: true }),
+      ).toBeEnabled();
       await form.getByRole('button', { name: 'Lưu dấu mốc', exact: true }).click();
       await expect(form).not.toBeVisible();
       entry = (await (await context.request.get(origin + '/api/journal')).json()).find(
         (e: JournalEntry) => e.id === entry.id,
       );
       assert.equal(entry.location?.label, 'Hội An');
-      assert.ok(Number.isFinite(entry.location?.latitude));
+      assert.equal(entry.location?.latitude, 15.8801);
+      entry = await (
+        await context.request.post(origin + '/api/journal/' + entry.id + '/assets', {
+          multipart: { file: { name: 'map-photo.png', mimeType: 'image/png', buffer: tile } },
+        })
+      ).json();
       await context.request.post(origin + '/api/journal', {
         data: {
           ...base,
@@ -176,23 +216,53 @@ try {
       });
       await page.reload();
       await expect(page.getByRole('heading', { name: entry.title, exact: true })).toBeVisible();
-      await page.getByRole('button', { name: /^Bản đồ \(/ }).click();
+      await expect(inlineMap.locator('.memory-pin-face img')).toBeVisible();
+      await expect
+        .poll(
+          async () =>
+            await inlineMap
+              .locator('.memory-pin-face img')
+              .evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0),
+        )
+        .toBe(true);
+      await inlineMap.locator('.memory-photo-pin').click();
+      await expect(inlineMap.locator('.leaflet-popup-content')).toBeVisible();
+      await page.getByRole('textbox', { name: 'Tìm dấu mốc', exact: true }).fill(' ');
+      await expect(inlineMap.locator('.leaflet-popup-content')).toBeVisible();
+      await page.getByRole('textbox', { name: 'Tìm dấu mốc', exact: true }).fill('');
+      await page.getByRole('button', { name: 'Mở rộng bản đồ', exact: true }).click();
       const mapDialog = page.getByRole('dialog', { name: 'Bản đồ kỉ niệm', exact: true });
       await expect(mapDialog.locator('.leaflet-control-attribution')).toContainText(
         'OpenStreetMap',
       );
-      await expect(mapDialog.locator('canvas')).toBeVisible();
       await expect(mapDialog.locator('.map-marker-count')).toHaveText('2');
-      const viewport = await mapDialog.locator('.memory-map').boundingBox();
-      assert.ok(viewport);
-      await mapDialog
-        .locator('.memory-map')
-        .click({ position: { x: viewport.width / 2, y: viewport.height / 2 } });
+      await mapDialog.locator('.memory-photo-pin').click();
       await expect(mapDialog.locator('.leaflet-popup-content button')).toHaveCount(2);
+      const zoom = mapDialog.getByLabel('Mức thu phóng', { exact: true });
+      let level = Number(await zoom.textContent());
+      await mapDialog.locator('.memory-map').focus();
+      await page.keyboard.press('+');
+      await expect.poll(async () => Number(await zoom.textContent())).toBeGreaterThan(level);
+      level = Number(await zoom.textContent());
+      await page.keyboard.press('-');
+      await expect.poll(async () => Number(await zoom.textContent())).toBeLessThan(level);
+      level = Number(await zoom.textContent());
+      await mapDialog.locator('.memory-map').hover();
+      await page.mouse.wheel(0, -200);
+      await expect.poll(async () => Number(await zoom.textContent())).toBeGreaterThan(level);
+      await mapDialog.getByRole('button', { name: 'Xem toàn bộ vị trí', exact: true }).click();
       await page.screenshot({ path: 'test-results/milestone-map-' + mobile + '.png' });
       await mapDialog.getByRole('button', { name: 'Đóng bản đồ kỉ niệm', exact: true }).click();
       await page.screenshot({
         path: 'test-results/timeline-groups-' + mobile + '.png',
+        fullPage: true,
+      });
+      await page.goto(origin + '/calendar');
+      const calendarFeed = page.getByRole('region', { name: 'Các dấu mốc', exact: true });
+      await expect(calendarFeed.locator('.journal-day-heading time')).toHaveCount(0);
+      await expect(calendarFeed.locator('header.section-heading > div > h2')).toHaveCount(1);
+      await page.screenshot({
+        path: 'test-results/calendar-single-date-' + mobile + '.png',
         fullPage: true,
       });
       await page.goto(origin + '/albums/' + album.id);
@@ -299,7 +369,7 @@ try {
   }
   await writeFile('test-results/upload-measurements.json', JSON.stringify(reports, null, 2));
   console.log(
-    'PASS journal refresh: source/day grouping, personalized name/private avatar, reduced image payloads, two bounded concurrent uploads with out-of-order responses, EXIF, location pinning/lazy map/attribution and mobile.',
+    'PASS journal refresh: alternating day groups and winding line, padded compact cards, calendar date shown once, personalized profiles, reduced concurrent uploads, EXIF, inline photo map with wheel/keyboard zoom, pin/GPS without coordinate inputs and mobile.',
   );
 } finally {
   await browser.close();

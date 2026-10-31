@@ -76,7 +76,16 @@ try {
       await form.getByRole('button', { name: 'Lưu dấu mốc', exact: true }).click();
       await expect(form).not.toBeVisible({ timeout: 20000 });
       await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
-      await expect(page.getByRole('img', { name: 'journal-photo.png', exact: true })).toBeVisible();
+      const entries = await (await context.request.get(origin + '/api/journal')).json();
+      const entry = entries.find((e: { title: string }) => e.title === title);
+      assert.deepEqual(entry.assets.map((a: { name: string }) => a.name).sort(), [
+        'journal-extra-2.png',
+        'journal-extra-3.png',
+        'journal-extra-4.png',
+        'journal-photo.png',
+      ]);
+      const firstPhoto = entry.assets[0].name;
+      await expect(page.getByRole('img', { name: firstPhoto, exact: true })).toBeVisible();
       const photos = page.locator('.journal-photos').first();
       await expect(photos.locator('button')).toHaveCount(3);
       await expect(photos.getByText('+1 ảnh', { exact: true })).toBeVisible();
@@ -86,24 +95,22 @@ try {
         'Timeline photo cluster should stay compact',
       );
       const tabsBefore = context.pages().length;
-      await page.getByRole('button', { name: 'Xem ảnh journal-photo.png', exact: true }).click();
+      await page.getByRole('button', { name: 'Xem ảnh ' + firstPhoto, exact: true }).click();
       const lightbox = page.getByRole('dialog', { name: 'Xem ảnh kỉ niệm', exact: true });
       await expect(lightbox).toBeVisible();
-      await expect(
-        lightbox.getByRole('img', { name: 'journal-photo.png', exact: true }),
-      ).toBeVisible();
+      await expect(lightbox.getByRole('img', { name: firstPhoto, exact: true })).toBeVisible();
       assert.equal(context.pages().length, tabsBefore, 'Photo must open in the same page');
       await page.screenshot({ path: 'test-results/photo-lightbox-' + device + '.png' });
       await page.keyboard.press('Escape');
       await expect(lightbox).not.toBeVisible();
-      await page.getByRole('button', { name: 'Xem ảnh journal-extra-3.png', exact: true }).click();
+      await page
+        .getByRole('button', { name: 'Xem ảnh ' + entry.assets[2].name, exact: true })
+        .click();
       await lightbox.getByRole('button', { name: 'Ảnh sau', exact: true }).click();
       await expect(
-        lightbox.getByRole('img', { name: 'journal-extra-4.png', exact: true }),
+        lightbox.getByRole('img', { name: entry.assets[3].name, exact: true }),
       ).toBeVisible();
       await page.keyboard.press('Escape');
-      const entries = await (await context.request.get(origin + '/api/journal')).json();
-      const entry = entries.find((e: { title: string }) => e.title === title);
       assert.ok(entry.assets[0].url.startsWith('/api/journal/'));
       const dayCell = page.locator('.calendar-grid button[aria-pressed="true"]');
       await expect(dayCell.locator('.calendar-photos img')).toHaveCount(1);

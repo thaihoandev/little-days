@@ -1,5 +1,5 @@
-import { lazy, Suspense, useState } from 'react';
-import { MapPin, Navigation } from 'lucide-react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { MapPin, Navigation, Trash2 } from 'lucide-react';
 import type { MilestoneLocation } from '../../../packages/domain/journal.js';
 const MemoryMap = lazy(() => import('./MemoryMap.js'));
 export function LocationFields({
@@ -11,24 +11,28 @@ export function LocationFields({
   onChange: (value: MilestoneLocation | null) => void;
   disabled: boolean;
 }) {
-  const [map, setMap] = useState(false),
-    [error, setError] = useState(''),
+  const [error, setError] = useState(''),
     [locating, setLocating] = useState(false),
-    [label, setLabel] = useState(value?.label || ''),
-    [latitude, setLatitude] = useState(value ? String(value.latitude) : ''),
-    [longitude, setLongitude] = useState(value ? String(value.longitude) : '');
-  const coordinates = (lat: string, lng: string, name = label) => {
-    setLatitude(lat);
-    setLongitude(lng);
-    onChange(
-      lat.trim() && lng.trim() && Number.isFinite(Number(lat)) && Number.isFinite(Number(lng))
-        ? { label: name, latitude: Number(lat), longitude: Number(lng) }
-        : null,
+    [label, setLabel] = useState(value?.label || '');
+  const active = useRef(true),
+    latest = useRef({ label, disabled, onChange });
+  const nameInput = useRef<HTMLInputElement>(null);
+  latest.current = { label, disabled, onChange };
+  useEffect(() => {
+    nameInput.current?.setCustomValidity(
+      label.trim() && !value ? 'Chọn địa điểm trên bản đồ hoặc dùng vị trí hiện tại.' : '',
     );
+  }, [label, value]);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
+  const pick = (point: MilestoneLocation) => {
+    if (!latest.current.disabled)
+      latest.current.onChange({ ...point, label: latest.current.label });
   };
-  const pick = (point: MilestoneLocation) =>
-    coordinates(String(point.latitude), String(point.longitude));
-  const required = !!(label || latitude || longitude);
   return (
     <fieldset className="location-fields" disabled={disabled}>
       <legend>
@@ -38,6 +42,7 @@ export function LocationFields({
       <label>
         Tên địa điểm
         <input
+          ref={nameInput}
           aria-label="Tên địa điểm"
           value={label}
           maxLength={200}
@@ -48,80 +53,59 @@ export function LocationFields({
           }}
         />
       </label>
-      <div className="location-coordinates">
-        <label>
-          Vĩ độ
-          <input
-            aria-label="Vĩ độ"
-            type="number"
-            step="any"
-            min={-85}
-            max={85}
-            value={latitude}
-            required={required}
-            onChange={(e) => coordinates(e.target.value, longitude)}
-          />
-        </label>
-        <label>
-          Kinh độ
-          <input
-            aria-label="Kinh độ"
-            type="number"
-            step="any"
-            min={-180}
-            max={180}
-            value={longitude}
-            required={required}
-            onChange={(e) => coordinates(latitude, e.target.value)}
-          />
-        </label>
-      </div>
-      <div className="row">
-        <button type="button" className="button quiet" onClick={() => setMap((v) => !v)}>
-          <MapPin size={15} />
-          {map ? 'Đóng bản đồ' : 'Ghim trên bản đồ'}
-        </button>
+      <div className="location-pick-status">
+        <p role="status">
+          {value
+            ? 'Đã ghim địa điểm · Chạm bản đồ để đổi vị trí'
+            : 'Chạm bản đồ để chọn nơi lưu kỉ niệm'}
+        </p>
         <button
           type="button"
-          className="button quiet"
+          className="icon-button"
+          aria-label="Vị trí hiện tại"
+          title={locating ? 'Đang lấy vị trí…' : 'Dùng vị trí hiện tại'}
           disabled={disabled || locating}
           onClick={() => {
             setError('');
             if (!navigator.geolocation) {
-              setError('Thiết bị không hỗ trợ lấy vị trí. Hãy nhập tọa độ hoặc ghim trên bản đồ.');
+              setError('Thiết bị không hỗ trợ lấy vị trí. Bạn có thể chạm bản đồ để chọn.');
               return;
             }
             setLocating(true);
             navigator.geolocation.getCurrentPosition(
               (p) => {
-                pick({ label, latitude: p.coords.latitude, longitude: p.coords.longitude });
+                if (!active.current) return;
+                pick({
+                  label: '',
+                  latitude: Math.max(-85, Math.min(85, p.coords.latitude)),
+                  longitude: p.coords.longitude,
+                });
                 setLocating(false);
-                setMap(false);
               },
               () => {
-                setError('Chưa lấy được vị trí. Bạn vẫn có thể chọn thủ công.');
-                setLocating(false);
+                if (active.current) {
+                  setError('Chưa lấy được vị trí. Bạn vẫn có thể chọn trên bản đồ.');
+                  setLocating(false);
+                }
               },
               { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 },
             );
           }}
         >
-          <Navigation size={15} />
-          {locating ? 'Đang lấy vị trí…' : 'Vị trí hiện tại'}
+          <Navigation size={17} className={locating ? 'spin' : undefined} />
         </button>
-        {required && (
+        {value && (
           <button
             type="button"
-            className="text-button"
+            className="icon-button"
+            aria-label="Bỏ địa điểm"
+            title="Bỏ địa điểm"
             onClick={() => {
               onChange(null);
-              setLatitude('');
-              setLongitude('');
               setLabel('');
-              setMap(false);
             }}
           >
-            Bỏ địa điểm
+            <Trash2 size={16} />
           </button>
         )}
       </div>
@@ -130,16 +114,9 @@ export function LocationFields({
           {error}
         </p>
       )}
-      {map && (
-        <>
-          <p className="muted small">
-            Bấm vào bản đồ để ghim. Nền bản đồ được tải từ OpenStreetMap khi bạn mở phần này.
-          </p>
-          <Suspense fallback={<p>Đang mở bản đồ…</p>}>
-            <MemoryMap selected={value} onPick={pick} />
-          </Suspense>
-        </>
-      )}
+      <Suspense fallback={<p>Đang mở bản đồ…</p>}>
+        <MemoryMap selected={value} onPick={pick} disabled={disabled} />
+      </Suspense>
     </fieldset>
   );
 }
