@@ -1,8 +1,10 @@
 # Trạng thái triển khai Little Days
 
-Ngày cập nhật: **31/10/2026**.
+Ngày cập nhật: **02/11/2026**.
 
 ## Kết quả hiện tại
+
+Đợt ưu tiên tiếp theo: thùng rác dấu mốc, lịch sử 20 phiên bản gồm ảnh với CAS/khôi phục và xóa vĩnh viễn theo quyền; bình luận/cảm xúc dùng quyền timeline, hỗ trợ backup/quota/xóa tài khoản; Ngày này năm trước trên Hôm nay. Trang Ảnh đã lưu được thiết kế lại, gom ảnh album/dấu mốc, lọc/tìm và tải ảnh riêng tư; bỏ caption tên file. Hướng dẫn và giới hạn: [MEMORY_COMMUNITY.md](MEMORY_COMMUNITY.md). Cần deploy FE/API cùng commit, không thêm env.
 
 Cải thiện tiếp giao diện timeline: đường chỉ uốn lượn, các nhóm ngày hai bên trên desktop, card gọn có padding, nút icon/tooltip; bản đồ ảnh hiển thị sẵn, zoom chuột/phím, chọn vị trí bằng map/GPS không hiện tọa độ; lịch bỏ lặp ngày ở nhóm con. Xem [TIMELINE_JOURNEY_DESIGN.md](TIMELINE_JOURNEY_DESIGN.md).
 

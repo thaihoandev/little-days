@@ -4,6 +4,8 @@
 
 ## Chạy local
 
+Cập nhật 02/11: [thùng rác/lịch sử dấu mốc, bình luận/cảm xúc, Ngày này năm trước và thư viện ảnh mới](MEMORY_COMMUNITY.md). Deploy FE/API cùng commit, không thêm env.
+
 Cập nhật 31/10: [tối ưu upload, timeline gom ngày, tên/avatar và bản đồ dấu mốc](UPDATE_2026_10_31.md). Không cần env mới; cần deploy cả FE và API.
 
 Có thể [mời người cùng xây dựng dòng thời gian và hợp nhất lịch](TIMELINE_COLLABORATION.md). Các trang có URL riêng, trang Hôm nay ưu tiên lịch/ghi chú; không cần thêm env.

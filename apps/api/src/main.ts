@@ -15,6 +15,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Req,
   Res,
   UnauthorizedException,
@@ -71,6 +72,7 @@ import { JournalService } from './journal.js';
 import { JournalAlbumService } from './journal-album.js';
 import { normalizePhoto } from './images.js';
 import { ProfileService } from './profiles.js';
+import { JournalSocial } from './journal-social.js';
 import { profileView } from './profile-view.js';
 import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 import { videoDurationFrames } from '../../../packages/domain/video.js';
@@ -92,6 +94,7 @@ const opsMonitor = new OpsMonitor(repository, mailer);
 const deletion = new AccountDeletion(repository, jobs, store, dataDir, () => backupLock.paused());
 const journal = new JournalService(repository, store, resources, deletion);
 const profiles = new ProfileService(repository, store, resources, deletion, journal.sharing);
+const journalSocial = new JournalSocial(repository, journal);
 const journalAlbums = new JournalAlbumService(repository, store, resources, deletion);
 const security = new AccountSecurity(
   repository,
@@ -225,6 +228,82 @@ class AppController {
   @Get('journal') async journalList(@Req() req: UserRequest) {
     return journal.list(req.userId);
   }
+  @Get('journal-trash') async journalTrash(@Req() req: UserRequest) {
+    return journal.trash(req.userId);
+  }
+  @Post('journal/:id/restore') async journalRestore(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return journal.restore(req.userId, id, body);
+  }
+  @Delete('journal-trash/:id') async journalPurge(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return journal.purge(req.userId, id, body);
+  }
+  @Get('journal/:id/history') async journalHistory(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+  ) {
+    return journal.history(req.userId, id);
+  }
+  @Post('journal/:id/history/:versionId/restore') async journalVersionRestore(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Param('versionId') versionId: string,
+    @Body() body: unknown,
+  ) {
+    return journal.restore(req.userId, id, body, versionId);
+  }
+  @Get('journal-history/:id/assets/:assetId') async journalHistoryAsset(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Param('assetId') assetId: string,
+    @Res() res: Response,
+  ) {
+    await streamObject(res, await journal.archivedAsset(req.userId, id, assetId, true), 'jpeg');
+  }
+  @Get('journal-trash/:id/assets/:assetId') async journalTrashAsset(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Param('assetId') assetId: string,
+    @Res() res: Response,
+  ) {
+    await streamObject(res, await journal.archivedAsset(req.userId, id, assetId, false), 'jpeg');
+  }
+  @Get('journal/:id/social') async journalSocialState(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+  ) {
+    return journalSocial.state(req.userId, id);
+  }
+  @Post('journal/:id/comments') async journalComment(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    await security.rateLimit('journal-social:' + req.userId, 30, 60000);
+    return journalSocial.comment(req.userId, id, body);
+  }
+  @Delete('journal/:id/comments/:commentId') async journalCommentRemove(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Param('commentId') commentId: string,
+  ) {
+    return journalSocial.removeComment(req.userId, id, commentId);
+  }
+  @Put('journal/:id/reaction') async journalReact(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    await security.rateLimit('journal-social:' + req.userId, 30, 60000);
+    return journalSocial.react(req.userId, id, body);
+  }
   @Post('journal') async journalCreate(@Req() req: UserRequest, @Body() body: unknown) {
     return journal.create(req.userId, body);
   }
@@ -321,6 +400,7 @@ class AppController {
       id: req.userId,
       email: account?.email ?? null,
       emailVerified: !!account?.emailVerifiedAt,
+      journalFeatures: 1,
       ...(await profileView(
         repository,
         req.userId,

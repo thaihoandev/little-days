@@ -213,6 +213,9 @@ test('journal ownership/CAS, normalized private photos, quota references and bac
     }
     await assert.rejects(f.journal.remove(owner, entry.id, { expectedRevision: 0 }));
     await f.journal.remove(owner, entry.id, { expectedRevision: entry.revision });
+    assert.ok((await f.store.read(key)).length, 'Trash retains restorable photos');
+    const trashed = (await f.journal.trash(owner))[0];
+    await f.journal.purge(owner, entry.id, { expectedRevision: trashed.revision });
     await assert.rejects(f.store.read(key));
     assert.equal((await f.journal.list(owner)).length, 0);
   } finally {

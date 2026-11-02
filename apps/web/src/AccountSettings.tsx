@@ -5,6 +5,7 @@ import { UsagePanel } from './UsagePanel.js';
 import { ProfileSettings, type ProfileView } from './ProfileSettings.js';
 
 export type PublicUser = {
+  journalFeatures?: number;
   id: string;
   email: string | null;
   emailVerified?: boolean;

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { ArrowLeft, ArrowRight, Trash2, X } from 'lucide-react';
+import { PhotoDownload } from './PhotoDownload.js';
 let locks = 0,
   previousOverflow = '';
 export function useBodyScrollLock() {
@@ -29,12 +30,14 @@ export function ConfirmDialog({
   onClose,
   onConfirm,
   confirmLabel = 'Xóa trang',
+  busy = false,
 }: {
   title: string;
   description: string;
   onClose: () => void;
   onConfirm: () => void;
   confirmLabel?: string;
+  busy?: boolean;
 }) {
   const ref = useDialog();
   return (
@@ -44,7 +47,7 @@ export function ConfirmDialog({
       aria-label={title}
       onCancel={(e) => {
         e.preventDefault();
-        onClose();
+        if (!busy) onClose();
       }}
     >
       <div className="confirm-dialog-icon">
@@ -53,10 +56,10 @@ export function ConfirmDialog({
       <h2>{title}</h2>
       <p>{description}</p>
       <div className="confirm-dialog-actions">
-        <button className="button quiet" autoFocus onClick={onClose}>
+        <button className="button quiet" autoFocus disabled={busy} onClick={onClose}>
           Giữ lại
         </button>
-        <button className="button danger" onClick={onConfirm}>
+        <button className="button danger" disabled={busy} onClick={onConfirm}>
           {confirmLabel}
         </button>
       </div>
@@ -119,7 +122,8 @@ export function PhotoLightbox({
         >
           <ArrowLeft />
         </button>
-        <p>{photo.name}</p>
+        <span className="lightbox-caption">Khoảnh khắc {index + 1}</span>
+        <PhotoDownload url={photo.url} id={photo.id} />
         <button
           className="icon-button"
           aria-label="Ảnh sau"

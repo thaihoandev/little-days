@@ -126,6 +126,9 @@ test('journal import copies independent media, keeps full notes and replays idem
     assert.equal((await f.service.create(f.owner, f.body)).id, album.id);
     assert.equal((await f.resources.usage(f.owner)).storageBytes, usage.storageBytes);
     await f.journal.remove(f.owner, f.entry.id, { expectedRevision: f.entry.revision });
+    const trashed = (await f.journal.trash(f.owner)).find((e) => e.id === f.entry.id)!;
+    await f.journal.purge(f.owner, f.entry.id, { expectedRevision: trashed.revision });
+    await assert.rejects(f.store.read('journal/' + f.entry.assets[0].id + '.jpg'));
     assert.ok((await f.store.read('uploads/' + album.assets[0].id + '.webp')).length > 0);
     assert.equal((await f.service.create(f.owner, f.body)).id, album.id);
     await assert.rejects(

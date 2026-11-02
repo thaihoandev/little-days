@@ -294,7 +294,6 @@ export function PhotoEditorDialog({
                 onClick={() => replace(a.id)}
               >
                 <img src={a.url} alt="" loading="lazy" />
-                <span>{a.name}</span>
               </button>
             ))}
           </div>

@@ -18,6 +18,8 @@ import {
   Pencil,
   Maximize2,
   CheckCheck,
+  History,
+  MessageCircle,
 } from 'lucide-react';
 import { type Album, todayIn, daysTogether } from '../../../packages/domain/index.js';
 import {
@@ -28,6 +30,7 @@ import {
   monthDays,
   occursOn,
   nextOccurrence,
+  memoriesOnThisDay,
 } from '../../../packages/domain/journal.js';
 import { api, ApiError } from './api.js';
 import { PhotoLightbox, ConfirmDialog } from './Overlays.js';
@@ -41,6 +44,8 @@ import type { MilestoneLocation } from '../../../packages/domain/journal.js';
 import { TimelineAlbumDialog, type TimelineChoice } from './TimelineAlbumDialog.js';
 import { TimelineHeading } from './TimelineHeading.js';
 import { TimelineTrail } from './TimelineTrail.js';
+import { JournalDetails, JournalTrash } from './JournalDetails.js';
+import { PhotoDownload } from './PhotoDownload.js';
 const MemoryMap = lazy(() => import('./MemoryMap.js'));
 
 type Item = JournalEntry & { album?: Album };
@@ -71,6 +76,7 @@ export default function JournalDashboard({
   verified,
   displayName,
   enhancedReady,
+  communityReady = false,
 }: {
   albums: Album[];
   mode: 'home' | 'timeline' | 'calendar';
@@ -80,6 +86,7 @@ export default function JournalDashboard({
   verified: boolean;
   displayName?: string;
   enhancedReady: boolean;
+  communityReady?: boolean;
 }) {
   const [today, setToday] = useState(() =>
     todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone),
@@ -87,6 +94,10 @@ export default function JournalDashboard({
   const [newKind, setNewKind] = useState<JournalContent['kind']>('memory');
   const loadVersion = useRef(0);
   const [sharingReady, setSharingReady] = useState(false);
+  const [details, setDetails] = useState<{ entry: JournalEntry; tab: 'social' | 'history' } | null>(
+      null,
+    ),
+    [trashOpen, setTrashOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false),
     [mapPoint, setMapPoint] = useState<MilestoneLocation | null>(null);
   const [sharing, setSharing] = useState<TimelineSharingState>({ ownId: userId, grants: [] }),
@@ -259,8 +270,10 @@ export default function JournalDashboard({
     if (d.getUTCFullYear() >= 1900 && d.getUTCFullYear() <= 2200)
       setMonth(d.toISOString().slice(0, 7));
   };
-  const update = (entry: JournalEntry) =>
+  const update = (entry: JournalEntry) => {
+    loadVersion.current++;
     setEntries((previous) => [entry, ...previous.filter((e) => e.id !== entry.id)]);
+  };
   const remove = async (entry: JournalEntry) => {
     if (deletingBusy) return;
     setDeletingBusy(true);
@@ -269,6 +282,7 @@ export default function JournalDashboard({
         method: 'DELETE',
         body: JSON.stringify({ expectedRevision: entry.revision }),
       });
+      loadVersion.current++;
       setEntries((previous) => previous.filter((e) => e.id !== entry.id));
       setDeleting(null);
     } catch (e) {
@@ -588,6 +602,41 @@ export default function JournalDashboard({
           </aside>
         </div>
       )}
+      {mode === 'home' && memoriesOnThisDay(all, today).length > 0 && (
+        <section className="on-this-day" aria-label="Ngày này năm trước">
+          <header>
+            <span className="eyebrow">MÌNH ĐÃ TỪNG CÓ NHỮNG NGÀY NHƯ THẾ</span>
+            <h2>Ngày này năm trước</h2>
+          </header>
+          <div className="on-this-day-cards">
+            {memoriesOnThisDay(all, today)
+              .slice(0, 8)
+              .map((entry) => (
+                <button
+                  key={entry.id}
+                  onClick={() => {
+                    if (entry.album) onOpenAlbum(entry.album);
+                    else setEditing(entry);
+                  }}
+                >
+                  {entry.assets[0] ? (
+                    <img src={entry.assets[0].url} alt="Một kỉ niệm năm cũ" loading="lazy" />
+                  ) : (
+                    <Heart size={28} />
+                  )}
+                  <span>
+                    <small>
+                      {Number(today.slice(0, 4)) - Number(entry.date.slice(0, 4))} năm trước ·{' '}
+                      {entry.date.slice(0, 4)}
+                    </small>
+                    <strong>{entry.title}</strong>
+                    <p>{entry.note.slice(0, 140)}</p>
+                  </span>
+                </button>
+              ))}
+          </div>
+        </section>
+      )}
       {mode === 'timeline' && all.some((entry) => !entry.timelineId) && (
         <section className="timeline-import-bar" aria-label="Tạo sổ từ dấu mốc">
           <div>
@@ -677,6 +726,16 @@ export default function JournalDashboard({
                   ))}
                 </select>
               </div>
+            )}
+            {communityReady && (
+              <button
+                className="icon-button"
+                aria-label="Mở thùng rác dấu mốc"
+                title="Thùng rác dấu mốc"
+                onClick={() => setTrashOpen(true)}
+              >
+                <Trash2 size={17} />
+              </button>
             )}
             {enhancedReady && mode !== 'timeline' && (
               <button
@@ -858,6 +917,26 @@ export default function JournalDashboard({
                               </div>
                             )}
                             <div className="journal-entry-actions">
+                              {!entry.album && communityReady && (
+                                <>
+                                  <button
+                                    className="icon-button"
+                                    aria-label={'Lời nhắn và cảm xúc ' + entry.title}
+                                    title="Lời nhắn & cảm xúc"
+                                    onClick={() => setDetails({ entry, tab: 'social' })}
+                                  >
+                                    <MessageCircle size={16} />
+                                  </button>
+                                  <button
+                                    className="icon-button"
+                                    aria-label={'Lịch sử dấu mốc ' + entry.title}
+                                    title="Lịch sử dấu mốc"
+                                    onClick={() => setDetails({ entry, tab: 'history' })}
+                                  >
+                                    <History size={16} />
+                                  </button>
+                                </>
+                              )}
                               {entry.album ? (
                                 <button
                                   className="icon-button"
@@ -982,6 +1061,18 @@ export default function JournalDashboard({
           onClose={() => setPhotoPreview(null)}
         />
       )}
+      {details && (
+        <JournalDetails
+          entry={details.entry}
+          initialTab={details.tab}
+          onClose={() => setDetails(null)}
+          onRestored={(entry) => {
+            update(entry);
+            setDetails(null);
+          }}
+        />
+      )}
+      {trashOpen && <JournalTrash onClose={() => setTrashOpen(false)} onRestored={update} />}
       {editing !== undefined && (
         <JournalDialog
           enhancedReady={enhancedReady}
@@ -1013,8 +1104,15 @@ export default function JournalDashboard({
       {deleting && (
         <ConfirmDialog
           title="Xóa dấu mốc?"
+          busy={deletingBusy}
           description={
-            'Xóa “' + deleting.title + '” cùng ảnh khỏi dòng thời gian và lịch của mọi thành viên?'
+            communityReady
+              ? 'Chuyển “' +
+                deleting.title +
+                '” vào thùng rác. Bạn có thể lấy lại cả nội dung và ảnh sau đó.'
+              : 'Xóa “' +
+                deleting.title +
+                '” cùng ảnh khỏi dòng thời gian và lịch của mọi thành viên?'
           }
           confirmLabel="Xóa dấu mốc"
           onClose={() => {

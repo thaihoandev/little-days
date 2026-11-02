@@ -40,6 +40,14 @@ await db.put('audio', audioId, 'fixture-owner', {
   url: '/api/audio/' + audioId,
 });
 await source.put('audio/' + audioId + '.mp3', Buffer.from('original audio'), 'audio/mpeg');
+const historicalId = crypto.randomUUID(),
+  avatarId = crypto.randomUUID();
+await db.put('journal-version', crypto.randomUUID(), 'fixture-owner', {
+  snapshot: { assets: [{ id: historicalId }] },
+});
+await db.put('profile', 'fixture-owner', 'fixture-owner', { avatar: { id: avatarId } });
+await source.put('journal/' + historicalId + '.jpg', Buffer.from('historical photo'), 'image/jpeg');
+await source.put('uploads/' + avatarId + '.webp', Buffer.from('profile avatar'), 'image/webp');
 function run(execute = false) {
   return new Promise<{ code: number | null; output: string }>((resolve, reject) => {
     const child = spawn(
@@ -64,7 +72,15 @@ try {
   assert.equal(fixture.requests.length, 0);
   const first = await run(true);
   assert.equal(first.code, 0, first.output);
-  assert.match(first.output, /"copied": 3/);
+  assert.match(first.output, /"copied": 5/);
+  assert.equal(
+    fixture.objects.get('contract-test/journal/' + historicalId + '.jpg')?.bytes.toString(),
+    'historical photo',
+  );
+  assert.equal(
+    fixture.objects.get('contract-test/uploads/' + avatarId + '.webp')?.bytes.toString(),
+    'profile avatar',
+  );
   assert.equal((await source.read(`uploads/${assetId}.webp`)).toString(), 'original image');
   assert.equal(
     fixture.objects.get(`contract-test/uploads/${assetId}.webp`)?.bytes.toString(),
@@ -77,7 +93,7 @@ try {
   assert.equal((await source.read('audio/' + audioId + '.mp3')).toString(), 'original audio');
   const second = await run(true);
   assert.equal(second.code, 0, second.output);
-  assert.match(second.output, /"skipped": 3/);
+  assert.match(second.output, /"skipped": 5/);
   fixture.objects.set(`contract-test/uploads/${assetId}.webp`, {
     bytes: Buffer.from('different data'),
     type: 'image/webp',

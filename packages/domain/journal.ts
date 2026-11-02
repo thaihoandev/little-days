@@ -26,6 +26,7 @@ export const defaultTimelineHeading = {
 };
 export type TimelineHeading = z.infer<typeof timelineHeadingSchema> & { revision: number };
 export type JournalEntry = JournalContent & {
+  deletedAt?: string;
   timelineId?: string;
   timelineLabel?: string;
   calendarVisible?: boolean;
@@ -35,6 +36,33 @@ export type JournalEntry = JournalContent & {
   createdAt: string;
   updatedAt: string;
   assets: Asset[];
+};
+export type JournalVersion = {
+  id: string;
+  entryId: string;
+  actorId: string;
+  action: string;
+  createdAt: string;
+  snapshot: JournalEntry;
+  actorName?: string;
+};
+export type JournalComment = {
+  id: string;
+  entryId: string;
+  timelineOwner: string;
+  actorId: string;
+  text: string;
+  createdAt: string;
+  displayName?: string;
+  avatarUrl?: string;
+  canDelete?: boolean;
+};
+export type JournalReaction = {
+  id: string;
+  entryId: string;
+  timelineOwner: string;
+  actorId: string;
+  emoji: string;
 };
 export type TimelineGrant = {
   ownerAvatarUrl?: string;
@@ -73,3 +101,17 @@ export const journalKindNames = {
   plan: 'Hẹn cùng nhau',
   note: 'Ghi chú',
 } as const;
+export function memoriesOnThisDay<T extends Pick<JournalEntry, 'date' | 'kind' | 'deletedAt'>>(
+  entries: T[],
+  today: string,
+) {
+  return entries
+    .filter(
+      (entry) =>
+        !entry.deletedAt &&
+        entry.kind !== 'plan' &&
+        entry.date < today &&
+        entry.date.slice(5) === today.slice(5),
+    )
+    .sort((a, b) => b.date.localeCompare(a.date));
+}

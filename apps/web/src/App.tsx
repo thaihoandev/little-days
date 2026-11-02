@@ -70,6 +70,7 @@ import { TextOverflowWarning } from './TextOverflowWarning.js';
 import JournalDashboard from './JournalDashboard.js';
 import { useAppRoute, sectionPaths, type AppSection } from './useAppRoute.js';
 import { UserAvatar } from './UserAvatar.js';
+import { PhotosLibrary } from './PhotosLibrary.js';
 import type { ProfileView } from './ProfileSettings.js';
 import { uploadImage, uploadBatch } from './image-upload.js';
 import { ConfirmDialog, PhotoLightbox } from './Overlays.js';
@@ -439,6 +440,7 @@ export default function App() {
               verified={!!user.emailVerified}
               displayName={user.email ? user.displayName : undefined}
               enhancedReady={typeof user.profileRevision === 'number'}
+              communityReady={user.journalFeatures === 1}
               albums={albums}
               mode={section as 'home' | 'timeline' | 'calendar'}
               onOpenAlbum={openAlbum}
@@ -519,39 +521,12 @@ export default function App() {
               </footer>
             </>
           ) : section === 'photos' ? (
-            <section className="photos-dashboard">
-              <span className="eyebrow">MỖI TẤM ẢNH, MỘT CÂU CHUYỆN</span>
-              <h1>Ảnh đã lưu</h1>
-              <p className="muted">Ảnh gốc của những ngày đáng nhớ, được tối ưu và lưu riêng tư.</p>
-              <div className="photo-grid">
-                {albums.flatMap((a) =>
-                  a.assets.map((asset) => (
-                    <button
-                      key={asset.id}
-                      onClick={() =>
-                        setPhotoPreview({
-                          photos: a.assets,
-                          index: a.assets.findIndex((p) => p.id === asset.id),
-                        })
-                      }
-                    >
-                      <img src={asset.url} alt={asset.name} />
-                      <span>{asset.name}</span>
-                    </button>
-                  )),
-                )}
-              </div>
-              {!albums.some((a) => a.assets.length) && (
-                <div className="empty-state">
-                  <Images />
-                  <h3>Chưa có ảnh nào ở đây</h3>
-                  <p>Mở một album và thêm ảnh đầu tiên của hai bạn.</p>
-                  <button className="button primary" onClick={() => setSection('albums')}>
-                    Về album của mình
-                  </button>
-                </div>
-              )}
-            </section>
+            <PhotosLibrary
+              key={user?.id}
+              albums={albums}
+              onAlbums={() => setSection('albums')}
+              onOpenAlbum={openAlbum}
+            />
           ) : null}
           <div className="dashboard-legal">
             <LegalLinks />
@@ -1312,7 +1287,7 @@ function Editor({
                     <button
                       key={a.id}
                       disabled={uploading}
-                      title={`Thêm ${a.name}`}
+                      title="Thêm ảnh vào trang sổ"
                       aria-label={`Thêm ${a.name}`}
                       onClick={() =>
                         add(
@@ -2208,9 +2183,9 @@ function ElementProperties({
                   Tranh minh họa {i}
                 </option>
               ))}
-              {album.assets.map((a) => (
+              {album.assets.map((a, i) => (
                 <option value={a.id} key={a.id}>
-                  {a.name}
+                  Ảnh kỉ niệm {i + 1}
                 </option>
               ))}
             </select>
@@ -2452,9 +2427,9 @@ function Memories({
               onChange={(e) => setForm({ ...form, assetId: e.target.value || null })}
             >
               <option value="">Chưa chọn ảnh</option>
-              {album.assets.map((a) => (
+              {album.assets.map((a, i) => (
                 <option key={a.id} value={a.id}>
-                  {a.name}
+                  Ảnh kỉ niệm {i + 1}
                 </option>
               ))}
             </select>

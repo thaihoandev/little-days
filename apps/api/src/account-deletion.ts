@@ -242,6 +242,11 @@ export class AccountDeletion {
       for (const asset of album.assets) keys.add('uploads/' + asset.id + '.webp');
     for (const entry of await this.db.list<{ assets: { id: string }[] }>('journal', owner))
       for (const asset of entry.assets) keys.add('journal/' + asset.id + '.jpg');
+    for (const version of await this.db.list<{ snapshot: { assets: { id: string }[] } }>(
+      'journal-version',
+      owner,
+    ))
+      for (const asset of version.snapshot.assets) keys.add('journal/' + asset.id + '.jpg');
     const profile = await this.db.get<{ avatar?: { id: string } }>('profile', owner);
     if (profile?.avatar) keys.add('uploads/' + profile.avatar.id + '.webp');
     for (const row of await this.db.query('SELECT payload FROM album_versions WHERE owner=?', [
@@ -397,11 +402,19 @@ export class AccountDeletion {
             'delete:' + owner,
             'timeline-invite:' + owner,
             'profile-upload:' + owner,
+            'journal-social:' + owner,
           ])
             await this.db.query(
               'DELETE FROM auth_rate_limits WHERE rate_key=? RETURNING rate_key',
               [authHash(value)],
             );
+        for (const row of await this.db.query(
+          "SELECT kind,id,payload FROM records WHERE kind IN ('journal-comment','journal-reaction')",
+        ))
+          if (
+            (JSON.parse(String(row.payload)) as { timelineOwner: string }).timelineOwner === owner
+          )
+            await this.db.remove(String(row.kind), String(row.id));
         await this.db.query('DELETE FROM records WHERE owner=? RETURNING id', [owner]);
         await this.db.query('DELETE FROM owner_operations WHERE owner=? RETURNING id', [owner]);
         await this.db.query('DELETE FROM media_objects WHERE owner=? RETURNING object_key', [

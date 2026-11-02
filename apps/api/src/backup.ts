@@ -77,6 +77,9 @@ function mediaKeys(dump: Dump) {
     if (row.kind === 'journal')
       for (const asset of (JSON.parse(String(row.payload)) as Album).assets)
         keys.add('journal/' + asset.id + '.jpg');
+    if (row.kind === 'journal-version')
+      for (const asset of (JSON.parse(String(row.payload)) as { snapshot: Album }).snapshot.assets)
+        keys.add('journal/' + asset.id + '.jpg');
     if (row.kind === 'audio')
       keys.add('audio/' + (JSON.parse(String(row.payload)) as AudioAsset).id + '.mp3');
     if (row.kind === 'profile') {

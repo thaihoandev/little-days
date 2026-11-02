@@ -44,6 +44,7 @@ try {
       'tests/journal.test.ts',
       'tests/timeline-sharing.test.ts',
       'tests/profile-location.test.ts',
+      'tests/journal-community.test.ts',
       'tests/journal-album.test.ts',
     ]),
   );

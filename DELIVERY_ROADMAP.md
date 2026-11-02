@@ -2,6 +2,8 @@
 
 Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → staging/PostgreSQL → load test và pilot, cùng cải thiện editor/video và quy trình backup.
 
+- [x] Đợt ưu tiên 02/11: lịch sử/thùng rác dấu mốc, bình luận/cảm xúc, Ngày này năm trước; thư viện ảnh mới, ẩn tên file và tải ảnh xuống. Xem `MEMORY_COMMUNITY.md`.
+
 - [x] Upload ảnh chuẩn hóa trước khi gửi/tiến trình/hai request đồng thời; timeline gom ngày và phân biệt album/dấu mốc; hồ sơ tên/avatar, vị trí và bản đồ miễn phí tải theo yêu cầu. Chi tiết và đề xuất tiếp theo: `UPDATE_2026_10_31.md`.
 
 - [x] Cộng tác dòng thời gian theo lời mời tài khoản; thêm/sửa/xóa mốc/ảnh, lịch chung có tùy chọn cá nhân, thu hồi/rời, CAS và backup/xóa tài khoản. Lịch 3:1, Hôm nay tập trung, URL riêng và deep link editor. Xem `TIMELINE_COLLABORATION.md`.

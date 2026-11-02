@@ -46,6 +46,12 @@ try {
     for (const asset of album.assets) keys.add(`uploads/${asset.id}.webp`);
   for (const entry of await db.list<{ assets: { id: string }[] }>('journal'))
     for (const asset of entry.assets) keys.add('journal/' + asset.id + '.jpg');
+  for (const version of await db.list<{ snapshot: { assets: { id: string }[] } }>(
+    'journal-version',
+  ))
+    for (const asset of version.snapshot.assets) keys.add('journal/' + asset.id + '.jpg');
+  for (const profile of await db.list<{ avatar?: { id: string } }>('profile'))
+    if (profile.avatar) keys.add('uploads/' + profile.avatar.id + '.webp');
   for (const audio of await db.list<AudioAsset>('audio')) keys.add('audio/' + audio.id + '.mp3');
   if (await db.hasTable('album_versions'))
     for (const row of await db.query('SELECT payload FROM album_versions'))
