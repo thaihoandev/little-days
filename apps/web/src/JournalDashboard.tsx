@@ -29,8 +29,9 @@ import {
   CheckCheck,
   History,
   MessageCircle,
+  Bell,
 } from 'lucide-react';
-import { type Album, todayIn, daysTogether } from '../../../packages/domain/index.js';
+import { type Album, todayIn, daysTogether, dateString } from '../../../packages/domain/index.js';
 import {
   type JournalEntry,
   type JournalContent,
@@ -58,6 +59,10 @@ import { PhotoDownload } from './PhotoDownload.js';
 import { useLibraryPage, useDebounced } from './useLibraryPage.js';
 import type { FeedEntry } from '../../../packages/domain/library.js';
 import { thumbnailUrl } from './thumbnail.js';
+import { ReminderDialog } from './ReminderControls.js';
+import { HolidayIcon, useHolidays } from './Holidays.js';
+import { holidayCategoryNames, type Holiday } from '../../../packages/domain/holidays.js';
+import type { ReminderSource, NotificationView } from '../../../packages/domain/reminders.js';
 const MemoryMap = lazy(() => import('./MemoryMap.js'));
 
 type Item = JournalEntry & { album?: Album };
@@ -90,6 +95,11 @@ export default function JournalDashboard({
   enhancedReady,
   communityReady = false,
   libraryReady = false,
+  remindersReady = false,
+  showHolidays = true,
+  focusDate,
+  notifications = [],
+  onOpenDay,
 }: {
   albums: Album[];
   mode: 'home' | 'timeline' | 'calendar';
@@ -101,11 +111,21 @@ export default function JournalDashboard({
   enhancedReady: boolean;
   communityReady?: boolean;
   libraryReady?: boolean;
+  remindersReady?: boolean;
+  showHolidays?: boolean;
+  focusDate?: string;
+  notifications?: NotificationView[];
+  onOpenDay?: (date: string) => void;
 }) {
   const [today, setToday] = useState(() =>
     todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone),
   );
   const [newKind, setNewKind] = useState<JournalContent['kind']>('memory');
+  const [reminderTarget, setReminderTarget] = useState<{
+    source: ReminderSource;
+    title: string;
+  } | null>(null);
+  const [holidayDraft, setHolidayDraft] = useState<Partial<JournalContent>>();
   const loadVersion = useRef(0);
   const [sharingReady, setSharingReady] = useState(false);
   const [details, setDetails] = useState<{ entry: JournalEntry; tab: 'social' | 'history' } | null>(
@@ -149,6 +169,31 @@ export default function JournalDashboard({
     [kind, setKind] = useState('all'),
     [limit, setLimit] = useState(20),
     [editing, setEditing] = useState<JournalEntry | null | undefined>();
+  useEffect(() => {
+    if (focusDate && dateString.safeParse(focusDate).success) {
+      setSelected(focusDate);
+      setMonth(focusDate.slice(0, 7));
+    }
+  }, [focusDate]);
+  const holidayData = useHolidays(month, remindersReady && showHolidays && mode !== 'timeline');
+  const holidaysByDay = useMemo(() => {
+    const map = new Map<string, Holiday[]>();
+    for (const holiday of holidayData.items)
+      map.set(holiday.date, [...(map.get(holiday.date) || []), holiday]);
+    return map;
+  }, [holidayData.items]);
+  const planHoliday = (holiday: Holiday) => {
+    setSelected(holiday.date);
+    setHolidayDraft({
+      title: 'Kế hoạch · ' + holiday.title,
+      date: holiday.date,
+      note: holiday.hint,
+      kind: 'plan',
+      annual: false,
+    });
+    setNewKind('plan');
+    setEditing(null);
+  };
   const paged = mode === 'timeline' && libraryReady;
   const search = useDebounced(query);
   const pageQuery = new URLSearchParams({
@@ -560,6 +605,26 @@ export default function JournalDashboard({
           {feed.error} <button onClick={feed.retry}>Thử lại</button>
         </p>
       )}
+      {mode === 'home' && notifications.some((n) => !n.readAt) && (
+        <section className="today-reminders" aria-label="Lời nhắc quan trọng">
+          <div>
+            <Bell size={19} />
+            <h2>Đừng quên những ngày này</h2>
+          </div>
+          {notifications
+            .filter((n) => !n.readAt)
+            .slice(0, 3)
+            .map((n) => (
+              <button key={n.id} onClick={() => onOpenDay?.(n.occurrenceDate)}>
+                <strong>{n.title}</strong>
+                <small>
+                  {dateLabel(n.occurrenceDate)} ·{' '}
+                  {n.offset ? 'Nhắc trước ' + n.offset + ' ngày' : 'Nhắc đúng ngày'}
+                </small>
+              </button>
+            ))}
+        </section>
+      )}
       {mode !== 'timeline' && (
         <div className="journal-overview">
           <section className="calendar-card" aria-label="Lịch tháng">
@@ -606,16 +671,22 @@ export default function JournalDashboard({
                     events.flatMap((e) => e.assets.slice(0, 1)).map((a) => [a.id, a]),
                   ).values(),
                 ];
+                const holidays = holidaysByDay.get(day) || [];
                 return (
                   <button
                     key={day}
                     disabled={day < '1900-01-01' || day > '2200-12-31'}
-                    aria-label={dateLabel(day) + (count ? ` · ${count} dấu mốc` : '')}
+                    aria-label={
+                      dateLabel(day) +
+                      (count ? ` · ${count} dấu mốc` : '') +
+                      (holidays.length ? ' · ' + holidays.map((h) => h.title).join(', ') : '')
+                    }
                     aria-pressed={selected === day}
                     className={[
                       day.slice(0, 7) !== month ? 'outside' : '',
                       day === today ? 'today' : '',
                       day === selected ? 'selected' : '',
+                      holidays.length ? 'has-holiday' : '',
                     ].join(' ')}
                     onClick={() => {
                       setSelected(day);
@@ -623,6 +694,17 @@ export default function JournalDashboard({
                     }}
                   >
                     <span>{Number(day.slice(-2))}</span>
+                    {holidays.length > 0 && (
+                      <span
+                        className="calendar-holiday-icons"
+                        aria-hidden="true"
+                        title={holidays.map((h) => h.title).join(' · ')}
+                      >
+                        {holidays.slice(0, 2).map((h) => (
+                          <HolidayIcon key={h.id} name={h.icon} size={12} />
+                        ))}
+                      </span>
+                    )}
                     {photos.length ? (
                       <span
                         className={'calendar-photos' + (photos.length > 1 ? ' multiple' : '')}
@@ -650,10 +732,86 @@ export default function JournalDashboard({
               })}
             </div>
             <p className="calendar-foot">
+              {holidayData.loading && (
+                <span className="calendar-holiday-status" role="status">
+                  Đang tải ngày lễ…{' '}
+                </span>
+              )}
               Chọn một ngày để xem kỉ niệm hoặc ghi thêm một lời nhắn.
             </p>
+            {holidayData.error && (
+              <p role="alert">
+                {holidayData.error}{' '}
+                <button className="text-button" onClick={holidayData.retry}>
+                  Tải lại ngày lễ
+                </button>
+              </p>
+            )}
+            {(holidaysByDay.get(selected) || []).length > 0 && (
+              <div className="selected-holidays" aria-label="Ngày lễ đang chọn">
+                {holidaysByDay.get(selected)!.map((h) => (
+                  <article key={h.id}>
+                    <span className={'holiday-icon ' + h.category}>
+                      <HolidayIcon name={h.icon} />
+                    </span>
+                    <div>
+                      <strong>{h.title}</strong>
+                      <small>{holidayCategoryNames[h.category]}</small>
+                    </div>
+                    <button
+                      className="button quiet"
+                      aria-label={'Lên kế hoạch cho ' + h.title}
+                      onClick={() => planHoliday(h)}
+                    >
+                      Lên kế hoạch
+                    </button>
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
           <aside className="upcoming-card">
+            {remindersReady && showHolidays && (
+              <section className="upcoming-holidays" aria-label="Dịp lễ sắp tới">
+                <span className="eyebrow">CHUẨN BỊ MỘT ĐIỀU ĐẸP</span>
+                <h3>Dịp lễ sắp tới</h3>
+                {holidayData.items
+                  .filter(
+                    (h) =>
+                      h.date >=
+                      (mode === 'home'
+                        ? today
+                        : selected.slice(0, 7) === month
+                          ? selected
+                          : month + '-01'),
+                  )
+                  .slice(0, 4)
+                  .map((h) => (
+                    <button
+                      key={h.id}
+                      className="upcoming-holiday"
+                      onClick={() => {
+                        setSelected(h.date);
+                        setMonth(h.date.slice(0, 7));
+                      }}
+                    >
+                      <span className={'holiday-icon ' + h.category}>
+                        <HolidayIcon name={h.icon} />
+                      </span>
+                      <span>
+                        <strong>{h.title}</strong>
+                        <small>
+                          {dateLabel(h.date, { day: 'numeric', month: 'short' })} ·{' '}
+                          {holidayCategoryNames[h.category]}
+                        </small>
+                      </span>
+                    </button>
+                  ))}
+                <p className="muted small">
+                  Ngày lễ và dịp kỷ niệm; lịch nghỉ, nghỉ bù theo công bố của cơ quan hoặc đơn vị.
+                </p>
+              </section>
+            )}
             <section className="selected-day-notes" aria-label="Ghi chú ngày đang chọn">
               <span className="eyebrow">NGÀY ĐANG CHỌN</span>
               <h3>{dateLabel(selected, { day: 'numeric', month: 'long' })}</h3>
@@ -1033,6 +1191,29 @@ export default function JournalDashboard({
                               </div>
                             )}
                             <div className="journal-entry-actions">
+                              {remindersReady && (
+                                <button
+                                  className="icon-button"
+                                  aria-label={'Nhắc tôi về ' + entry.title}
+                                  title="Thiết lập lời nhắc"
+                                  onClick={() =>
+                                    setReminderTarget({
+                                      title: entry.title,
+                                      source: entry.album
+                                        ? entry.id.startsWith('start-')
+                                          ? { kind: 'album-start', id: entry.album.id }
+                                          : {
+                                              kind: 'album-memory',
+                                              id: entry.album.id,
+                                              memoryId: entry.id.split(':')[1],
+                                            }
+                                        : { kind: 'journal', id: entry.id },
+                                    })
+                                  }
+                                >
+                                  <Bell size={16} />
+                                </button>
+                              )}
                               {!entry.album && communityReady && (
                                 <>
                                   <button
@@ -1216,13 +1397,18 @@ export default function JournalDashboard({
             mode === 'timeline' && selectedTimeline !== 'all' ? selectedTimeline : userId
           }
           initial={editing}
+          draft={editing === null ? holidayDraft : undefined}
           initialKind={newKind}
           date={selected}
-          onClose={() => setEditing(undefined)}
+          onClose={() => {
+            setEditing(undefined);
+            setHolidayDraft(undefined);
+          }}
           onUpdated={update}
           onSaved={(entry) => {
             update(entry);
             setEditing(undefined);
+            setHolidayDraft(undefined);
             setSelected(entry.date);
             setMonth(entry.date.slice(0, 7));
           }}
@@ -1234,6 +1420,13 @@ export default function JournalDashboard({
           verified={verified}
           onChange={refresh}
           onClose={() => setSharingOpen(false)}
+        />
+      )}
+      {reminderTarget && (
+        <ReminderDialog
+          {...reminderTarget}
+          onClose={() => setReminderTarget(null)}
+          onSaved={() => window.dispatchEvent(new Event('little-days:reminders'))}
         />
       )}
       {deleting && (
@@ -1272,6 +1465,7 @@ function JournalDialog({
   defaultTimeline,
   initial,
   initialKind,
+  draft,
   date,
   onClose,
   onSaved,
@@ -1282,6 +1476,7 @@ function JournalDialog({
   defaultTimeline: string;
   initial: JournalEntry | null;
   initialKind: JournalContent['kind'];
+  draft?: Partial<JournalContent>;
   date: string;
   onClose: () => void;
   onSaved: (entry: JournalEntry) => void;
@@ -1300,7 +1495,7 @@ function JournalDialog({
             annual: initial.annual,
             location: initial.location,
           }
-        : { title: '', date, note: '', kind: initialKind, annual: false },
+        : { title: '', date, note: '', kind: initialKind, annual: false, ...draft },
     ),
     [files, setFiles] = useState<File[]>([]),
     [busy, setBusy] = useState(false),

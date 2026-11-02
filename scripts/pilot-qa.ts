@@ -6,6 +6,7 @@ import path from 'node:path';
 import { ensureBrowser } from '@remotion/renderer';
 
 const suites = [
+  ['reminders-holidays', 'scripts/smoke-reminders-holidays.ts'],
   ['library-performance', 'scripts/smoke-library-performance.ts'],
   ['interface-refinement', 'scripts/smoke-interface-refinement.ts'],
   ['community', 'scripts/smoke-community-ui.ts'],
@@ -70,6 +71,7 @@ const env = {
   DATA_DIR: path.join(root, 'data'),
   STORAGE_DRIVER: 'local',
   MAIL_DRIVER: production ? 'disabled' : 'local',
+  REMINDER_CRON_TOKEN: 'fixture-reminder-cron-token-0123456789abcdef',
   OPS_ALERT_ENABLED: 'false',
   OPS_TOKEN: '',
   OPS_TOKEN_FILE: '',

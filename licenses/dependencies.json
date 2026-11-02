@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "lockSha256": "7c808450ce90165aa7db153b42f72b149643a5e654ced3e752cc75233cbca017",
+  "lockSha256": "e0a3386a4797b57af24c5a138a7443baf6db9c3da19017324f875e9fc5cb328b",
   "platform": "win32",
   "architecture": "x64",
   "entries": [
@@ -3515,6 +3515,19 @@
       "review": "declared-license-not-legal-clearance"
     },
     {
+      "name": "astronomia",
+      "version": "4.2.0",
+      "location": "node_modules/astronomia",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
       "name": "baseline-browser-mapping",
       "version": "2.11.34",
       "location": "node_modules/baseline-browser-mapping",
@@ -3893,6 +3906,19 @@
       "name": "csstype",
       "version": "3.2.3",
       "location": "node_modules/csstype",
+      "license": "MIT",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "date-chinese",
+      "version": "2.1.4",
+      "location": "node_modules/date-chinese",
       "license": "MIT",
       "dev": false,
       "optional": false,

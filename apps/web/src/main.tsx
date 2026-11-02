@@ -23,6 +23,7 @@ import './journal-refresh.css';
 import './timeline-journey.css';
 import './memory-community.css';
 import './interface-refinement.css';
+import './reminders.css';
 class Boundary extends React.Component<{ children: React.ReactNode }, { error: boolean }> {
   state = { error: false };
   static getDerivedStateFromError() {

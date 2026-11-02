@@ -78,6 +78,8 @@ import { PhotosLibrary } from './PhotosLibrary.js';
 import type { ProfileView } from './ProfileSettings.js';
 import { uploadImage, uploadBatch, configureUploads } from './image-upload.js';
 import { configureThumbnails, thumbnailUrl } from './thumbnail.js';
+import { NotificationCenter } from './ReminderControls.js';
+import type { NotificationView } from '../../../packages/domain/reminders.js';
 import { ConfirmDialog, PhotoLightbox } from './Overlays.js';
 import { decorationCatalog } from '../../../packages/domain/decorations.js';
 import {
@@ -225,7 +227,11 @@ export default function App() {
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
   const [modal, setModal] = useState<'create' | 'account' | 'help' | null>(null);
-  const { route, pathname, navigate } = useAppRoute();
+  const { route, pathname, search, navigate } = useAppRoute();
+  const [notifications, setNotifications] = useState<{
+    userId: string;
+    items: NotificationView[];
+  }>();
   const section = route.section;
   const setSection = (section: AppSection) => navigate(sectionPaths[section]);
   const openAlbum = (album: Album) => {
@@ -474,13 +480,30 @@ export default function App() {
                 }[section]
               }
             </span>
-            <button
-              className="icon-button"
-              aria-label="Tài khoản"
-              onClick={() => setModal('account')}
-            >
-              <UserAvatar name={user?.displayName} url={user?.avatarUrl} />
-            </button>
+            <div className="dashboard-account-tools">
+              {user?.remindersVersion === 1 && (
+                <NotificationCenter
+                  key={user.id}
+                  userId={user.id}
+                  onOpenDay={(date) => navigate('/calendar?date=' + date)}
+                  onItems={(items) => setNotifications({ userId: user.id, items })}
+                  onPreferences={(prefs) =>
+                    setUser((current) =>
+                      current?.id === user.id
+                        ? { ...current, showHolidays: prefs.showHolidays }
+                        : current,
+                    )
+                  }
+                />
+              )}
+              <button
+                className="icon-button"
+                aria-label="Tài khoản"
+                onClick={() => setModal('account')}
+              >
+                <UserAvatar name={user?.displayName} url={user?.avatarUrl} />
+              </button>
+            </div>
           </header>
           {user && ['home', 'timeline', 'calendar'].includes(section) && (
             <JournalDashboard
@@ -491,6 +514,11 @@ export default function App() {
               enhancedReady={typeof user.profileRevision === 'number'}
               communityReady={user.journalFeatures === 1}
               libraryReady={user.libraryVersion === 1}
+              remindersReady={user.remindersVersion === 1}
+              showHolidays={user.showHolidays !== false}
+              focusDate={new URLSearchParams(search).get('date') || undefined}
+              notifications={notifications?.userId === user.id ? notifications.items : []}
+              onOpenDay={(date) => navigate('/calendar?date=' + date)}
               albums={albums}
               mode={section as 'home' | 'timeline' | 'calendar'}
               onOpenAlbum={openAlbum}

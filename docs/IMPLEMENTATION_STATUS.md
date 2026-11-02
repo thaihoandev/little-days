@@ -4,6 +4,8 @@ Ngày cập nhật: **02/11/2026**.
 
 ## Kết quả hiện tại
 
+Đợt 2 bổ sung lời nhắc/chuông thông báo, email opt-in và ngày lễ Việt Nam/các dịp Tây phổ biến có icon, tạo kế hoạch ngay từ lịch. Lịch và thông báo dùng sau deploy; email tự động cần bật workflow riêng theo [REMINDERS_HOLIDAYS.md](REMINDERS_HOLIDAYS.md).
+
 Sửa focus/caret popup nhập chữ, thêm nút căn lề và 10 font tiếng Việt tự host dùng chung canvas/viewer/MP4; toolbar tải ảnh rõ, thùng rác tách hàng bộ lọc, hồ sơ rộng hai cột/tab mobile và loading khi lấy dữ liệu. Tài liệu hướng dẫn tập trung tại `docs/`. Xem [INTERFACE_REFINEMENT.md](INTERFACE_REFINEMENT.md) về cập nhật API/worker đang dùng; không thêm env.
 
 Đợt ưu tiên tiếp theo: thùng rác dấu mốc, lịch sử 20 phiên bản gồm ảnh với CAS/khôi phục và xóa vĩnh viễn theo quyền; bình luận/cảm xúc dùng quyền timeline, hỗ trợ backup/quota/xóa tài khoản; Ngày này năm trước trên Hôm nay. Trang Ảnh đã lưu được thiết kế lại, gom ảnh album/dấu mốc, lọc/tìm và tải ảnh riêng tư; bỏ caption tên file. Hướng dẫn và giới hạn: [MEMORY_COMMUNITY.md](MEMORY_COMMUNITY.md). Cần deploy FE/API cùng commit, không thêm env.
@@ -175,6 +177,12 @@ Kiểm tra bổ sung đã qua: 12 luồng UI cô lập desktop/mobile; 8 unit te
 4. Đo tải/CPU/RAM toàn container và chi phí trên hạ tầng đích, hiệu chỉnh quota.
 5. Thư viện nhạc tuyển chọn và nhóm lồng nhau là các phần mở rộng còn lại; không chờ pilot để phát triển tiếp.
 6. Đối chiếu license, kiểm toán bảo mật và xác nhận rollout/rollback trước phát hành.
+
+## Đợt 2 — lời nhắc và ngày lễ
+
+Đã bổ sung mã nhắc cá nhân theo dấu mốc/kỉ niệm, chuông thông báo, cài đặt giờ/múi giờ và email opt-in có receipt chống gửi trùng. Ngày lễ Việt Nam và dịp Tây phổ biến có icon, danh sách sắp tới và tạo kế hoạch. Dữ liệu dùng records hiện có, tích hợp backup và xóa tài khoản; frontend có capability gate khi FE/API deploy lệch phiên bản.
+
+Thông báo trong app hoạt động sau deploy; email chủ động cần token riêng ở Render/GitHub cùng variable bật workflow. Chưa coi email cron production là đã cấu hình hoặc gửi thử thật. Hướng dẫn: [REMINDERS_HOLIDAYS.md](REMINDERS_HOLIDAYS.md).
 
 ## Tài liệu
 

@@ -18,6 +18,10 @@ The standalone image-processing worker uses IMG.LY background-removal 1.7.0 (AGP
 
 Leaflet 1.9.4 is distributed under BSD-2-Clause; its original license is included in `licenses/THIRD-PARTY-LICENSE-TEXTS.txt`. Map data and raster tiles are supplied separately by OpenStreetMap contributors and the OpenStreetMap Foundation, with visible attribution. See the [OSM copyright and ODbL information](https://www.openstreetmap.org/copyright) and [tile usage policy](https://operations.osmfoundation.org/policies/tiles/). Tiles load when the timeline map, location picker or expanded map is displayed, with normal browser caching; bulk download and offline prefetch are not implemented. The service is best-effort and has no availability guarantee. User milestone content is not sent to a geocoding service or included in this project's code license.
 
+## Vietnamese lunar calendar
+
+Vietnamese lunar dates are calculated on the API with `date-chinese` 2.1.4 (`CalendarVietnamese`) and its `astronomia` dependency, distributed under MIT licenses. Original installed notices are collected in `licenses/THIRD-PARTY-LICENSE-TEXTS.txt`. No lunar-calendar or astronomy package is shipped in the frontend bundle. Holiday descriptions and icons are application data; they do not specify employer-specific leave or substitute days.
+
 ## Fonts
 
 Be Vietnam Pro, Caveat, Lora and Patrick Hand are bundled through Fontsource. Their original SIL Open Font License 1.1 notices, authors and reserved names are preserved in `licenses/fonts/`. Font licensing is independent from Little Days' code license; do not remove the font notices or rename modified fonts contrary to their reserved-name requirements.

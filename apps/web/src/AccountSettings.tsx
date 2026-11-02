@@ -5,6 +5,8 @@ import { UsagePanel } from './UsagePanel.js';
 import { ProfileSettings, type ProfileView } from './ProfileSettings.js';
 
 export type PublicUser = {
+  remindersVersion?: number;
+  showHolidays?: boolean;
   libraryVersion?: number;
   fontCatalogVersion?: number;
   journalFeatures?: number;

@@ -2,6 +2,9 @@
 
 Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → staging/PostgreSQL → load test và pilot, cùng cải thiện editor/video và quy trình backup.
 
+- [x] Mã đợt 2: lời nhắc cá nhân 0/1/3/7 ngày, giờ/múi giờ, chuông thông báo và email opt-in; ngày lễ Việt Nam/dịp Tây phổ biến tại Việt Nam có icon và tạo kế hoạch. Xem `REMINDERS_HOLIDAYS.md`.
+- [ ] Cấu hình token Render/GitHub và bật workflow Anniversary reminders để gửi thư chủ động; chưa ghi nhận email lịch nhắc production hoặc cron đã bật.
+
 - [x] Đợt 1 hiệu năng: receipt upload và đối soát khi mất phản hồi, thử lại riêng ảnh lỗi; phân trang SQL timeline/ảnh, album summary, ảnh xem nhanh riêng tư, truy vấn cộng tác theo lô và giảm vẽ lại bản đồ. Xem `PERFORMANCE.md` về phạm vi và số đo fixture.
 
 - [x] Đợt ưu tiên 02/11: lịch sử/thùng rác dấu mốc, bình luận/cảm xúc, Ngày này năm trước; thư viện ảnh mới, ẩn tên file và tải ảnh xuống. Xem `MEMORY_COMMUNITY.md`.

@@ -4,6 +4,8 @@
 
 Toàn bộ hướng dẫn sử dụng và vận hành: [Mục lục tài liệu](docs/README.md).
 
+Đợt 2: [chuông thông báo, lời nhắc và ngày lễ Việt Nam/các dịp phổ biến](docs/REMINDERS_HOLIDAYS.md). Lịch dùng ngay sau deploy; email tự động cần bật workflow theo hướng dẫn.
+
 Upload phục hồi, phân trang timeline/thư viện và tối ưu tải ảnh: [hướng dẫn hiệu năng](docs/PERFORMANCE.md).
 
 Cập nhật giao diện: [nhập chữ không nhảy con trỏ, căn lề, 10 font mới và bố cục hồ sơ](docs/INTERFACE_REFINEMENT.md).

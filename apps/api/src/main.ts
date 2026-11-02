@@ -75,6 +75,9 @@ import { normalizePhoto } from './images.js';
 import { UploadReceipts, type UploadCommit } from './upload-receipts.js';
 import { LibraryService } from './library.js';
 import { ImagePreviews } from './image-previews.js';
+import { ReminderService } from './reminders.js';
+import { holidaysForYear } from './holidays.js';
+import { timingSafeEqual } from 'node:crypto';
 import { ProfileService } from './profiles.js';
 import { JournalSocial } from './journal-social.js';
 import { profileView } from './profile-view.js';
@@ -97,6 +100,16 @@ const mailer = createMailer(dataDir);
 const opsMonitor = new OpsMonitor(repository, mailer);
 const deletion = new AccountDeletion(repository, jobs, store, dataDir, () => backupLock.paused());
 const journal = new JournalService(repository, store, resources, deletion);
+const reminders = new ReminderService(
+  repository,
+  journal,
+  deletion,
+  mailer,
+  process.env.APP_ORIGIN || 'http://127.0.0.1:5173',
+);
+const reminderCronToken = process.env.REMINDER_CRON_TOKEN?.trim();
+if (reminderCronToken && !/^[A-Za-z0-9_-]{32,256}$/.test(reminderCronToken))
+  throw new Error('REMINDER_CRON_TOKEN cần 32–256 ký tự chữ/số/_/-.');
 const uploadReceipts = new UploadReceipts(repository, deletion);
 const library = new LibraryService(repository, journal);
 const imagePreviews = new ImagePreviews(store);
@@ -176,6 +189,52 @@ function validateReferences(album: Album) {
 
 @Controller('api')
 class AppController {
+  @Get('holidays') async holidays(@Query('year') year: unknown) {
+    return { items: holidaysForYear(year) };
+  }
+  @Get('reminder-settings') async reminderSettings(@Req() req: UserRequest) {
+    return { ...(await reminders.settings(req.userId)), schedulerConfigured: !!reminderCronToken };
+  }
+  @Patch('reminder-settings') async reminderPreferences(
+    @Req() req: UserRequest,
+    @Body() body: unknown,
+  ) {
+    return reminders.savePreferences(req.userId, body);
+  }
+  @Get('reminders') async reminderRules(@Req() req: UserRequest) {
+    return reminders.rules(req.userId);
+  }
+  @Post('reminders') async reminderSave(@Req() req: UserRequest, @Body() body: unknown) {
+    await security.rateLimit('reminders:' + req.userId, 30, 60000);
+    return reminders.saveRule(req.userId, body);
+  }
+  @Delete('reminders/:id') async reminderRemove(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    return reminders.removeRule(req.userId, id, body);
+  }
+  @Get('notifications') async notifications(@Req() req: UserRequest) {
+    return reminders.notifications(req.userId);
+  }
+  @Post('notifications/:id/read') async notificationRead(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+  ) {
+    return reminders.markRead(req.userId, id);
+  }
+  @Post('reminder-cron') @HttpCode(200) async reminderTick(@Req() req: Request) {
+    if (!reminderCronToken) throw new HttpException('Lịch nhắc chưa được cấu hình.', 503);
+    const incoming = req.headers.authorization?.replace(/^Bearer /, '') || '';
+    if (
+      !/^[A-Za-z0-9_-]{32,256}$/.test(incoming) ||
+      incoming.length !== reminderCronToken.length ||
+      !timingSafeEqual(Buffer.from(incoming), Buffer.from(reminderCronToken))
+    )
+      throw new UnauthorizedException();
+    return reminders.runScheduled();
+  }
   @Patch('profile') async saveProfile(@Req() req: UserRequest, @Body() body: unknown) {
     return profiles.save(req.userId, body);
   }
@@ -427,6 +486,10 @@ class AppController {
       journalFeatures: 1,
       fontCatalogVersion: 1,
       libraryVersion: 1,
+      remindersVersion: 1,
+      showHolidays:
+        (await repository.get<{ showHolidays: boolean }>('reminder-preferences', req.userId))
+          ?.showHolidays ?? true,
       ...(await profileView(
         repository,
         req.userId,
@@ -1296,6 +1359,7 @@ app.use('/api', async (req: UserRequest, res: Response, next: NextFunction) => {
       req.path === '/health' ||
       req.path === '/health/ready' ||
       req.path.startsWith('/ops/') ||
+      req.path === '/reminder-cron' ||
       req.path === '/session' ||
       req.path.startsWith('/auth/') ||
       req.path.startsWith('/demo/') ||

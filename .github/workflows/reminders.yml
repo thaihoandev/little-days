@@ -1,0 +1,24 @@
+name: Anniversary reminders
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: anniversary-reminders
+  cancel-in-progress: false
+jobs:
+  reminders:
+    if: vars.REMINDERS_SCHEDULE_ENABLED == 'true' && github.ref == 'refs/heads/main' && !github.event.repository.fork
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/run-reminders.mjs
+        env:
+          REMINDER_API_ORIGIN: ${{ vars.REMINDER_API_ORIGIN }}
+          REMINDER_CRON_TOKEN: ${{ secrets.REMINDER_CRON_TOKEN }}

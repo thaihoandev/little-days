@@ -403,13 +403,14 @@ export class AccountDeletion {
             'timeline-invite:' + owner,
             'profile-upload:' + owner,
             'journal-social:' + owner,
+            'reminders:' + owner,
           ])
             await this.db.query(
               'DELETE FROM auth_rate_limits WHERE rate_key=? RETURNING rate_key',
               [authHash(value)],
             );
         for (const row of await this.db.query(
-          "SELECT kind,id,payload FROM records WHERE kind IN ('journal-comment','journal-reaction')",
+          "SELECT kind,id,payload FROM records WHERE kind IN ('journal-comment','journal-reaction','reminder-rule','reminder-notification','reminder-email-receipt')",
         ))
           if (
             (JSON.parse(String(row.payload)) as { timelineOwner: string }).timelineOwner === owner
