@@ -729,12 +729,13 @@ export default function JournalDashboard({
             )}
             {communityReady && (
               <button
-                className="icon-button"
+                className="button quiet journal-trash-action"
                 aria-label="Mở thùng rác dấu mốc"
                 title="Thùng rác dấu mốc"
                 onClick={() => setTrashOpen(true)}
               >
                 <Trash2 size={17} />
+                <span>Thùng rác</span>
               </button>
             )}
             {enhancedReady && mode !== 'timeline' && (

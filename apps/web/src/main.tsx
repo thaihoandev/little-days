@@ -10,6 +10,7 @@ import '@fontsource/lora/latin-400-italic.css';
 import '@fontsource/lora/vietnamese-400-italic.css';
 import '@fontsource/patrick-hand/latin-400.css';
 import '@fontsource/patrick-hand/vietnamese-400.css';
+import '../../../packages/scrapbook-renderer/additional-fonts.css';
 import App from './App.js';
 import './styles.css';
 import './journal.css';
@@ -21,6 +22,7 @@ import './editor-upgrade.css';
 import './journal-refresh.css';
 import './timeline-journey.css';
 import './memory-community.css';
+import './interface-refinement.css';
 class Boundary extends React.Component<{ children: React.ReactNode }, { error: boolean }> {
   state = { error: false };
   static getDerivedStateFromError() {

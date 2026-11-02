@@ -1,20 +1,24 @@
 # Little Days — Couple Scrapbook
 
-Ứng dụng React + TypeScript cho cặp đôi: trang chủ lịch và timeline, lưu dấu mốc/ảnh/ghi chú, tùy chỉnh scrapbook và xuất video MP4. API NestJS xử lý tài khoản, dữ liệu riêng tư và tác vụ render Remotion. Xem [lịch, timeline, 14 mẫu và thư viện nhạc](CALENDAR_TIMELINE.md), gồm hướng dẫn cập nhật API/worker hiện có.
+Ứng dụng React + TypeScript cho cặp đôi: trang chủ lịch và timeline, lưu dấu mốc/ảnh/ghi chú, tùy chỉnh scrapbook và xuất video MP4. API NestJS xử lý tài khoản, dữ liệu riêng tư và tác vụ render Remotion. Xem [lịch, timeline, 14 mẫu và thư viện nhạc](docs/CALENDAR_TIMELINE.md), gồm hướng dẫn cập nhật API/worker hiện có.
+
+Toàn bộ hướng dẫn sử dụng và vận hành: [Mục lục tài liệu](docs/README.md).
+
+Cập nhật giao diện: [nhập chữ không nhảy con trỏ, căn lề, 10 font mới và bố cục hồ sơ](docs/INTERFACE_REFINEMENT.md).
 
 ## Chạy local
 
-Cập nhật 02/11: [thùng rác/lịch sử dấu mốc, bình luận/cảm xúc, Ngày này năm trước và thư viện ảnh mới](MEMORY_COMMUNITY.md). Deploy FE/API cùng commit, không thêm env.
+Cập nhật 02/11: [thùng rác/lịch sử dấu mốc, bình luận/cảm xúc, Ngày này năm trước và thư viện ảnh mới](docs/MEMORY_COMMUNITY.md). Deploy FE/API cùng commit, không thêm env.
 
-Cập nhật 31/10: [tối ưu upload, timeline gom ngày, tên/avatar và bản đồ dấu mốc](UPDATE_2026_10_31.md). Không cần env mới; cần deploy cả FE và API.
+Cập nhật 31/10: [tối ưu upload, timeline gom ngày, tên/avatar và bản đồ dấu mốc](docs/UPDATE_2026_10_31.md). Không cần env mới; cần deploy cả FE và API.
 
-Có thể [mời người cùng xây dựng dòng thời gian và hợp nhất lịch](TIMELINE_COLLABORATION.md). Các trang có URL riêng, trang Hôm nay ưu tiên lịch/ghi chú; không cần thêm env.
+Có thể [mời người cùng xây dựng dòng thời gian và hợp nhất lịch](docs/TIMELINE_COLLABORATION.md). Các trang có URL riêng, trang Hôm nay ưu tiên lịch/ghi chú; không cần thêm env.
 
-Tách nền ảnh thành sticker ngay trong trình duyệt, có so sánh ảnh gốc, viền trắng/bóng đổ và bản sao riêng tư. Xem [hướng dẫn tách nền và triển khai](BACKGROUND_REMOVAL.md); không cần thêm env hoặc API trả phí.
+Tách nền ảnh thành sticker ngay trong trình duyệt, có so sánh ảnh gốc, viền trắng/bóng đổ và bản sao riêng tư. Xem [hướng dẫn tách nền và triển khai](docs/BACKGROUND_REMOVAL.md); không cần thêm env hoặc API trả phí.
 
 Logo cuốn sổ/trái tim nằm tại `apps/web/public/logo.svg`, dùng chung cho wordmark và favicon. `node scripts/generate-brand.mjs` tạo lại PNG 32px và Apple touch icon 180px từ SVG nguồn.
 
-App cloud hiện dùng Render/Neon/Cloudinary. Backup tự động qua GitHub Actions, không cần thêm host, được hướng dẫn tại [SCHEDULED_BACKUP.md](SCHEDULED_BACKUP.md); lịch mặc định chưa bật đến khi điền secrets/variables.
+App cloud hiện dùng Render/Neon/Cloudinary. Backup tự động qua GitHub Actions, không cần thêm host, được hướng dẫn tại [docs/SCHEDULED_BACKUP.md](docs/SCHEDULED_BACKUP.md); lịch mặc định chưa bật đến khi điền secrets/variables.
 
 Yêu cầu Node.js **22.14 trở lên** và npm. File `.env` đã được tạo và chọn Cloudinary cho media; database mặc định là SQLite, không cần Docker.
 
@@ -72,17 +76,17 @@ Nhạc riêng được lưu authenticated trong Cloudinary (resource video), ho�
 
 Mở **Tài khoản** để xem trạng thái xác minh email, gửi lại liên kết hoặc đổi mật khẩu. **Đăng nhập → Quên mật khẩu?** để đặt lại mật khẩu. Link xác minh có hạn 24 giờ, link reset 15 phút và chỉ dùng một lần.
 
-Development mặc định dùng hộp thư local: `npm run mail:outbox -- --latest` để xem thư và mở liên kết. Gửi thật qua SMTP bằng các biến mới trong `.env.example`; `.env` đang có và credentials Cloudinary được giữ nguyên. Xem [hướng dẫn tài khoản/email](AUTH_EMAIL.md).
+Development mặc định dùng hộp thư local: `npm run mail:outbox -- --latest` để xem thư và mở liên kết. Gửi thật qua SMTP bằng các biến mới trong `.env.example`; `.env` đang có và credentials Cloudinary được giữ nguyên. Xem [hướng dẫn tài khoản/email](docs/AUTH_EMAIL.md).
 
-**Mail trên Render Free:** đã có Brevo HTTPS, chỉ cấu hình `MAIL_DRIVER=brevo`, `BREVO_API_KEY`, `MAIL_FROM` trên Render API sau khi xác minh sender. Không cần thêm file `.env` hoặc cấu hình mail cho worker. Có adapter Resend HTTPS nếu đã dùng provider đó. Xem [các bước bật Brevo](AUTH_EMAIL.md#bật-mail-trên-render-free-dùng-brevo-https).
+**Mail trên Render Free:** đã có Brevo HTTPS, chỉ cấu hình `MAIL_DRIVER=brevo`, `BREVO_API_KEY`, `MAIL_FROM` trên Render API sau khi xác minh sender. Không cần thêm file `.env` hoặc cấu hình mail cho worker. Có adapter Resend HTTPS nếu đã dùng provider đó. Xem [các bước bật Brevo](docs/AUTH_EMAIL.md#bật-mail-trên-render-free-dùng-brevo-https).
 
-**Tài khoản → Xóa tài khoản** yêu cầu mật khẩu, câu xác nhận và đồng ý xóa vĩnh viễn. Hệ thống thu hồi phiên/link chia sẻ ngay, hủy xuất video và dọn dữ liệu/media nền với retry qua restart. Không cần biến môi trường mới. Xem [hướng dẫn xóa tài khoản](ACCOUNT_DELETION.md).
+**Tài khoản → Xóa tài khoản** yêu cầu mật khẩu, câu xác nhận và đồng ý xóa vĩnh viễn. Hệ thống thu hồi phiên/link chia sẻ ngay, hủy xuất video và dọn dữ liệu/media nền với retry qua restart. Không cần biến môi trường mới. Xem [hướng dẫn xóa tài khoản](docs/ACCOUNT_DELETION.md).
 
 ## Lịch sử và khôi phục
 
 Trong editor, bấm **Lịch sử phiên bản** cạnh undo/redo để xem trước và khôi phục bản cũ hoặc đặt tên mốc lưu. Giữ 50 revision gần nhất, kể cả mốc có tên. Khôi phục tạo revision mới và giữ bản trước đó; thư viện ảnh hiện tại được giữ nguyên.
 
-Có lệnh `backup:create`, `backup:verify`, `backup:restore` cho database cùng media local/S3/Cloudinary. Restore mặc định chỉ kiểm tra và yêu cầu database đích trống. Xem [hướng dẫn backup/restore](BACKUP_RESTORE.md) trước khi chạy. `.env` không được đưa vào backup hoặc thay đổi tự động.
+Có lệnh `backup:create`, `backup:verify`, `backup:restore` cho database cùng media local/S3/Cloudinary. Restore mặc định chỉ kiểm tra và yêu cầu database đích trống. Xem [hướng dẫn backup/restore](docs/BACKUP_RESTORE.md) trước khi chạy. `.env` không được đưa vào backup hoặc thay đổi tự động.
 
 ## Phần đã triển khai
 
@@ -90,7 +94,7 @@ Có lệnh `backup:create`, `backup:verify`, `backup:restore` cho database cùng
 - Text, ảnh, sticker và bộ đếm ngày; chọn nhiều, nhóm/bỏ nhóm, kéo/resize/xoay nhóm, crop, căn chỉnh, chia đều, đường dẫn căn, lớp ẩn/hiện/khóa.
 - Mẫu bố cục cá nhân lưu trên backend, tái sử dụng với ảnh album đích; trạng thái lớp và bố cục dùng chung giữa editor/viewer/MP4.
 - Thêm/nhân bản/xóa/sắp xếp trang; chỉnh màu giấy, font và chuyển động video.
-- 18 trang trí vector trong 5 bộ và 9 mẫu minh họa; popup xóa trang/xem ảnh, album co vừa một màn hình và scrollbar theo tông giao diện. Xem [hướng dẫn mẫu và trang trí](CALENDAR_TIMELINE.md).
+- 18 trang trí vector trong 5 bộ và 9 mẫu minh họa; popup xóa trang/xem ảnh, album co vừa một màn hình và scrollbar theo tông giao diện. Xem [hướng dẫn mẫu và trang trí](docs/CALENDAR_TIMELINE.md).
 - 6 mẫu chữ, 6 mẫu bộ đếm với 5 giao diện; viewer có ba kiểu sổ/ba hiệu ứng chuyển trang và vuốt ngang. Ảnh mới chuẩn hóa tối đa 1600px, nén thêm khi nặng; ảnh timeline xếp cụm thumbnail nhỏ.
 - Lưu server có optimistic revision, phát hiện xung đột, bản nháp local và undo/redo.
 - Quản lý kỉ niệm theo ngày; đếm ngày lịch theo múi giờ và tính kỉ niệm hằng năm, có quy tắc 29/2.
@@ -175,7 +179,7 @@ Mặc định bind loopback. Đặt `HOST=0.0.0.0` khi chạy trong container ho
 3. Chạy `docker compose up --build` để mở API, worker và PostgreSQL.
 4. Mở [http://127.0.0.1:3001](http://127.0.0.1:3001).
 
-Database và media ở hai volume riêng. Thay database không tự di chuyển album SQLite cũ. Compose là cấu hình chuẩn bị sẵn; trạng thái kiểm chứng thực tế xem [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md).
+Database và media ở hai volume riêng. Thay database không tự di chuyển album SQLite cũ. Compose là cấu hình chuẩn bị sẵn; trạng thái kiểm chứng thực tế xem [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md).
 
 Tăng worker bằng `docker compose up --build --scale worker=2`. Mỗi worker render một video mỗi lúc, có workspace/output riêng theo lease. API và worker dùng chung volume khi `STORAGE_DRIVER=local`; với nhiều máy cần PostgreSQL và object storage dùng chung.
 
@@ -232,9 +236,9 @@ Không tự đổi database hoặc key prefix sau khi copy. Việc chuyển SQLi
 
 ## Giới hạn vận hành hiện tại
 
-Muốn chạy free, không thuê VPS: xem [FREE_HOSTING.md](FREE_HOSTING.md). Đã có `render.yaml`, mẫu `.env.cloud` cho worker local và generator cấu hình Vercel frontend.
+Muốn chạy free, không thuê VPS: xem [docs/FREE_HOSTING.md](docs/FREE_HOSTING.md). Đã có `render.yaml`, mẫu `.env.cloud` cho worker local và generator cấu hình Vercel frontend.
 
-Đã có quota media/lượt xuất, retention video, cleanup có tham chiếu, log/metrics và cấu hình staging HTTPS. Xem [OPERATIONS.md](OPERATIONS.md), [STAGING.md](STAGING.md) và [PILOT.md](PILOT.md). `npm run setup:staging` tạo cấu hình riêng và giữ nguyên `.env`; domain/SMTP/credentials staging cần điền trước khi chạy trên máy chủ.
+Đã có quota media/lượt xuất, retention video, cleanup có tham chiếu, log/metrics và cấu hình staging HTTPS. Xem [docs/OPERATIONS.md](docs/OPERATIONS.md), [docs/STAGING.md](docs/STAGING.md) và [docs/PILOT.md](docs/PILOT.md). `npm run setup:staging` tạo cấu hình riêng và giữ nguyên `.env`; domain/SMTP/credentials staging cần điền trước khi chạy trên máy chủ.
 
 - Render worker đã tách riêng và có atomic claim/lease. SQLite phù hợp các tiến trình trên cùng máy; triển khai nhiều máy cần PostgreSQL và cloud storage dùng chung. Chưa load test toàn hệ thống nhiều API replica.
 - Chưa tích hợp Supabase Auth, email magic link, Redis/BullMQ hay CDN. Hàng đợi hiện dùng SQL trực tiếp và không cần Redis. Cần backup DB cùng media theo driver đang dùng.
@@ -252,7 +256,7 @@ Không công bố bản local như dịch vụ production nhiều người dùng
 
 ## Tạo sổ từ timeline và giấy phép
 
-Trong **Dòng thời gian**, chọn các mốc → **Tạo scrapbook** → chọn mẫu, tên sổ và hai tên → xem trước → tạo. Ngày, lời nhắn và ảnh được sao chép vào album mới để chỉnh layout; xóa nguồn không làm mất bản sao. Xem [TIMELINE_SCRAPBOOK.md](TIMELINE_SCRAPBOOK.md) về giới hạn, retry và triển khai.
+Trong **Dòng thời gian**, chọn các mốc → **Tạo scrapbook** → chọn mẫu, tên sổ và hai tên → xem trước → tạo. Ngày, lời nhắn và ảnh được sao chép vào album mới để chỉnh layout; xóa nguồn không làm mất bản sao. Xem [docs/TIMELINE_SCRAPBOOK.md](docs/TIMELINE_SCRAPBOOK.md) về giới hạn, retry và triển khai.
 
 Mã gốc dùng **AGPL-3.0-only kèm ngoại lệ Remotion** đã được chủ dự án chấp thuận. Xem [LICENSE.md](LICENSE.md), [LICENSE](LICENSE), [ngoại lệ](LICENSE-REMOTION-EXCEPTION.md) và [third-party notices](THIRD_PARTY_NOTICES.md). Thư viện/font/native binary giữ giấy phép riêng; ảnh và lời nhắn của người dùng không tự được cấp phép theo AGPL. Giao diện có liên kết giấy phép và mã nguồn tương ứng với commit build. `npm run legal:prepare` chạy tự động trước build/dev; `npm run licenses:inventory` cập nhật kiểm kê khi đổi dependencies. Không cần thêm `.env`.
 
@@ -260,4 +264,4 @@ Mã gốc dùng **AGPL-3.0-only kèm ngoại lệ Remotion** đã được chủ
 
 Ba project skill đã được chuẩn bị trong `skills/couple-scrapbook-editor/`, `skills/couple-scrapbook-backend/` và `skills/couple-scrapbook-video/`. Chúng mô tả implementation thực tế và chưa được cài vào cấu hình skill global của Codex.
 
-[IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) mô tả kiến trúc đích và toàn bộ lộ trình. [IMPLEMENTATION_STATUS.md](IMPLEMENTATION_STATUS.md) phân biệt phần đã làm, đã kiểm tra và còn thiếu.
+[docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) mô tả kiến trúc đích và toàn bộ lộ trình. [docs/IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md) phân biệt phần đã làm, đã kiểm tra và còn thiếu.

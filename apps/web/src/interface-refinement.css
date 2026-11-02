@@ -1,0 +1,298 @@
+.text-align-control {
+  display: inline-flex;
+  gap: 3px;
+  padding: 4px;
+  background: #eef1e5;
+  border: 1px solid #dce2ce;
+  border-radius: 10px;
+  align-self: start;
+}
+.text-align-control .icon-button {
+  width: 36px;
+  height: 34px;
+  border-radius: 7px;
+  color: #859270;
+}
+.text-align-control button[aria-pressed='true'] {
+  background: #fffdf7;
+  color: #536d3d;
+  box-shadow: 0 2px 7px #57633a18;
+}
+.text-format-tools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 15px 0;
+}
+.text-format-tools label {
+  min-width: 0;
+  flex: 1;
+  max-width: 245px;
+  font-size: 10px;
+}
+.text-format-tools select {
+  width: 100%;
+  padding: 9px;
+  border: 1px solid #dce1ce;
+  border-radius: 8px;
+  background: #fffdf7;
+}
+.text-editor-modal .large-textarea {
+  width: 100%;
+  min-height: 210px;
+  padding: 18px;
+  font-size: 21px;
+  line-height: 1.65;
+  border-radius: 12px;
+  background: #faf9ef;
+}
+.text-editor-modal .large-textarea:focus {
+  outline: 2px solid #93a67b;
+  outline-offset: 2px;
+}
+.photo-lightbox .lightbox-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.photo-lightbox .lightbox-toolbar .icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #d5d8c0;
+  border-radius: 11px;
+  background: #fffdf4;
+  color: #485f34;
+  opacity: 1;
+}
+.photo-lightbox .lightbox-toolbar .icon-button:hover {
+  background: #e7efd8;
+  color: #324d21;
+}
+.photo-lightbox .lightbox-toolbar button[aria-label='Tải ảnh xuống'] {
+  background: #e9f0d7;
+  border-color: #becb9f;
+}
+.photo-lightbox footer {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  gap: 10px;
+  align-items: center;
+}
+.photo-lightbox .lightbox-caption {
+  text-align: center;
+}
+.lightbox-image {
+  position: relative;
+}
+.lightbox-loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #e9ecd8;
+  background: #313a2ce8;
+  padding: 20px;
+  font-size: 13px;
+  text-align: center;
+}
+.journal-home .journal-feed > .section-heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+}
+.journal-home .journal-feed > .section-heading > div:first-child {
+  min-width: 0;
+}
+.journal-home .journal-feed > .section-heading .journal-filters {
+  grid-column: 1;
+  grid-row: 2;
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  justify-content: start;
+}
+.journal-home .journal-feed .journal-search {
+  flex: 1;
+  min-width: 0;
+  max-width: 440px;
+}
+.journal-home .journal-feed .journal-filters select {
+  max-width: 180px;
+}
+.journal-home .journal-trash-action {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  font-size: 11px;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+.journal-home .journal-feed > .section-heading > .icon-button {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+}
+.account-modal.modal.wide {
+  width: min(1060px, calc(100vw - 48px));
+  padding: 24px 28px;
+  max-height: calc(100dvh - 36px);
+}
+.account-modal .account-settings {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+}
+.account-summary-column,
+.account-security-column {
+  display: grid;
+  gap: 13px;
+  min-width: 0;
+}
+.account-security-column {
+  border: 1px solid #e0e3d2;
+  border-radius: 14px;
+  padding: 18px;
+  background: #fafaf1;
+}
+.account-security-column > h3 {
+  font:
+    20px Lora,
+    serif;
+  margin: 0 0 3px;
+}
+.account-security-column > p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.account-security-column .delete-account-section {
+  padding-top: 10px;
+  margin-top: 0;
+}
+.account-security-column > .button {
+  justify-self: start;
+}
+.account-mobile-tabs {
+  display: none;
+}
+.account-modal .profile-settings {
+  padding: 17px;
+}
+.account-modal .usage-panel {
+  padding: 15px;
+  margin: 0;
+}
+.account-modal .usage-panel p {
+  margin: 8px 0;
+  font-size: 11px;
+}
+.data-loading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px;
+  margin: 12px 0;
+  background: #f0f3e7;
+  color: #859470;
+  border-radius: 10px;
+  font-size: 12px;
+}
+.loading-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid #cad5b9;
+  border-top-color: #74895b;
+  animation: spin 0.8s linear infinite;
+}
+@media (max-width: 700px) {
+  .account-modal.modal.wide {
+    width: min(520px, calc(100vw - 24px));
+    padding: 18px;
+    max-height: calc(100dvh - 24px);
+  }
+  .account-modal .account-settings {
+    display: block;
+  }
+  .account-mobile-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 5px;
+    background: #eef1e4;
+    border-radius: 10px;
+    margin-bottom: 14px;
+  }
+  .account-mobile-tabs button {
+    flex: 1;
+    padding: 9px;
+    border-radius: 7px;
+    font-size: 12px;
+  }
+  .account-mobile-tabs button[aria-pressed='true'] {
+    background: #fffdf6;
+    color: #5a7045;
+  }
+  .account-modal .account-settings > div[data-active='false'] {
+    display: none;
+  }
+  .account-modal .profile-settings {
+    padding: 14px;
+  }
+  .account-modal .profile-identity {
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+  .account-modal .profile-settings form {
+    gap: 8px;
+  }
+  .account-modal .usage-panel {
+    margin-top: 12px;
+  }
+}
+@media (max-width: 600px) {
+  .text-format-tools {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .text-format-tools label {
+    max-width: none;
+    min-width: 130px;
+  }
+  .journal-home .journal-feed > .section-heading {
+    gap: 12px;
+  }
+  .journal-home .journal-trash-action {
+    padding: 9px;
+  }
+  .journal-trash-action span {
+    font-size: 10px;
+  }
+  .journal-home .journal-feed > .section-heading .journal-filters {
+    grid-column: 1/-1;
+    flex-wrap: wrap;
+  }
+  .journal-home .journal-feed .journal-search {
+    max-width: none;
+    flex-basis: 100%;
+  }
+  .journal-home .journal-feed .journal-filters select {
+    width: 100%;
+    max-width: none;
+  }
+  .photo-lightbox .lightbox-toolbar .icon-button {
+    width: 38px;
+    height: 38px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .loading-dot {
+    animation: none;
+  }
+}

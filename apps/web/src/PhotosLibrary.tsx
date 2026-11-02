@@ -15,6 +15,7 @@ export function PhotosLibrary({
   onOpenAlbum: (album: Album) => void;
 }) {
   const [entries, setEntries] = useState<JournalEntry[]>([]),
+    [loading, setLoading] = useState(true),
     [error, setError] = useState(''),
     [query, setQuery] = useState(''),
     [source, setSource] = useState('all'),
@@ -28,6 +29,9 @@ export function PhotosLibrary({
       })
       .catch((e) => {
         if (active && e.status !== 404) setError(e.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
       });
     return () => {
       active = false;
@@ -95,7 +99,13 @@ export function PhotosLibrary({
           {error}
         </p>
       )}
-      <div className="memory-gallery">
+      {loading && (
+        <div className="data-loading" role="status">
+          <span className="loading-dot" />
+          Đang tải những khung hình…
+        </div>
+      )}
+      <div className="memory-gallery" aria-busy={loading}>
         {filtered.slice(0, limit).map((row, i) => (
           <article
             className={
@@ -142,7 +152,7 @@ export function PhotosLibrary({
           </article>
         ))}
       </div>
-      {!filtered.length && (
+      {!loading && !filtered.length && (
         <div className="library-empty">
           <Images size={36} />
           <h2>

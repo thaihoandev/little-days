@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { decorationIds } from './decorations.js';
 import { counterStyleIds } from './counter.js';
+import { fontIds } from './font-catalog.js';
+export { fonts, fontIds } from './font-catalog.js';
 
 const finite = z.number().finite();
 export const dateString = z
@@ -33,7 +35,7 @@ export const elementSchema = z.object({
   assetId: z.string().max(100).nullable(),
   photoStyle: z.enum(['polaroid', 'cutout']).optional(),
   decorationId: z.enum(decorationIds).optional(),
-  font: z.enum(['serif', 'sans', 'hand']),
+  font: z.enum(fontIds),
   fontSize: finite.min(10).max(160),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
   align: z.enum(['left', 'center', 'right']),
@@ -206,7 +208,6 @@ export type ExportJob = {
   audioAsset?: AudioAsset;
 };
 export type JobView = Omit<ExportJob, 'snapshot' | 'assetData' | 'outputKey' | 'audioAsset'>;
-export const fonts = { serif: 'Lora', sans: 'Be Vietnam Pro', hand: 'Patrick Hand' };
 export const themeNames: Record<Theme, string> = {
   polaroid: 'Nhật ký Polaroid',
   letter: 'Thư gửi người thương',

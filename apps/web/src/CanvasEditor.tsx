@@ -276,6 +276,27 @@ export function CanvasEditor({
   useEffect(() => {
     void document.fonts.ready.then(() => setFontReady((n) => n + 1));
   }, []);
+  const usedFonts = Array.from(new Set(page.elements.map((e) => fonts[e.font])))
+    .sort()
+    .join('|');
+  useEffect(() => {
+    let active = true;
+    void Promise.all(
+      usedFonts
+        .split('|')
+        .filter(Boolean)
+        .map((family) => document.fonts.load(`400 32px "${family}"`, 'Thương nhớ Việt Nam')),
+    )
+      .then(() => {
+        if (active) setFontReady((n) => n + 1);
+      })
+      .catch(() => {
+        if (active) setFontReady((n) => n + 1);
+      });
+    return () => {
+      active = false;
+    };
+  }, [usedFonts]);
   const chosen = page.elements.filter((e) => selected.includes(e.id));
   const locked = chosen.some((e) => e.locked);
   const nodeFor = (id: string) => stage.current?.findOne('#' + id);
@@ -478,6 +499,10 @@ export function CanvasEditor({
                   if (e.type === 'image' && !e.locked) {
                     onSelect([e.id]);
                     onEditPhoto(e.id);
+                  }
+                  if (e.type === 'text' && !e.locked) {
+                    onSelect([e.id]);
+                    onEditText();
                   }
                 }}
                 onDragStart={() => {

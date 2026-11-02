@@ -77,6 +77,7 @@ export class RenderQueue {
       backupProtocol: 1,
       musicCatalogVersion: 1,
       photoStylesVersion: 1,
+      fontCatalogVersion: 1,
     });
   }
   async start() {

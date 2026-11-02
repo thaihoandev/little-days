@@ -22,6 +22,8 @@ Leaflet 1.9.4 is distributed under BSD-2-Clause; its original license is include
 
 Be Vietnam Pro, Caveat, Lora and Patrick Hand are bundled through Fontsource. Their original SIL Open Font License 1.1 notices, authors and reserved names are preserved in `licenses/fonts/`. Font licensing is independent from Little Days' code license; do not remove the font notices or rename modified fonts contrary to their reserved-name requirements.
 
+The additional Roboto, Nunito, Quicksand, Playfair Display, Merriweather, Montserrat, Source Sans 3, Comfortaa, Dancing Script and EB Garamond families are also bundled through Fontsource with their original OFL-1.1 notices in `licenses/fonts/`. Latin and Vietnamese subsets are served locally for web and video; no Google Fonts API request is required.
+
 ## Native media and browser components
 
 Sharp/libvips, the Remotion compositor, FFmpeg/FFprobe and downloaded Chromium include separately licensed native components. Package metadata alone is not a complete native-binary audit. Preserve their original distribution notices and the corresponding-source/relinking rights required by the actual binary builds when redistributing installers or containers. A Windows inventory does not establish the contents or obligations of the Linux image used on a server.

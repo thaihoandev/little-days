@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "lockSha256": "2b41897ce6efba1954437399558c91076e58739ca12bd04c0f306804d2b07ad6",
+  "lockSha256": "7c808450ce90165aa7db153b42f72b149643a5e654ced3e752cc75233cbca017",
   "platform": "win32",
   "architecture": "x64",
   "entries": [
@@ -918,6 +918,45 @@
       "review": "declared-license-not-legal-clearance"
     },
     {
+      "name": "@fontsource/comfortaa",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/comfortaa",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@fontsource/dancing-script",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/dancing-script",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@fontsource/eb-garamond",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/eb-garamond",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
       "name": "@fontsource/lora",
       "version": "5.3.0",
       "location": "node_modules/@fontsource/lora",
@@ -931,9 +970,100 @@
       "review": "declared-license-not-legal-clearance"
     },
     {
+      "name": "@fontsource/merriweather",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/merriweather",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@fontsource/montserrat",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/montserrat",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@fontsource/nunito",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/nunito",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
       "name": "@fontsource/patrick-hand",
       "version": "5.3.0",
       "location": "node_modules/@fontsource/patrick-hand",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@fontsource/playfair-display",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/playfair-display",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@fontsource/quicksand",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/quicksand",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@fontsource/roboto",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/roboto",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@fontsource/source-sans-3",
+      "version": "5.3.1",
+      "location": "node_modules/@fontsource/source-sans-3",
       "license": "OFL-1.1",
       "dev": false,
       "optional": false,

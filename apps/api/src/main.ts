@@ -401,6 +401,7 @@ class AppController {
       email: account?.email ?? null,
       emailVerified: !!account?.emailVerifiedAt,
       journalFeatures: 1,
+      fontCatalogVersion: 1,
       ...(await profileView(
         repository,
         req.userId,
@@ -1047,6 +1048,26 @@ class AppController {
       if (!live.length || live.some((w) => w.musicCatalogVersion !== 1))
         throw new HttpException(
           'Bản nhạc này chưa sẵn sàng xuất. Hãy chọn Chuông gió hoặc thử lại sau khi hệ thống xuất video được cập nhật.',
+          503,
+        );
+    }
+    if (
+      album.pages.some(
+        (page) =>
+          input.config.pageIds.includes(page.id) &&
+          page.elements.some(
+            (e) => e.visible !== false && !['serif', 'sans', 'hand'].includes(e.font),
+          ),
+      )
+    ) {
+      const workers = await repository.list<{ lastSeen: number; fontCatalogVersion?: number }>(
+          'worker',
+        ),
+        now = await repository.now(),
+        live = workers.filter((worker) => now - worker.lastSeen < 15000);
+      if (!live.length || live.some((worker) => worker.fontCatalogVersion !== 1))
+        throw new HttpException(
+          'Font mới chưa sẵn sàng xuất video. Hãy cập nhật bộ xuất hiện có hoặc chọn font cũ.',
           503,
         );
     }

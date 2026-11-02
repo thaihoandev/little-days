@@ -19,6 +19,7 @@ import '@fontsource/be-vietnam-pro/vietnamese-400.css';
 import '@fontsource/be-vietnam-pro/latin-400.css';
 import '@fontsource/patrick-hand/latin-400.css';
 import '@fontsource/patrick-hand/vietnamese-400.css';
+import '../scrapbook-renderer/additional-fonts.css';
 
 export type RecapProps = {
   album: Album;

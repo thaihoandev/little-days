@@ -5,6 +5,7 @@ import { UsagePanel } from './UsagePanel.js';
 import { ProfileSettings, type ProfileView } from './ProfileSettings.js';
 
 export type PublicUser = {
+  fontCatalogVersion?: number;
   journalFeatures?: number;
   id: string;
   email: string | null;
@@ -28,6 +29,9 @@ export default function AccountSettings({
     [deletePassword, setDeletePassword] = useState(''),
     [confirmation, setConfirmation] = useState(''),
     [acknowledged, setAcknowledged] = useState(false);
+  const [accountTab, setAccountTab] = useState<'profile' | 'security'>(
+    user?.emailVerified === false ? 'security' : 'profile',
+  );
   const [mode, setMode] = useState<'register' | 'login' | 'forgot'>(initialMode);
   const [email, setEmail] = useState(''),
     [password, setPassword] = useState('');
@@ -52,244 +56,270 @@ export default function AccountSettings({
   if (user?.email)
     return (
       <div className="form-stack account-settings">
-        {typeof user.profileRevision === 'number' && (
-          <ProfileSettings
-            value={{
-              displayName: user.displayName || user.email.split('@')[0],
-              avatarUrl: user.avatarUrl,
-              profileRevision: user.profileRevision,
-            }}
-            onChange={(value) => onProfileChange?.(value)}
-          />
-        )}
-        <UsagePanel />
-        <p>
-          <strong>{user.email}</strong>
-        </p>
-        <p className={'verification-status ' + (user.emailVerified ? 'verified' : '')}>
-          {user.emailVerified ? 'Email đã xác minh' : 'Email chưa xác minh'}
-        </p>
-        {!user.emailVerified && (
+        <div className="account-mobile-tabs" role="group" aria-label="Mục tài khoản">
+          <button
+            type="button"
+            aria-pressed={accountTab === 'profile'}
+            onClick={() => setAccountTab('profile')}
+          >
+            Hồ sơ
+          </button>
+          <button
+            type="button"
+            aria-pressed={accountTab === 'security'}
+            onClick={() => setAccountTab('security')}
+          >
+            Bảo mật
+          </button>
+        </div>
+        <div className="account-summary-column" data-active={accountTab === 'profile'}>
+          {typeof user.profileRevision === 'number' && (
+            <ProfileSettings
+              value={{
+                displayName: user.displayName || user.email.split('@')[0],
+                avatarUrl: user.avatarUrl,
+                profileRevision: user.profileRevision,
+              }}
+              onChange={(value) => onProfileChange?.(value)}
+            />
+          )}
+          <UsagePanel />
+        </div>
+        <div className="account-security-column" data-active={accountTab === 'security'}>
+          <h3>Đăng nhập & bảo mật</h3>
+          <p>
+            <strong>{user.email}</strong>
+          </p>
+          <p className={'verification-status ' + (user.emailVerified ? 'verified' : '')}>
+            {user.emailVerified ? 'Email đã xác minh' : 'Email chưa xác minh'}
+          </p>
+          {!user.emailVerified && (
+            <button
+              className="button quiet"
+              disabled={busy}
+              onClick={() =>
+                void run(async () => {
+                  const result = await api<{ message: string }>('/auth/request-verification', {
+                    method: 'POST',
+                  });
+                  setMessage(result.message);
+                })
+              }
+            >
+              Gửi lại email xác minh
+            </button>
+          )}
+          <p className="muted small">
+            Album chỉ hiển thị với tài khoản của bạn, trừ khi bạn chủ động tạo link chia sẻ.
+          </p>
           <button
             className="button quiet"
             disabled={busy}
-            onClick={() =>
-              void run(async () => {
-                const result = await api<{ message: string }>('/auth/request-verification', {
-                  method: 'POST',
-                });
-                setMessage(result.message);
-              })
-            }
-          >
-            Gửi lại email xác minh
-          </button>
-        )}
-        <p className="muted small">
-          Album chỉ hiển thị với tài khoản của bạn, trừ khi bạn chủ động tạo link chia sẻ.
-        </p>
-        <button
-          className="button quiet"
-          disabled={busy}
-          onClick={() => {
-            setChanging((value) => !value);
-            setError('');
-            setMessage('');
-          }}
-        >
-          Đổi mật khẩu
-        </button>
-        {changing && (
-          <form
-            className="form-stack"
-            onSubmit={(event) => {
-              event.preventDefault();
-              void run(async () => {
-                if (password !== confirmPassword) throw new Error('Hai mật khẩu mới chưa khớp.');
-                const result = await api<{ message: string }>('/auth/change-password', {
-                  method: 'POST',
-                  body: JSON.stringify({ currentPassword, newPassword: password }),
-                });
-                setCurrentPassword('');
-                setPassword('');
-                setConfirmPassword('');
-                setChanging(false);
-                setMessage(result.message);
-              });
-            }}
-          >
-            <label>
-              Mật khẩu hiện tại
-              <input
-                type="password"
-                autoComplete="current-password"
-                required
-                minLength={10}
-                maxLength={200}
-                value={currentPassword}
-                disabled={busy}
-                onChange={(event) => setCurrentPassword(event.target.value)}
-              />
-            </label>
-            <label>
-              Mật khẩu mới
-              <input
-                type="password"
-                autoComplete="new-password"
-                required
-                minLength={10}
-                maxLength={200}
-                value={password}
-                disabled={busy}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-            </label>
-            <label>
-              Nhập lại mật khẩu mới
-              <input
-                type="password"
-                autoComplete="new-password"
-                required
-                minLength={10}
-                maxLength={200}
-                value={confirmPassword}
-                disabled={busy}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-              />
-            </label>
-            <button className="button primary" disabled={busy}>
-              Lưu mật khẩu mới
-            </button>
-            <p className="muted small">Sau khi đổi, các phiên đăng nhập khác cần đăng nhập lại.</p>
-          </form>
-        )}
-        <button
-          className="button quiet"
-          disabled={busy}
-          onClick={() =>
-            void run(async () => {
-              await api('/auth/logout', { method: 'POST' });
-              try {
-                for (const key of Object.keys(localStorage))
-                  if (key.startsWith('scrapbook-draft:' + user.id + ':'))
-                    localStorage.removeItem(key);
-              } catch {
-                /* Logout still succeeds when device storage is unavailable. */
-              }
-              onChange();
-            })
-          }
-        >
-          <LogOut size={17} />
-          Đăng xuất
-        </button>
-        <div className="delete-account-section">
-          <button
-            className="button danger"
-            disabled={busy}
             onClick={() => {
-              setDeleting((value) => !value);
-              setChanging(false);
+              setChanging((value) => !value);
               setError('');
               setMessage('');
             }}
           >
-            Xóa tài khoản
+            Đổi mật khẩu
           </button>
-          {deleting && (
+          {changing && (
             <form
               className="form-stack"
               onSubmit={(event) => {
                 event.preventDefault();
                 void run(async () => {
-                  if (!acknowledged || confirmation !== 'XÓA TÀI KHOẢN')
-                    throw new Error('Hãy xác nhận trước khi xóa.');
-                  const result = await api<{ receipt: string; message: string }>('/auth/account', {
-                    method: 'DELETE',
-                    body: JSON.stringify({ password: deletePassword, confirmation }),
+                  if (password !== confirmPassword) throw new Error('Hai mật khẩu mới chưa khớp.');
+                  const result = await api<{ message: string }>('/auth/change-password', {
+                    method: 'POST',
+                    body: JSON.stringify({ currentPassword, newPassword: password }),
                   });
-                  try {
-                    for (const key of Object.keys(localStorage))
-                      if (key.startsWith('scrapbook-draft:' + user.id + ':'))
-                        localStorage.removeItem(key);
-                  } catch {
-                    /* Server deletion remains active if browser storage is unavailable. */
-                  }
-                  setDeletePassword('');
-                  onChange(result.message, result.receipt);
+                  setCurrentPassword('');
+                  setPassword('');
+                  setConfirmPassword('');
+                  setChanging(false);
+                  setMessage(result.message);
                 });
               }}
             >
-              <h3>Xóa tài khoản vĩnh viễn</h3>
-              <p>
-                Album, kỉ niệm, mẫu riêng, ảnh, nhạc và video của tài khoản sẽ bị xóa. Link chia sẻ
-                và mọi phiên đăng nhập được thu hồi; video đang xuất sẽ bị hủy. Thao tác không thể
-                hoàn tác.
-              </p>
-              <p className="muted small">
-                Các bản sao lưu do người vận hành đã tạo trước đó cần được xử lý riêng theo thời hạn
-                lưu trữ.
-              </p>
               <label>
-                Mật khẩu để xóa tài khoản
+                Mật khẩu hiện tại
                 <input
                   type="password"
                   autoComplete="current-password"
+                  required
                   minLength={10}
                   maxLength={200}
-                  required
-                  value={deletePassword}
+                  value={currentPassword}
                   disabled={busy}
-                  onChange={(event) => setDeletePassword(event.target.value)}
+                  onChange={(event) => setCurrentPassword(event.target.value)}
                 />
               </label>
               <label>
-                Nhập XÓA TÀI KHOẢN để xác nhận
+                Mật khẩu mới
                 <input
-                  value={confirmation}
-                  maxLength={40}
+                  type="password"
+                  autoComplete="new-password"
                   required
+                  minLength={10}
+                  maxLength={200}
+                  value={password}
                   disabled={busy}
-                  onChange={(event) => setConfirmation(event.target.value)}
+                  onChange={(event) => setPassword(event.target.value)}
                 />
               </label>
-              <label className="check-label">
+              <label>
+                Nhập lại mật khẩu mới
                 <input
-                  type="checkbox"
+                  type="password"
+                  autoComplete="new-password"
                   required
-                  checked={acknowledged}
+                  minLength={10}
+                  maxLength={200}
+                  value={confirmPassword}
                   disabled={busy}
-                  onChange={(event) => setAcknowledged(event.target.checked)}
+                  onChange={(event) => setConfirmPassword(event.target.value)}
                 />
-                Tôi hiểu dữ liệu sẽ bị xóa vĩnh viễn
               </label>
-              <button
-                className="button danger"
-                disabled={busy || !acknowledged || confirmation !== 'XÓA TÀI KHOẢN'}
-              >
-                Xác nhận xóa tài khoản vĩnh viễn
+              <button className="button primary" disabled={busy}>
+                Lưu mật khẩu mới
               </button>
-              <button
-                className="text-button"
-                type="button"
-                disabled={busy}
-                onClick={() => setDeleting(false)}
-              >
-                Giữ lại tài khoản
-              </button>
+              <p className="muted small">
+                Sau khi đổi, các phiên đăng nhập khác cần đăng nhập lại.
+              </p>
             </form>
           )}
+          <button
+            className="button quiet"
+            disabled={busy}
+            onClick={() =>
+              void run(async () => {
+                await api('/auth/logout', { method: 'POST' });
+                try {
+                  for (const key of Object.keys(localStorage))
+                    if (key.startsWith('scrapbook-draft:' + user.id + ':'))
+                      localStorage.removeItem(key);
+                } catch {
+                  /* Logout still succeeds when device storage is unavailable. */
+                }
+                onChange();
+              })
+            }
+          >
+            <LogOut size={17} />
+            Đăng xuất
+          </button>
+          <div className="delete-account-section">
+            <button
+              className="button danger"
+              disabled={busy}
+              onClick={() => {
+                setDeleting((value) => !value);
+                setChanging(false);
+                setError('');
+                setMessage('');
+              }}
+            >
+              Xóa tài khoản
+            </button>
+            {deleting && (
+              <form
+                className="form-stack"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void run(async () => {
+                    if (!acknowledged || confirmation !== 'XÓA TÀI KHOẢN')
+                      throw new Error('Hãy xác nhận trước khi xóa.');
+                    const result = await api<{ receipt: string; message: string }>(
+                      '/auth/account',
+                      {
+                        method: 'DELETE',
+                        body: JSON.stringify({ password: deletePassword, confirmation }),
+                      },
+                    );
+                    try {
+                      for (const key of Object.keys(localStorage))
+                        if (key.startsWith('scrapbook-draft:' + user.id + ':'))
+                          localStorage.removeItem(key);
+                    } catch {
+                      /* Server deletion remains active if browser storage is unavailable. */
+                    }
+                    setDeletePassword('');
+                    onChange(result.message, result.receipt);
+                  });
+                }}
+              >
+                <h3>Xóa tài khoản vĩnh viễn</h3>
+                <p>
+                  Album, kỉ niệm, mẫu riêng, ảnh, nhạc và video của tài khoản sẽ bị xóa. Link chia
+                  sẻ và mọi phiên đăng nhập được thu hồi; video đang xuất sẽ bị hủy. Thao tác không
+                  thể hoàn tác.
+                </p>
+                <p className="muted small">
+                  Các bản sao lưu do người vận hành đã tạo trước đó cần được xử lý riêng theo thời
+                  hạn lưu trữ.
+                </p>
+                <label>
+                  Mật khẩu để xóa tài khoản
+                  <input
+                    type="password"
+                    autoComplete="current-password"
+                    minLength={10}
+                    maxLength={200}
+                    required
+                    value={deletePassword}
+                    disabled={busy}
+                    onChange={(event) => setDeletePassword(event.target.value)}
+                  />
+                </label>
+                <label>
+                  Nhập XÓA TÀI KHOẢN để xác nhận
+                  <input
+                    value={confirmation}
+                    maxLength={40}
+                    required
+                    disabled={busy}
+                    onChange={(event) => setConfirmation(event.target.value)}
+                  />
+                </label>
+                <label className="check-label">
+                  <input
+                    type="checkbox"
+                    required
+                    checked={acknowledged}
+                    disabled={busy}
+                    onChange={(event) => setAcknowledged(event.target.checked)}
+                  />
+                  Tôi hiểu dữ liệu sẽ bị xóa vĩnh viễn
+                </label>
+                <button
+                  className="button danger"
+                  disabled={busy || !acknowledged || confirmation !== 'XÓA TÀI KHOẢN'}
+                >
+                  Xác nhận xóa tài khoản vĩnh viễn
+                </button>
+                <button
+                  className="text-button"
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setDeleting(false)}
+                >
+                  Giữ lại tài khoản
+                </button>
+              </form>
+            )}
+          </div>
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
+          {message && (
+            <p className="success-message" role="status">
+              {message}
+            </p>
+          )}
         </div>
-        {error && (
-          <p className="error" role="alert">
-            {error}
-          </p>
-        )}
-        {message && (
-          <p className="success-message" role="status">
-            {message}
-          </p>
-        )}
       </div>
     );
   return (

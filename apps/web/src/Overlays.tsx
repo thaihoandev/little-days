@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Trash2, X } from 'lucide-react';
 import { PhotoDownload } from './PhotoDownload.js';
 let locks = 0,
@@ -66,6 +66,29 @@ export function ConfirmDialog({
     </dialog>
   );
 }
+function LightboxImage({ url, name }: { url: string; name: string }) {
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  return (
+    <div className="lightbox-image" aria-busy={state === 'loading'}>
+      <img
+        src={url}
+        alt={name}
+        onLoad={() => setState('ready')}
+        onError={() => setState('error')}
+      />
+      {state === 'loading' && (
+        <p className="lightbox-loading" role="status">
+          Đang mở ảnh…
+        </p>
+      )}
+      {state === 'error' && (
+        <p className="lightbox-loading" role="alert">
+          Chưa mở được ảnh. Hãy kiểm tra kết nối hoặc quyền xem.
+        </p>
+      )}
+    </div>
+  );
+}
 export function PhotoLightbox({
   photos,
   index,
@@ -106,13 +129,14 @@ export function PhotoLightbox({
         <span>
           {index + 1} / {photos.length}
         </span>
-        <button className="icon-button" aria-label="Đóng ảnh" autoFocus onClick={onClose}>
-          <X />
-        </button>
+        <div className="lightbox-toolbar">
+          <PhotoDownload url={photo.url} id={photo.id} />
+          <button className="icon-button" aria-label="Đóng ảnh" autoFocus onClick={onClose}>
+            <X />
+          </button>
+        </div>
       </header>
-      <div className="lightbox-image">
-        <img src={photo.url} alt={photo.name} />
-      </div>
+      <LightboxImage key={photo.id + photo.url} url={photo.url} name={photo.name} />
       <footer>
         <button
           className="icon-button"
@@ -123,7 +147,6 @@ export function PhotoLightbox({
           <ArrowLeft />
         </button>
         <span className="lightbox-caption">Khoảnh khắc {index + 1}</span>
-        <PhotoDownload url={photo.url} id={photo.id} />
         <button
           className="icon-button"
           aria-label="Ảnh sau"

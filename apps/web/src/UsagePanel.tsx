@@ -10,16 +10,20 @@ type Usage = {
 export function UsagePanel() {
   const [usage, setUsage] = useState<Usage>();
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(true);
   const load = () => {
     setError(false);
+    setLoading(true);
     void api<Usage>('/usage')
       .then(setUsage)
-      .catch(() => setError(true));
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   };
   useEffect(load, []);
   return (
     <section className="usage-panel" aria-label="Hạn mức tài khoản">
       <strong>Hạn mức media và video</strong>
+      {loading && <p role="status">Đang tải dung lượng…</p>}
       {usage && (
         <>
           <p>
@@ -43,7 +47,7 @@ export function UsagePanel() {
         </>
       )}
       {error && <p role="alert">Chưa tải được hạn mức.</p>}
-      <button className="text-button" type="button" onClick={load}>
+      <button className="text-button" type="button" disabled={loading} onClick={load}>
         Cập nhật hạn mức
       </button>
     </section>

@@ -26,7 +26,7 @@ Khóa giao dịch và kiểm tra revision hỗ trợ SQLite/PostgreSQL; các b�
 
 Deploy API/frontend cùng commit; cập nhật worker hiện có nếu dùng xuất MP4. Không cần biến môi trường mới hoặc dịch vụ mới. Việc tạo album không phụ thuộc worker; xuất MP4 vẫn cần worker hiện có hoạt động.
 
-Mã dự án dùng AGPL-3.0-only cùng ngoại lệ liên kết Remotion đã được chủ dự án chấp thuận; xem [LICENSE.md](LICENSE.md). Giao diện có **Giấy phép** và **Mã nguồn**; build sạch tạo liên kết commit/archive tương ứng. Dữ liệu riêng của người dùng không được đưa vào mã nguồn công khai.
+Mã dự án dùng AGPL-3.0-only cùng ngoại lệ liên kết Remotion đã được chủ dự án chấp thuận; xem [LICENSE.md](../LICENSE.md). Giao diện có **Giấy phép** và **Mã nguồn**; build sạch tạo liên kết commit/archive tương ứng. Dữ liệu riêng của người dùng không được đưa vào mã nguồn công khai.
 
 ## Kiểm tra
 

@@ -38,6 +38,9 @@ import {
   Unlock,
   UserRound,
   X,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
 } from 'lucide-react';
 import { MotionConfig, motion } from 'motion/react';
 import {
@@ -54,6 +57,7 @@ import {
   stickerOptions,
   themeNames,
   todayIn,
+  fonts,
 } from '../../../packages/domain/index.js';
 import { api, ApiError } from './api.js';
 import { SelectionTools, Layers, TemplateLibrary } from './LayoutTools.js';
@@ -106,6 +110,37 @@ const VideoModal = lazy(() => import('./VideoModal.js'));
 const VersionHistory = lazy(() => import('./VersionHistory.js'));
 type User = PublicUser;
 
+function TextAlignment({
+  value,
+  onChange,
+}: {
+  value: ScrapElement['align'];
+  onChange: (align: ScrapElement['align']) => void;
+}) {
+  return (
+    <div className="text-align-control" role="group" aria-label="Căn nội dung trong khung chữ">
+      {(
+        [
+          { id: 'left', label: 'Căn trái', Icon: AlignLeft },
+          { id: 'center', label: 'Căn giữa', Icon: AlignCenter },
+          { id: 'right', label: 'Căn phải', Icon: AlignRight },
+        ] as const
+      ).map(({ id, label, Icon }) => (
+        <button
+          key={id}
+          type="button"
+          className="icon-button"
+          aria-label={label}
+          title={label}
+          aria-pressed={value === id}
+          onClick={() => onChange(id)}
+        >
+          <Icon size={18} />
+        </button>
+      ))}
+    </div>
+  );
+}
 function Modal({
   title,
   children,
@@ -120,18 +155,26 @@ function Modal({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const close = useRef(onClose);
+  close.current = onClose;
   useEffect(() => {
     const previous = document.activeElement as HTMLElement;
-    const first = ref.current?.querySelector<HTMLElement>('input,button,textarea,select');
+    const first =
+      ref.current?.querySelector<HTMLElement>('[data-autofocus]') ||
+      ref.current?.querySelector<HTMLElement>('input,button,textarea,select');
     first?.focus();
     const key = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.isComposing) return;
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        close.current();
+      }
       if (e.key === 'Tab') {
         const items = Array.from(
           ref.current?.querySelectorAll<HTMLElement>(
             'button:not(:disabled),input,textarea,select,a[href]',
           ) || [],
-        );
+        ).filter((item) => item.getClientRects().length > 0 && !item.closest('[inert]'));
         if (e.shiftKey && document.activeElement === items[0]) {
           e.preventDefault();
           items.at(-1)?.focus();
@@ -146,7 +189,7 @@ function Modal({
       document.removeEventListener('keydown', key);
       previous?.focus();
     };
-  }, [onClose]);
+  }, []);
   return (
     <div className="modal-backdrop">
       <div
@@ -299,6 +342,7 @@ export default function App() {
           key={active.id}
           initial={active}
           userId={user.id}
+          extendedFonts={user.fontCatalogVersion === 1}
           notify={notify}
           onBack={() => {
             setActive(null);
@@ -716,6 +760,8 @@ function AccountModal({
     <Modal
       title={user?.email ? 'Tài khoản của bạn' : 'Giữ lại góc riêng của mình'}
       onClose={onClose}
+      wide={!!user?.email}
+      className={user?.email ? 'account-modal' : ''}
     >
       <Suspense fallback={<p>Đang mở tài khoản…</p>}>
         <AccountSettings
@@ -734,11 +780,13 @@ function Editor({
   userId,
   onBack,
   notify,
+  extendedFonts,
 }: {
   initial: Album;
   userId: string;
   onBack: () => void;
   notify: (s: string) => void;
+  extendedFonts: boolean;
 }) {
   const doc = useDocument(initial, userId);
   const { album } = doc;
@@ -1741,6 +1789,7 @@ function Editor({
             {selectedElement ? (
               <>
                 <ElementProperties
+                  extendedFonts={extendedFonts}
                   e={selectedElement}
                   keepPhotoRatio={keepPhotoRatio}
                   onKeepPhotoRatio={setKeepPhotoRatio}
@@ -1919,9 +1968,42 @@ function Editor({
           </Modal>
         )}
         {editText && selectedElement && (
-          <Modal title="Viết một lời thương" onClose={() => setEditText(false)}>
+          <Modal
+            title="Viết một lời thương"
+            className="text-editor-modal"
+            onClose={() => setEditText(false)}
+          >
+            <div className="text-format-tools">
+              <TextAlignment
+                value={selectedElement.align}
+                onChange={(align) => patch(selectedElement.id, { align })}
+              />
+              <label>
+                Kiểu chữ
+                <select
+                  aria-label="Kiểu chữ trong nội dung"
+                  value={selectedElement.font}
+                  onChange={(ev) =>
+                    patch(selectedElement.id, { font: ev.target.value as ScrapElement['font'] })
+                  }
+                >
+                  {Object.entries(fonts).map(([id, name]) => (
+                    <option
+                      key={id}
+                      value={id}
+                      disabled={!extendedFonts && !['serif', 'sans', 'hand'].includes(id)}
+                    >
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
             <textarea
               className="large-textarea"
+              aria-label="Nội dung chữ trong sổ"
+              data-autofocus
+              style={{ textAlign: selectedElement.align, fontFamily: fonts[selectedElement.font] }}
               rows={7}
               autoFocus
               maxLength={3000}
@@ -2045,6 +2127,7 @@ function ElementProperties({
   keepPhotoRatio,
   onKeepPhotoRatio,
   onEditPhoto,
+  extendedFonts,
 }: {
   e: ScrapElement;
   patch: (p: Partial<ScrapElement>) => void;
@@ -2052,6 +2135,7 @@ function ElementProperties({
   keepPhotoRatio: boolean;
   onKeepPhotoRatio: (value: boolean) => void;
   onEditPhoto: () => void;
+  extendedFonts: boolean;
 }) {
   const asset = album.assets.find((a) => a.id === e.assetId),
     crop = photoWindow(e, asset);
@@ -2239,9 +2323,15 @@ function ElementProperties({
               value={e.font}
               onChange={(ev) => patch({ font: ev.target.value as ScrapElement['font'] })}
             >
-              <option value="hand">Patrick Hand · Viết tay</option>
-              <option value="serif">Lora · Trang sách</option>
-              <option value="sans">Be Vietnam Pro · Gọn gàng</option>
+              {Object.entries(fonts).map(([id, name]) => (
+                <option
+                  key={id}
+                  value={id}
+                  disabled={!extendedFonts && !['serif', 'sans', 'hand'].includes(id)}
+                >
+                  {name}
+                </option>
+              ))}
             </select>
           </label>
           <div className="two-fields">
@@ -2266,17 +2356,7 @@ function ElementProperties({
               />
             </label>
           </div>
-          <label>
-            Căn chữ
-            <select
-              value={e.align}
-              onChange={(ev) => patch({ align: ev.target.value as ScrapElement['align'] })}
-            >
-              <option value="left">Trái</option>
-              <option value="center">Giữa</option>
-              <option value="right">Phải</option>
-            </select>
-          </label>
+          <TextAlignment value={e.align} onChange={(align) => patch({ align })} />
         </>
       ) : (
         <p className="notice">
