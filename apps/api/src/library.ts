@@ -84,7 +84,7 @@ export class LibraryService {
           : undefined,
       };
     });
-    const owners = [actor, ...grants.map((g) => g.timelineOwner)];
+    const owners = [...new Set([actor, ...grants.map((g) => g.timelineOwner)])].sort();
     if (timeline !== 'all' && !owners.includes(timeline))
       throw new NotFoundException('Không tìm thấy dòng thời gian.');
     return { owners: timeline === 'all' ? owners : [timeline], grants };

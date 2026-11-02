@@ -180,6 +180,31 @@ test('SQL library pages combine books/memories/journal, exact totals, private cu
     const shared = await f.library.page(member, { timeline: owner });
     assert.equal(shared.total, 47 - 2);
     assert.ok(shared.items.every((i) => 'timelineId' in i && i.timelineId === owner));
+    const secondGrant = await f.journal.sharing.invite(stranger, {
+      email: member + '@fixture.test',
+    });
+    await f.journal.sharing.change(member, secondGrant.id, {
+      expectedRevision: 0,
+      action: 'accept',
+    });
+    const originalQuery = f.db.query;
+    let reverse = false;
+    f.db.query = async function (sql, values) {
+      const rows = await originalQuery.call(this, sql, values);
+      return sql.includes('SELECT g.payload AS grant') && reverse ? rows.reverse() : rows;
+    };
+    try {
+      const first = await f.library.page(member, { limit: 7 });
+      reverse = true;
+      const second = await f.library.page(member, { limit: 7, cursor: first.nextCursor! });
+      assert.equal(second.total, 46);
+      assert.equal(second.items.length, 7);
+      const keys = new Set(first.items.map((item) => ('id' in item ? item.id : '')));
+      assert.ok(second.items.every((item) => 'id' in item && !keys.has(item.id)));
+    } finally {
+      f.db.query = originalQuery;
+    }
+    await f.journal.sharing.change(stranger, secondGrant.id, { expectedRevision: 1 }, true);
     await f.journal.sharing.change(owner, grant.id, { expectedRevision: 1 }, true);
     await assert.rejects(f.library.page(member, { timeline: owner }), status(404));
     assert.equal((await f.library.page(member, {})).total, 0);
