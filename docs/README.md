@@ -25,6 +25,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Kế hoạch và hồ sơ
 
+- [Quy tắc agent và cơ sở nghiên cứu](AGENT_GUIDE.md)
 - [Trạng thái triển khai](IMPLEMENTATION_STATUS.md)
 - [Kế hoạch tổng thể](IMPLEMENTATION_PLAN.md)
 - [Roadmap](DELIVERY_ROADMAP.md)
