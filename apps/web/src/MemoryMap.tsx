@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { LocateFixed, Minus, Plus } from 'lucide-react';
 import * as L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { thumbnailUrl } from './thumbnail.js';
 import type { JournalEntry, MilestoneLocation } from '../../../packages/domain/journal.js';
 
 export default function MemoryMap({
@@ -101,7 +102,7 @@ export default function MemoryMap({
       if (photo) {
         const image = document.createElement('img');
         image.loading = 'lazy';
-        image.src = photo.url;
+        image.src = thumbnailUrl(photo.url);
         image.alt = '';
         image.decoding = 'async';
         image.onerror = () => {
@@ -129,7 +130,7 @@ export default function MemoryMap({
         if (thumbnail) {
           const img = document.createElement('img');
           img.loading = 'lazy';
-          img.src = thumbnail.url;
+          img.src = thumbnailUrl(thumbnail.url);
           img.alt = '';
           img.onerror = () => img.remove();
           row.append(img);

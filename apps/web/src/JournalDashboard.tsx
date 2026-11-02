@@ -1,4 +1,13 @@
-import { Fragment, lazy, Suspense, useEffect, useRef, useState, type FormEvent } from 'react';
+import {
+  Fragment,
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from 'react';
 import {
   CalendarDays,
   ChevronLeft,
@@ -46,6 +55,9 @@ import { TimelineHeading } from './TimelineHeading.js';
 import { TimelineTrail } from './TimelineTrail.js';
 import { JournalDetails, JournalTrash } from './JournalDetails.js';
 import { PhotoDownload } from './PhotoDownload.js';
+import { useLibraryPage, useDebounced } from './useLibraryPage.js';
+import type { FeedEntry } from '../../../packages/domain/library.js';
+import { thumbnailUrl } from './thumbnail.js';
 const MemoryMap = lazy(() => import('./MemoryMap.js'));
 
 type Item = JournalEntry & { album?: Album };
@@ -77,6 +89,7 @@ export default function JournalDashboard({
   displayName,
   enhancedReady,
   communityReady = false,
+  libraryReady = false,
 }: {
   albums: Album[];
   mode: 'home' | 'timeline' | 'calendar';
@@ -87,6 +100,7 @@ export default function JournalDashboard({
   displayName?: string;
   enhancedReady: boolean;
   communityReady?: boolean;
+  libraryReady?: boolean;
 }) {
   const [today, setToday] = useState(() =>
     todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone),
@@ -100,6 +114,7 @@ export default function JournalDashboard({
     [trashOpen, setTrashOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false),
     [mapPoint, setMapPoint] = useState<MilestoneLocation | null>(null);
+  const [openingPoint, setOpeningPoint] = useState(false);
   const [sharing, setSharing] = useState<TimelineSharingState>({ ownId: userId, grants: [] }),
     [sharingOpen, setSharingOpen] = useState(false),
     [selectedTimeline, setSelectedTimeline] = useState('all'),
@@ -113,6 +128,7 @@ export default function JournalDashboard({
   ];
   const [chosen, setChosen] = useState<string[]>([]),
     [creatingAlbum, setCreatingAlbum] = useState(false);
+  const chosenItems = useRef(new Map<string, Item>());
   const [photoPreview, setPhotoPreview] = useState<{
     photos: JournalEntry['assets'];
     index: number;
@@ -133,10 +149,25 @@ export default function JournalDashboard({
     [kind, setKind] = useState('all'),
     [limit, setLimit] = useState(20),
     [editing, setEditing] = useState<JournalEntry | null | undefined>();
+  const paged = mode === 'timeline' && libraryReady;
+  const search = useDebounced(query);
+  const pageQuery = new URLSearchParams({
+    limit: '20',
+    q: search,
+    kind,
+    timeline: selectedTimeline,
+    today,
+  });
+  const feed = useLibraryPage<FeedEntry>('/library/feed?' + pageQuery, paged);
+  const points = useLibraryPage<FeedEntry>('/library/map?' + pageQuery, paged && enhancedReady);
+  const fromFeed = (item: FeedEntry): Item => ({
+    ...item,
+    album: item.albumId ? albums.find((a) => a.id === item.albumId) : undefined,
+  });
   useEffect(() => {
     let active = true;
     const version = ++loadVersion.current;
-    Promise.all([api<JournalEntry[]>('/journal'), readSharing()])
+    Promise.all([paged ? Promise.resolve([]) : api<JournalEntry[]>('/journal'), readSharing()])
       .then(([data, state]) => {
         if (active && version === loadVersion.current) {
           setEntries(data);
@@ -154,10 +185,17 @@ export default function JournalDashboard({
       active = false;
       loadVersion.current++;
     };
-  }, []);
+  }, [mode, libraryReady, userId]);
   const refresh = async () => {
     const version = ++loadVersion.current;
-    const [data, state] = await Promise.all([api<JournalEntry[]>('/journal'), readSharing()]);
+    if (paged) {
+      feed.refresh();
+      points.refresh();
+    }
+    const [data, state] = await Promise.all([
+      paged ? Promise.resolve([]) : api<JournalEntry[]>('/journal'),
+      readSharing(),
+    ]);
     if (version !== loadVersion.current) return;
     setEntries(data);
     setSharingReady(!!state);
@@ -175,7 +213,12 @@ export default function JournalDashboard({
   };
   useEffect(() => {
     const update = () => {
-      if (document.visibilityState === 'visible' && editing === undefined && !sharingOpen)
+      if (
+        document.visibilityState === 'visible' &&
+        editing === undefined &&
+        !sharingOpen &&
+        (!paged || (feed.items.length <= 20 && !chosen.length))
+      )
         void refresh().catch((e) => setError(e.message));
     };
     const timer = setInterval(update, 30000);
@@ -184,47 +227,73 @@ export default function JournalDashboard({
       clearInterval(timer);
       window.removeEventListener('focus', update);
     };
-  }, [editing, sharingOpen, selectedTimeline]);
-  useEffect(() => setLimit(20), [query, kind, mode]);
-  const albumItems: Item[] = albums.flatMap((album) => [
-    {
-      id: 'start-' + album.id,
-      title: 'Ngày bắt đầu · ' + album.names.join(' & '),
-      date: album.startDate,
-      note: 'Câu chuyện của hai đứa bắt đầu từ đây.',
-      kind: 'anniversary' as const,
-      annual: true,
-      assets: album.assets.slice(0, 1),
-      revision: album.revision,
-      createdAt: album.createdAt,
-      updatedAt: album.updatedAt,
-      album,
-    },
-    ...album.memories.map((memory) => ({
-      ...memory,
-      id: album.id + ':' + memory.id,
-      note: memory.body,
-      kind: 'memory' as const,
-      annual: false,
-      assets: album.assets.filter((a) => a.id === memory.assetId),
-      revision: album.revision,
-      createdAt: album.createdAt,
-      updatedAt: album.updatedAt,
-      album,
-    })),
+  }, [
+    editing,
+    sharingOpen,
+    selectedTimeline,
+    paged,
+    search,
+    kind,
+    feed.items.length,
+    chosen.length,
   ]);
-  const all: Item[] = [...entries, ...albumItems].filter((e) =>
-      mode === 'timeline'
-        ? selectedTimeline === 'all' || (e.timelineId || userId) === selectedTimeline
-        : e.calendarVisible !== false,
-    ),
-    upcoming = all
-      .map((entry) => ({ entry, next: nextOccurrence(entry, today) }))
-      .filter((i): i is { entry: Item; next: string } => !!i.next)
-      .sort((a, b) => a.next.localeCompare(b.next))
-      .slice(0, 4);
-  const choices: TimelineChoice[] = all
-    .filter((e) => chosen.includes(e.id) && !e.timelineId)
+  useEffect(() => setLimit(20), [query, kind, mode]);
+  const albumItems: Item[] = useMemo(
+    () =>
+      albums.flatMap((album) => [
+        {
+          id: 'start-' + album.id,
+          title: 'Ngày bắt đầu · ' + album.names.join(' & '),
+          date: album.startDate,
+          note: 'Câu chuyện của hai đứa bắt đầu từ đây.',
+          kind: 'anniversary' as const,
+          annual: true,
+          assets: album.assets.slice(0, 1),
+          revision: album.revision,
+          createdAt: album.createdAt,
+          updatedAt: album.updatedAt,
+          album,
+        },
+        ...album.memories.map((memory) => ({
+          ...memory,
+          id: album.id + ':' + memory.id,
+          note: memory.body,
+          kind: 'memory' as const,
+          annual: false,
+          assets: album.assets.filter((a) => a.id === memory.assetId),
+          revision: album.revision,
+          createdAt: album.createdAt,
+          updatedAt: album.updatedAt,
+          album,
+        })),
+      ]),
+    [albums],
+  );
+  const all: Item[] = useMemo(
+    () =>
+      (paged ? feed.items.map(fromFeed) : [...entries, ...albumItems]).filter((e) =>
+        mode === 'timeline'
+          ? selectedTimeline === 'all' || (e.timelineId || userId) === selectedTimeline
+          : e.calendarVisible !== false,
+      ),
+    [paged, feed.items, entries, albumItems, albums, mode, selectedTimeline, userId],
+  );
+  const upcoming = all
+    .map((entry) => ({ entry, next: nextOccurrence(entry, today) }))
+    .filter((i): i is { entry: Item; next: string } => !!i.next)
+    .sort((a, b) => a.next.localeCompare(b.next))
+    .slice(0, 4);
+  useEffect(() => {
+    for (const id of chosen) {
+      const current = all.find((entry) => entry.id === id);
+      if (current) chosenItems.current.set(id, current);
+    }
+    for (const id of chosenItems.current.keys())
+      if (!chosen.includes(id)) chosenItems.current.delete(id);
+  }, [chosen, all]);
+  const choices: TimelineChoice[] = chosen
+    .map((id) => all.find((entry) => entry.id === id) || chosenItems.current.get(id))
+    .filter((e): e is Item => !!e && !e.timelineId)
     .map((entry) => ({
       entry,
       source: entry.album
@@ -247,7 +316,8 @@ export default function JournalDashboard({
               .includes(query.toLocaleLowerCase('vi'))),
       )
       .sort((a, b) => b.date.localeCompare(a.date));
-  const mapEntries = mode === 'timeline' ? filtered : all;
+  const pagedPoints = useMemo(() => points.items.map(fromFeed), [points.items, albums]);
+  const mapEntries = paged ? pagedPoints : mode === 'timeline' ? filtered : all;
   const visible =
     mode === 'calendar'
       ? dayItems
@@ -255,7 +325,9 @@ export default function JournalDashboard({
         ? dayItems.length
           ? dayItems
           : filtered.slice(0, 4)
-        : filtered.slice(0, limit);
+        : paged
+          ? filtered
+          : filtered.slice(0, limit);
   const [year, monthIndex] = month.split('-').map(Number),
     days = monthDays(year, monthIndex - 1);
   const groupedDays = groupJournalDays(
@@ -273,6 +345,24 @@ export default function JournalDashboard({
   const update = (entry: JournalEntry) => {
     loadVersion.current++;
     setEntries((previous) => [entry, ...previous.filter((e) => e.id !== entry.id)]);
+    if (paged) {
+      feed.refresh();
+      points.refresh();
+    }
+  };
+  const openMapEntry = async (entry: JournalEntry) => {
+    if (!paged) {
+      setEditing(entry);
+      return;
+    }
+    setOpeningPoint(true);
+    try {
+      setEditing(await api<JournalEntry>('/journal/' + entry.id));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setOpeningPoint(false);
+    }
   };
   const remove = async (entry: JournalEntry) => {
     if (deletingBusy) return;
@@ -284,6 +374,10 @@ export default function JournalDashboard({
       });
       loadVersion.current++;
       setEntries((previous) => previous.filter((e) => e.id !== entry.id));
+      if (paged) {
+        feed.refresh();
+        points.refresh();
+      }
       setDeleting(null);
     } catch (e) {
       setError((e as Error).message);
@@ -308,7 +402,8 @@ export default function JournalDashboard({
                   : 'Hôm nay của ' + (displayName || 'bạn')}
               </h1>
               <p>
-                {all.filter((e) => !e.album).length} dấu mốc · {albums.length} album
+                {paged ? (feed.stats?.milestones ?? 0) : all.filter((e) => !e.album).length} dấu mốc
+                · {albums.length} album
               </p>
             </>
           )}
@@ -420,17 +515,27 @@ export default function JournalDashboard({
           <div className="journey-numbers" aria-label="Câu chuyện qua những con số">
             <div>
               <Heart size={19} />
-              <strong>{all.filter((e) => !e.album).length}</strong>
+              <strong>
+                {paged ? (feed.stats?.milestones ?? 0) : all.filter((e) => !e.album).length}
+              </strong>
               <span>dấu mốc đã giữ</span>
             </div>
             <div>
               <ImagePlus size={19} />
-              <strong>{new Set(all.flatMap((e) => e.assets.map((a) => a.id))).size}</strong>
+              <strong>
+                {paged
+                  ? (feed.stats?.photos ?? 0)
+                  : new Set(all.flatMap((e) => e.assets.map((a) => a.id))).size}
+              </strong>
               <span>tấm ảnh kỉ niệm</span>
             </div>
             <div>
               <CalendarDays size={19} />
-              <strong>{all.filter((e) => !!nextOccurrence(e, today)).length}</strong>
+              <strong>
+                {paged
+                  ? (feed.stats?.upcoming ?? 0)
+                  : all.filter((e) => !!nextOccurrence(e, today)).length}
+              </strong>
               <span>ngày đang chờ</span>
             </div>
           </div>
@@ -448,6 +553,11 @@ export default function JournalDashboard({
           >
             Tải lại
           </button>
+        </p>
+      )}
+      {paged && feed.error && (
+        <p className="error-banner" role="alert">
+          {feed.error} <button onClick={feed.retry}>Thử lại</button>
         </p>
       )}
       {mode !== 'timeline' && (
@@ -521,7 +631,7 @@ export default function JournalDashboard({
                         {photos.slice(0, 2).map((a) => (
                           <img
                             key={a.id}
-                            src={a.url}
+                            src={thumbnailUrl(a.url)}
                             alt=""
                             loading="lazy"
                             decoding="async"
@@ -620,7 +730,11 @@ export default function JournalDashboard({
                   }}
                 >
                   {entry.assets[0] ? (
-                    <img src={entry.assets[0].url} alt="Một kỉ niệm năm cũ" loading="lazy" />
+                    <img
+                      src={thumbnailUrl(entry.assets[0].url)}
+                      alt="Một kỉ niệm năm cũ"
+                      loading="lazy"
+                    />
                   ) : (
                     <Heart size={28} />
                   )}
@@ -637,7 +751,7 @@ export default function JournalDashboard({
           </div>
         </section>
       )}
-      {mode === 'timeline' && all.some((entry) => !entry.timelineId) && (
+      {mode === 'timeline' && (chosen.length > 0 || all.some((entry) => !entry.timelineId)) && (
         <section className="timeline-import-bar" aria-label="Tạo sổ từ dấu mốc">
           <div>
             <BookOpen size={20} />
@@ -708,6 +822,7 @@ export default function JournalDashboard({
                   <Search size={15} />
                   <input
                     aria-label="Tìm dấu mốc"
+                    maxLength={200}
                     placeholder="Tìm một kỉ niệm…"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -752,7 +867,7 @@ export default function JournalDashboard({
               </button>
             )}
           </header>
-          {loading ? (
+          {(paged ? feed.loading && !feed.items.length : loading) ? (
             <p className="muted" role="status">
               Đang mở những ngày đã lưu…
             </p>
@@ -821,7 +936,7 @@ export default function JournalDashboard({
                             >
                               {entry.assets[0] || entry.album.assets[0] ? (
                                 <img
-                                  src={(entry.assets[0] || entry.album.assets[0]).url}
+                                  src={thumbnailUrl((entry.assets[0] || entry.album.assets[0]).url)}
                                   alt=""
                                   loading="lazy"
                                 />
@@ -901,7 +1016,7 @@ export default function JournalDashboard({
                                     onClick={() => setPhotoPreview({ photos: entry.assets, index })}
                                   >
                                     <img
-                                      src={asset.url}
+                                      src={thumbnailUrl(asset.url)}
                                       alt={asset.name}
                                       loading="lazy"
                                       decoding="async"
@@ -992,8 +1107,12 @@ export default function JournalDashboard({
               </button>
             </div>
           )}
-          {mode === 'timeline' && filtered.length > limit && (
-            <button className="button quiet" onClick={() => setLimit((n) => n + 20)}>
+          {mode === 'timeline' && (paged ? !!feed.nextCursor : filtered.length > limit) && (
+            <button
+              className="button quiet"
+              disabled={paged && feed.loading}
+              onClick={() => (paged ? feed.loadMore() : setLimit((n) => n + 20))}
+            >
               Xem thêm dấu mốc
             </button>
           )}
@@ -1004,7 +1123,11 @@ export default function JournalDashboard({
               <div>
                 <span className="eyebrow">NHỮNG NƠI ĐÃ ĐẾN</span>
                 <h2>Bản đồ kỉ niệm</h2>
-                <p>{mapEntries.filter((e) => e.location).length} dấu mốc đã ghim</p>
+                <p>
+                  {points.loading
+                    ? 'Đang tải địa điểm…'
+                    : `${mapEntries.filter((e) => e.location).length} dấu mốc đã ghim`}
+                </p>
               </div>
               <button
                 className="icon-button"
@@ -1022,9 +1145,20 @@ export default function JournalDashboard({
               <MemoryMap
                 entries={mapEntries}
                 selected={mapPoint}
-                onOpen={(entry) => setEditing(entry)}
+                onOpen={(entry) => void openMapEntry(entry)}
               />
             </Suspense>
+            {openingPoint && <p role="status">Đang mở dấu mốc…</p>}
+            {points.error && (
+              <p role="alert">
+                {points.error} <button onClick={points.retry}>Thử lại</button>
+              </p>
+            )}
+            {points.nextCursor && (
+              <button className="button quiet" disabled={points.loading} onClick={points.loadMore}>
+                Xem thêm địa điểm ({points.items.length}/{points.total})
+              </button>
+            )}
             {!mapEntries.some((e) => e.location) && (
               <p className="map-empty-hint">
                 Ghim địa điểm khi thêm dấu mốc để lưu lại những nơi của hai bạn.
@@ -1051,7 +1185,7 @@ export default function JournalDashboard({
           onClose={() => setMapOpen(false)}
           onOpen={(entry) => {
             setMapOpen(false);
-            setEditing(entry);
+            void openMapEntry(entry);
           }}
         />
       )}
@@ -1184,12 +1318,20 @@ function JournalDialog({
       remaining = [...files];
     setUploadMessage('');
     try {
-      current = await api<JournalEntry>(entry ? '/journal/' + entry.id : '/journal', {
-        method: entry ? 'PATCH' : 'POST',
-        body: JSON.stringify(
-          entry ? { expectedRevision: entry.revision, content } : { ...content, timelineId },
-        ),
-      });
+      if (
+        !entry ||
+        Object.entries(content).some(
+          ([key, value]) =>
+            JSON.stringify(value) !== JSON.stringify(entry[key as keyof JournalEntry]),
+        )
+      )
+        current = await api<JournalEntry>(entry ? '/journal/' + entry.id : '/journal', {
+          method: entry ? 'PATCH' : 'POST',
+          body: JSON.stringify(
+            entry ? { expectedRevision: entry.revision, content } : { ...content, timelineId },
+          ),
+        });
+      if (!current) throw new Error('Chưa lưu được dấu mốc.');
       setEntry(current);
       onUpdated(current);
       const id = current.id;

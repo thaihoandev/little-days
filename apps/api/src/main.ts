@@ -16,6 +16,7 @@ import {
   Patch,
   Post,
   Put,
+  Query,
   Req,
   Res,
   UnauthorizedException,
@@ -71,6 +72,9 @@ import { BackupLock, backupSafeStore } from './backup-lock.js';
 import { JournalService } from './journal.js';
 import { JournalAlbumService } from './journal-album.js';
 import { normalizePhoto } from './images.js';
+import { UploadReceipts, type UploadCommit } from './upload-receipts.js';
+import { LibraryService } from './library.js';
+import { ImagePreviews } from './image-previews.js';
 import { ProfileService } from './profiles.js';
 import { JournalSocial } from './journal-social.js';
 import { profileView } from './profile-view.js';
@@ -93,6 +97,9 @@ const mailer = createMailer(dataDir);
 const opsMonitor = new OpsMonitor(repository, mailer);
 const deletion = new AccountDeletion(repository, jobs, store, dataDir, () => backupLock.paused());
 const journal = new JournalService(repository, store, resources, deletion);
+const uploadReceipts = new UploadReceipts(repository, deletion);
+const library = new LibraryService(repository, journal);
+const imagePreviews = new ImagePreviews(store);
 const profiles = new ProfileService(repository, store, resources, deletion, journal.sharing);
 const journalSocial = new JournalSocial(repository, journal);
 const journalAlbums = new JournalAlbumService(repository, store, resources, deletion);
@@ -141,9 +148,8 @@ async function streamObject(res: Response, key: string, type: string, filename?:
   await pipeline(object.stream, res);
 }
 async function ownedAlbum(req: UserRequest, id: string): Promise<Album> {
-  const album = await repository.get<Album>('album', id);
-  if (!album || (await repository.owner('album', id)) !== req.userId)
-    throw new NotFoundException('Không tìm thấy album.');
+  const album = await repository.owned<Album>('album', id, req.userId);
+  if (!album) throw new NotFoundException('Không tìm thấy album.');
   return album;
 }
 async function ownedAudio(req: UserRequest, albumId: string, audioId: string) {
@@ -228,8 +234,20 @@ class AppController {
   @Get('journal') async journalList(@Req() req: UserRequest) {
     return journal.list(req.userId);
   }
+  @Get('library/feed') async libraryFeed(@Req() req: UserRequest, @Query() query: unknown) {
+    return library.page(req.userId, query);
+  }
+  @Get('library/photos') async libraryPhotos(@Req() req: UserRequest, @Query() query: unknown) {
+    return library.page(req.userId, query, true);
+  }
+  @Get('library/map') async libraryMap(@Req() req: UserRequest, @Query() query: unknown) {
+    return library.page(req.userId, query, false, true);
+  }
   @Get('journal-trash') async journalTrash(@Req() req: UserRequest) {
     return journal.trash(req.userId);
+  }
+  @Get('journal/:id') async journalEntry(@Req() req: UserRequest, @Param('id') id: string) {
+    return journal.read(req.userId, id);
   }
   @Post('journal/:id/restore') async journalRestore(
     @Req() req: UserRequest,
@@ -333,16 +351,22 @@ class AppController {
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File | undefined,
   ) {
-    return journal.upload(req.userId, id, file);
+    return journal.upload(req.userId, id, file, req.headers['x-upload-id']);
   }
   @Get('journal/:id/assets/:assetId') async journalAsset(
     @Req() req: UserRequest,
     @Param('id') id: string,
     @Param('assetId') assetId: string,
     @Res() res: Response,
+    @Query('thumbnail') thumbnail?: string,
   ) {
     const entry = await journal.owned(req.userId, id);
     if (!entry.assets.some((a) => a.id === assetId)) throw new NotFoundException();
+    if (thumbnail === '1')
+      return res
+        .type('webp')
+        .setHeader('Cache-Control', 'private, no-cache')
+        .send(await imagePreviews.get('journal/' + assetId + '.jpg'));
     await streamObject(res, 'journal/' + assetId + '.jpg', 'jpeg');
   }
   @Delete('journal/:id/assets/:assetId') async journalRemoveAsset(
@@ -402,6 +426,7 @@ class AppController {
       emailVerified: !!account?.emailVerifiedAt,
       journalFeatures: 1,
       fontCatalogVersion: 1,
+      libraryVersion: 1,
       ...(await profileView(
         repository,
         req.userId,
@@ -573,7 +598,8 @@ class AppController {
     await repository.remove('layout-template', id);
     return { ok: true };
   }
-  @Get('albums') async albums(@Req() req: UserRequest) {
+  @Get('albums') async albums(@Req() req: UserRequest, @Query('summary') summary?: string) {
+    if (summary === '1') return library.summaries(req.userId);
     return (await repository.list<Album>('album', req.userId)).sort((a, b) =>
       b.updatedAt.localeCompare(a.updatedAt),
     );
@@ -760,6 +786,50 @@ class AppController {
     @Param('id') id: string,
     @UploadedFile() file: Express.Multer.File | undefined,
   ) {
+    await ownedAlbum(req, id);
+    if (!file) throw new BadRequestException('Chọn một ảnh JPEG, PNG hoặc WebP.');
+    return uploadReceipts.run(
+      req.userId,
+      'album:' + id,
+      req.headers['x-upload-id'],
+      file.buffer,
+      async (assetId) => {
+        const album = await ownedAlbum(req, id);
+        return album.assets.some((a) => a.id === assetId) ? album : undefined;
+      },
+      (commit) => this.uploadAlbum(req, id, file, commit),
+    );
+  }
+  @Get('albums/:id/uploads/:uploadId') async albumUploadStatus(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Param('uploadId') uploadId: string,
+    @Query('sha256') digest: string,
+  ) {
+    await ownedAlbum(req, id);
+    return uploadReceipts.status(req.userId, 'album:' + id, uploadId, digest, async (assetId) => {
+      const album = await ownedAlbum(req, id);
+      return album.assets.some((a) => a.id === assetId) ? album : undefined;
+    });
+  }
+  @Get('journal/:id/uploads/:uploadId') async journalUploadStatus(
+    @Req() req: UserRequest,
+    @Param('id') id: string,
+    @Param('uploadId') uploadId: string,
+    @Query('sha256') digest: string,
+  ) {
+    await journal.owned(req.userId, id);
+    return uploadReceipts.status(req.userId, 'journal:' + id, uploadId, digest, async (assetId) => {
+      const entry = await journal.read(req.userId, id);
+      return entry.assets.some((a) => a.id === assetId) ? entry : undefined;
+    });
+  }
+  private async uploadAlbum(
+    req: UserRequest,
+    id: string,
+    file: Express.Multer.File,
+    commit: UploadCommit,
+  ) {
     const started = performance.now();
     const before = await ownedAlbum(req, id);
     if (!file) throw new BadRequestException('Chọn một ảnh JPEG, PNG hoặc WebP.');
@@ -792,7 +862,12 @@ class AppController {
         const expected = album.revision;
         album.revision++;
         album.updatedAt = new Date().toISOString();
-        if (await repository.compareAndSwap('album', id, req.userId, expected, album)) {
+        const saved = await commit(assetId, async () =>
+          (await repository.compareAndSwap('album', id, req.userId, expected, album))
+            ? album
+            : null,
+        );
+        if (saved) {
           logEvent('image_upload_completed', {
             source: 'album',
             bytesReceived: file.size,
@@ -807,7 +882,9 @@ class AppController {
       throw new ConflictException('Album đang thay đổi, vui lòng tải ảnh lại.');
     } catch (e) {
       try {
-        await resources.remove(key);
+        // An uncertain COMMIT must not delete an image that is already published.
+        const current = await repository.get<Album>('album', id);
+        if (!current?.assets.some((asset) => asset.id === assetId)) await resources.remove(key);
       } catch {
         console.error('Deferred image cleanup.');
       }
@@ -821,9 +898,14 @@ class AppController {
     @Param('id') id: string,
     @Param('assetId') assetId: string,
     @Res() res: Response,
+    @Query('thumbnail') thumbnail?: string,
   ) {
-    const album = await ownedAlbum(req, id);
-    if (!album.assets.some((a) => a.id === assetId)) throw new NotFoundException();
+    if (!(await library.ownsAlbumAsset(req.userId, id, assetId))) throw new NotFoundException();
+    if (thumbnail === '1')
+      return res
+        .type('webp')
+        .setHeader('Cache-Control', 'private, no-cache')
+        .send(await imagePreviews.get(`uploads/${assetId}.webp`));
     res.setHeader('Cache-Control', 'private, max-age=3600');
     await streamObject(res, `uploads/${assetId}.webp`, 'webp');
   }

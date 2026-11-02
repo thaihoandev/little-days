@@ -33,15 +33,19 @@ export class Repository {
       this.postgres = new pg.Pool({
         connectionString: this.options.databaseUrl ?? process.env.DATABASE_URL,
       });
-      await this.migrate(() =>
-        this.query(
+      await this.migrate(async () => {
+        await this.query(
           'CREATE TABLE IF NOT EXISTS records (kind TEXT NOT NULL, id TEXT NOT NULL, owner TEXT NOT NULL, payload TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(kind,id))',
-        ).then(() => undefined),
-      );
+        );
+        await this.query('CREATE INDEX IF NOT EXISTS records_owner ON records(kind,owner)');
+      });
     } else {
       const dataDir = this.options.dataDir || process.env.DATA_DIR || 'data';
       mkdirSync(dataDir, { recursive: true });
       this.sqlite = new DatabaseSync(path.resolve(dataDir, 'scrapbook.sqlite'));
+      this.sqlite.function('vi_lower', { deterministic: true }, (value) =>
+        String(value ?? '').toLocaleLowerCase('vi'),
+      );
       this.sqlite.exec(
         'PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL; CREATE TABLE IF NOT EXISTS records (kind TEXT NOT NULL, id TEXT NOT NULL, owner TEXT NOT NULL, payload TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(kind,id)); CREATE INDEX IF NOT EXISTS records_owner ON records(kind,owner);',
       );
@@ -154,6 +158,14 @@ export class Repository {
   async owner(kind: string, id: string): Promise<string | undefined> {
     return (await this.query('SELECT owner FROM records WHERE kind=? AND id=?', [kind, id]))[0]
       ?.owner as string | undefined;
+  }
+  async owned<T>(kind: string, id: string, owner: string): Promise<T | undefined> {
+    const rows = await this.query('SELECT payload FROM records WHERE kind=? AND id=? AND owner=?', [
+      kind,
+      id,
+      owner,
+    ]);
+    return rows[0] ? (JSON.parse(String(rows[0].payload)) as T) : undefined;
   }
   async list<T>(kind: string, owner?: string): Promise<T[]> {
     const rows = await this.query(

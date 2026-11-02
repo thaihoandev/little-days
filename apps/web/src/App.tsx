@@ -76,7 +76,8 @@ import { useAppRoute, sectionPaths, type AppSection } from './useAppRoute.js';
 import { UserAvatar } from './UserAvatar.js';
 import { PhotosLibrary } from './PhotosLibrary.js';
 import type { ProfileView } from './ProfileSettings.js';
-import { uploadImage, uploadBatch } from './image-upload.js';
+import { uploadImage, uploadBatch, configureUploads } from './image-upload.js';
+import { configureThumbnails, thumbnailUrl } from './thumbnail.js';
 import { ConfirmDialog, PhotoLightbox } from './Overlays.js';
 import { decorationCatalog } from '../../../packages/domain/decorations.js';
 import {
@@ -248,7 +249,11 @@ export default function App() {
         return;
       }
       const session = await api<User>('/session');
-      const library = await api<Album[]>('/albums');
+      configureUploads(session.libraryVersion === 1);
+      configureThumbnails(session.libraryVersion === 1);
+      const library = await api<Album[]>(
+        '/albums' + (session.libraryVersion === 1 ? '?summary=1' : ''),
+      );
       setUser(session);
       setAlbums(library);
     } catch (e) {
@@ -485,6 +490,7 @@ export default function App() {
               displayName={user.email ? user.displayName : undefined}
               enhancedReady={typeof user.profileRevision === 'number'}
               communityReady={user.journalFeatures === 1}
+              libraryReady={user.libraryVersion === 1}
               albums={albums}
               mode={section as 'home' | 'timeline' | 'calendar'}
               onOpenAlbum={openAlbum}
@@ -524,7 +530,7 @@ export default function App() {
                         aria-label={`Mở ${album.title}`}
                       >
                         <div className="cover-preview">
-                          <PagePreview album={album} width={246} />
+                          <PagePreview album={album} width={246} thumbnails />
                         </div>
                         <span className="cover-tag">{themeNames[album.theme]}</span>
                       </button>
@@ -532,7 +538,10 @@ export default function App() {
                         <button onClick={() => openAlbum(album)}>
                           <h3>{album.title}</h3>
                           <p>
-                            {album.names.join(' & ')} <span>·</span> {album.pages.length} trang
+                            {album.names.join(' & ')} <span>·</span>{' '}
+                            {(album as Album & { pageCount?: number }).pageCount ??
+                              album.pages.length}{' '}
+                            trang
                           </p>
                         </button>
                         <button
@@ -568,6 +577,7 @@ export default function App() {
             <PhotosLibrary
               key={user?.id}
               albums={albums}
+              libraryReady={user?.libraryVersion === 1}
               onAlbums={() => setSection('albums')}
               onOpenAlbum={openAlbum}
             />
@@ -815,6 +825,7 @@ function Editor({
   const [video, setVideo] = useState<Album | null>(null);
   const [share, setShare] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [failedUploads, setFailedUploads] = useState<File[]>([]);
   const [uploadMessage, setUploadMessage] = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
   const [localError, setLocalError] = useState('');
@@ -984,13 +995,14 @@ function Editor({
       reportLocalError(e);
     }
   };
-  const upload = async (files: FileList | null) => {
-    if (!files?.length) return;
+  const upload = async (files: FileList | File[] | null) => {
+    if (!files?.length || uploading) return;
+    const picked = Array.from(files);
+    setFailedUploads((previous) => [...new Set([...previous, ...picked])]);
     setUploading(true);
     setUploadMessage('Đang lưu các thay đổi trước khi tải ảnh…');
     await safe(async () => {
       await doc.flush();
-      const picked = Array.from(files);
       let completed = 0;
       const batch = await uploadBatch<Album>(picked, async (file, index) => {
         const updated = await uploadImage<Album>(`/albums/${album.id}/assets`, file, (p) =>
@@ -1003,6 +1015,10 @@ function Editor({
       });
       if (batch.latest) doc.accept(batch.latest);
       const failed = batch.results.filter((r) => r.error);
+      setFailedUploads((previous) => [
+        ...previous.filter((file) => !picked.includes(file)),
+        ...failed.map((r) => r.file),
+      ]);
       if (failed.length)
         throw new Error(`Đã lưu ${completed}/${picked.length} ảnh. ${failed[0].error!.message}`);
       notify('Ảnh đã được tối ưu và lưu. Chạm vào ảnh để thêm vào trang.');
@@ -1330,6 +1346,25 @@ function Editor({
                   <strong>{uploading ? 'Đang lưu ảnh…' : 'Thêm ảnh của hai bạn'}</strong>
                   <span>JPEG, PNG, WebP · tối đa 20 MB/ảnh</span>
                 </button>
+                {failedUploads.length > 0 && !uploading && (
+                  <div className="upload-retry-list" role="status">
+                    <p>{failedUploads.length} ảnh chưa tải xong. Ảnh đã lưu được giữ nguyên.</p>
+                    {failedUploads.map((file, index) => (
+                      <button
+                        key={index}
+                        className="button quiet"
+                        onClick={() => void upload([file])}
+                      >
+                        Thử lại ảnh {index + 1}
+                      </button>
+                    ))}
+                    {failedUploads.length > 1 && (
+                      <button className="button quiet" onClick={() => void upload(failedUploads)}>
+                        Thử lại các ảnh lỗi
+                      </button>
+                    )}
+                  </div>
+                )}
                 <div className="media-grid">
                   {album.assets.map((a) => (
                     <button
@@ -1349,7 +1384,7 @@ function Editor({
                         )
                       }
                     >
-                      <img src={a.url} alt={a.name} />
+                      <img src={thumbnailUrl(a.url)} alt={a.name} loading="lazy" decoding="async" />
                     </button>
                   ))}
                 </div>

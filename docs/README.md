@@ -5,6 +5,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 ## Sử dụng
 
 - [Nhập chữ, font mới, hồ sơ và giao diện](INTERFACE_REFINEMENT.md)
+- [Upload phục hồi, phân trang và hiệu năng](PERFORMANCE.md)
 - [Lịch, timeline, mẫu sổ và nhạc](CALENDAR_TIMELINE.md)
 - [Cộng tác dòng thời gian](TIMELINE_COLLABORATION.md)
 - [Tạo scrapbook từ dấu mốc](TIMELINE_SCRAPBOOK.md)

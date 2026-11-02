@@ -2,6 +2,8 @@
 
 Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → staging/PostgreSQL → load test và pilot, cùng cải thiện editor/video và quy trình backup.
 
+- [x] Đợt 1 hiệu năng: receipt upload và đối soát khi mất phản hồi, thử lại riêng ảnh lỗi; phân trang SQL timeline/ảnh, album summary, ảnh xem nhanh riêng tư, truy vấn cộng tác theo lô và giảm vẽ lại bản đồ. Xem `PERFORMANCE.md` về phạm vi và số đo fixture.
+
 - [x] Đợt ưu tiên 02/11: lịch sử/thùng rác dấu mốc, bình luận/cảm xúc, Ngày này năm trước; thư viện ảnh mới, ẩn tên file và tải ảnh xuống. Xem `MEMORY_COMMUNITY.md`.
 
 - [x] Upload ảnh chuẩn hóa trước khi gửi/tiến trình/hai request đồng thời; timeline gom ngày và phân biệt album/dấu mốc; hồ sơ tên/avatar, vị trí và bản đồ miễn phí tải theo yêu cầu. Chi tiết và đề xuất tiếp theo: `UPDATE_2026_10_31.md`.

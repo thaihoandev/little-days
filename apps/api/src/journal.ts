@@ -22,6 +22,7 @@ import { AccountDeletion, UPLOAD_TIMEOUT_MS } from './account-deletion.js';
 import { logEvent } from './observability.js';
 import { TimelineSharing } from './timeline-sharing.js';
 import { profileView } from './profile-view.js';
+import { UploadReceipts, type UploadCommit } from './upload-receipts.js';
 
 export class JournalService {
   readonly sharing: TimelineSharing;
@@ -131,6 +132,10 @@ export class JournalService {
     const entry = await this.db.get<JournalEntry>('journal', id);
     if (!entry || entry.deletedAt) throw new NotFoundException('Không tìm thấy dấu mốc.');
     return entry;
+  }
+  async read(actor: string, id: string) {
+    const owner = await this.ownerOf(actor, id);
+    return this.present(actor, owner, await this.owned(actor, id));
   }
   async create(actor: string, body: unknown) {
     const content = journalContentSchema.parse(body);
@@ -244,7 +249,35 @@ export class JournalService {
       await this.deletion.end(operation);
     }
   }
-  async upload(actor: string, id: string, file: Express.Multer.File | undefined) {
+  async upload(
+    actor: string,
+    id: string,
+    file: Express.Multer.File | undefined,
+    uploadId?: unknown,
+  ) {
+    await this.owned(actor, id);
+    if (!file) throw new BadRequestException('Chọn một ảnh.');
+    return new UploadReceipts(this.db, this.deletion).run(
+      actor,
+      'journal:' + id,
+      uploadId,
+      file.buffer,
+      async (assetId) => {
+        const owner = await this.ownerOf(actor, id),
+          entry = await this.owned(actor, id);
+        return entry.assets.some((a) => a.id === assetId)
+          ? this.present(actor, owner, entry)
+          : undefined;
+      },
+      (commit) => this.uploadPhoto(actor, id, file, commit),
+    );
+  }
+  private async uploadPhoto(
+    actor: string,
+    id: string,
+    file: Express.Multer.File,
+    commit: UploadCommit,
+  ) {
     const started = performance.now();
     const owner = await this.ownerOf(actor, id);
     if (!file || file.size > 20 * 1048576)
@@ -284,14 +317,16 @@ export class JournalService {
             },
           ],
         };
-        const saved = await this.withTimeline(actor, owner, async () => {
-          if ((await this.owned(actor, id)).revision !== current.revision) return null;
-          await this.checkpoint(owner, owner, current, 'previous');
-          if (!(await this.db.compareAndSwap('journal', id, owner, current.revision, entry)))
-            return null;
-          await this.checkpoint(owner, actor, entry, 'photo');
-          return this.present(actor, owner, entry);
-        });
+        const saved = await this.withTimeline(actor, owner, () =>
+          commit(assetId, async () => {
+            if ((await this.owned(actor, id)).revision !== current.revision) return null;
+            await this.checkpoint(owner, owner, current, 'previous');
+            if (!(await this.db.compareAndSwap('journal', id, owner, current.revision, entry)))
+              return null;
+            await this.checkpoint(owner, actor, entry, 'photo');
+            return this.present(actor, owner, entry);
+          }),
+        );
         if (saved) {
           logEvent('image_upload_completed', {
             source: 'milestone',
@@ -306,7 +341,12 @@ export class JournalService {
       }
       throw new ConflictException('Dấu mốc đang thay đổi. Vui lòng tải ảnh lại.');
     } catch (error) {
-      await this.resources.remove(key).catch(() => logEvent('journal_media_cleanup_deferred'));
+      try {
+        const current = await this.db.get<JournalEntry>('journal', id);
+        if (!current?.assets.some((a) => a.id === assetId)) await this.resources.remove(key);
+      } catch {
+        logEvent('journal_media_cleanup_deferred');
+      }
       throw error;
     } finally {
       await this.deletion.end(operation);

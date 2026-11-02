@@ -7,6 +7,26 @@
   border-radius: 10px;
   align-self: start;
 }
+.upload-retry-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #d9dfcb;
+  border-radius: 10px;
+  background: #f4f5e9;
+}
+.upload-retry-list p {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.upload-retry-list .button {
+  font-size: 11px;
+  padding: 8px 10px;
+}
 .text-align-control .icon-button {
   width: 36px;
   height: 34px;

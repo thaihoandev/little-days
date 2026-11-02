@@ -179,6 +179,7 @@ Kiểm tra bổ sung đã qua: 12 luồng UI cô lập desktop/mobile; 8 unit te
 ## Tài liệu
 
 - `README.md`: hướng dẫn chạy và kiểm thử.
+- `PERFORMANCE.md`: upload phục hồi, phân trang timeline/ảnh, thumbnail riêng tư và benchmark fixture lớn.
 - `BACKUP_RESTORE.md`: lịch sử phiên bản, lệnh backup/restore, giới hạn và quy trình kiểm tra sau phục hồi.
 - `SCHEDULED_BACKUP.md`: GitHub Actions backup mã hóa theo lịch, cấu hình secrets/variables, giới hạn quota và phục hồi từ artifact.
 - `AUTH_EMAIL.md`: luồng tài khoản, hộp thư local, SMTP, hạn token và rate-limit.

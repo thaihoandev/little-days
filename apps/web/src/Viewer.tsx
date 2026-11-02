@@ -10,6 +10,7 @@ import {
   daysTogether,
 } from '../../../packages/domain/index.js';
 import { PageArtwork } from '../../../packages/scrapbook-renderer/index.js';
+import { thumbnailUrl } from './thumbnail.js';
 import { useBodyScrollLock } from './Overlays.js';
 import { LegalLinks } from './LegalLinks.js';
 
@@ -17,22 +18,32 @@ export function PagePreview({
   album,
   index = 0,
   width = 300,
+  thumbnails = false,
 }: {
   album: Album;
   index?: number;
   width?: number;
+  thumbnails?: boolean;
 }) {
   return (
     <div style={{ width, height: (width / PAGE_WIDTH) * PAGE_HEIGHT, overflow: 'hidden' }}>
       <div style={{ transform: `scale(${width / PAGE_WIDTH})`, transformOrigin: 'top left' }}>
         <PageArtwork
           page={album.pages[index]}
-          album={album}
+          album={
+            thumbnails
+              ? { ...album, assets: album.assets.map((a) => ({ ...a, url: thumbnailUrl(a.url) })) }
+              : album
+          }
+          imageComponent={thumbnails ? PreviewImage : undefined}
           referenceDate={todayIn(album.timezone)}
         />
       </div>
     </div>
   );
+}
+function PreviewImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  return <img {...props} loading="lazy" decoding="async" />;
 }
 export function Viewer({ album, onClose }: { album: Album; onClose?: () => void }) {
   useBodyScrollLock();

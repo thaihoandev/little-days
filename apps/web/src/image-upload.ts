@@ -1,4 +1,4 @@
-import { ApiError } from './api.js';
+import { api, ApiError } from './api.js';
 
 export type UploadProgress = {
   phase: 'prepare' | 'upload' | 'save';
@@ -6,6 +6,12 @@ export type UploadProgress = {
   total: number;
 };
 let preparationQueue: Promise<unknown> = Promise.resolve();
+let receiptSupport = false;
+export function configureUploads(enabled: boolean) {
+  receiptSupport = enabled;
+}
+const preparedFiles = new WeakMap<File, Map<number, Promise<File>>>();
+const memoryReceipts = new Map<string, { id: string; until: number }>();
 /** Decode at most one large image at a time, while other requests can upload concurrently. */
 export function prepareImage(file: File, maxEdge = 1600): Promise<File> {
   const task = preparationQueue
@@ -62,52 +68,139 @@ export async function uploadImage<T>(
   maxEdge = 1600,
 ): Promise<T> {
   progress?.({ phase: 'prepare', loaded: 0, total: source.size });
-  const file = await prepareImage(source, maxEdge),
+  let prepared = preparedFiles.get(source);
+  if (!prepared) {
+    prepared = new Map();
+    preparedFiles.set(source, prepared);
+  }
+  if (!prepared.has(maxEdge)) prepared.set(maxEdge, prepareImage(source, maxEdge));
+  const file = await prepared.get(maxEdge)!,
     body = new FormData();
   body.append('file', file);
   for (const [key, value] of Object.entries(fields)) body.append(key, value);
-  return new Promise<T>((resolve, reject) => {
-    const request = new XMLHttpRequest();
-    request.open('POST', '/api' + path);
-    request.withCredentials = true;
-    request.timeout = 180000;
-    request.upload.onprogress = (event) =>
-      progress?.({
-        phase: event.lengthComputable && event.loaded === event.total ? 'save' : 'upload',
-        loaded: event.loaded,
-        total: event.lengthComputable ? event.total : file.size,
-      });
-    request.onerror = () =>
-      reject(
-        new Error('Kết nối bị gián đoạn. Tải lại thư viện để kiểm tra ảnh trước khi thử lại.'),
+  const reliable = receiptSupport && /^\/(albums|journal)\/[0-9a-f-]+\/assets$/.test(path);
+  let receiptKey = '',
+    uploadId = '',
+    digestHex = '',
+    reused = false;
+  if (reliable) {
+    const digest = await crypto.subtle.digest('SHA-256', await file.arrayBuffer());
+    digestHex = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
+    const identity = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(JSON.stringify([source.name, source.size, source.lastModified])),
+    );
+    const identityHex = Array.from(new Uint8Array(identity), (b) =>
+      b.toString(16).padStart(2, '0'),
+    ).join('');
+    receiptKey = 'little-days-upload:' + path + ':' + digestHex + ':' + identityHex;
+    try {
+      const old = JSON.parse(sessionStorage.getItem(receiptKey) || 'null');
+      uploadId = old && old.until > Date.now() ? old.id : '';
+    } catch {
+      /* A retry within this call still uses one token when storage is blocked. */
+    }
+    const cached = memoryReceipts.get(receiptKey);
+    reused = !!uploadId || !!(cached && cached.until > Date.now());
+    uploadId ||= cached && cached.until > Date.now() ? cached.id : crypto.randomUUID();
+    for (const [key, value] of memoryReceipts)
+      if (value.until < Date.now()) memoryReceipts.delete(key);
+    memoryReceipts.set(receiptKey, { id: uploadId, until: Date.now() + 86400000 });
+    try {
+      sessionStorage.setItem(
+        receiptKey,
+        JSON.stringify({ id: uploadId, until: Date.now() + 86400000 }),
       );
-    request.ontimeout = () =>
-      reject(
-        new Error('Máy chủ phản hồi quá lâu. Tải lại thư viện để kiểm tra ảnh trước khi thử lại.'),
-      );
-    request.onload = () => {
-      let data: any;
-      try {
-        data = JSON.parse(request.responseText);
-      } catch {
-        reject(new Error('Chưa nhận được kết quả tải ảnh. Hãy tải lại thư viện.'));
-        return;
-      }
-      if (request.status < 200 || request.status >= 300) {
-        reject(
-          new ApiError(
-            request.status,
-            Array.isArray(data.message)
-              ? data.message.join(', ')
-              : data.message || 'Chưa tải được ảnh.',
-          ),
+    } catch {}
+  }
+  const send = () =>
+    new Promise<T>((resolve, reject) => {
+      const request = new XMLHttpRequest();
+      request.open('POST', '/api' + path);
+      request.withCredentials = true;
+      request.timeout = 180000;
+      if (uploadId) request.setRequestHeader('X-Upload-Id', uploadId);
+      request.upload.onprogress = (event) =>
+        progress?.({
+          phase: event.lengthComputable && event.loaded === event.total ? 'save' : 'upload',
+          loaded: event.loaded,
+          total: event.lengthComputable ? event.total : file.size,
+        });
+      request.onerror = () =>
+        reject(new ApiError(0, 'Kết nối bị gián đoạn. Bạn có thể thử lại ảnh chưa tải xong.'));
+      request.ontimeout = () =>
+        reject(new ApiError(0, 'Máy chủ phản hồi quá lâu. Bạn có thể thử lại ảnh chưa tải xong.'));
+      request.onload = () => {
+        let data: any;
+        try {
+          data = JSON.parse(request.responseText);
+        } catch {
+          reject(
+            new ApiError(
+              request.status >= 500 ? request.status : 0,
+              'Chưa nhận được kết quả tải ảnh. Hãy thử lại.',
+            ),
+          );
+          return;
+        }
+        if (request.status < 200 || request.status >= 300) {
+          reject(
+            new ApiError(
+              request.status,
+              Array.isArray(data.message)
+                ? data.message.join(', ')
+                : data.message || 'Chưa tải được ảnh.',
+              data.code,
+            ),
+          );
+          return;
+        }
+        resolve(data as T);
+      };
+      request.send(body);
+    });
+  for (let attempt = 0; ; attempt++) {
+    try {
+      let result: T;
+      if (reliable && (attempt > 0 || reused)) {
+        const status = await api<{ state: 'missing' | 'pending' | 'completed'; result?: T }>(
+          path.replace(/\/assets$/, '/uploads/') + uploadId + '?sha256=' + digestHex,
+          { signal: AbortSignal.timeout(20000) },
         );
-        return;
+        if (status.state === 'pending')
+          throw new ApiError(
+            409,
+            'Ảnh vẫn đang được lưu. Hãy thử lại sau ít giây.',
+            'UPLOAD_PENDING',
+          );
+        result = status.state === 'completed' ? status.result! : await send();
+      } else result = await send();
+      if (receiptKey)
+        try {
+          sessionStorage.removeItem(receiptKey);
+        } catch {}
+      memoryReceipts.delete(receiptKey);
+      preparedFiles.delete(source);
+      return result;
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 410) {
+        memoryReceipts.delete(receiptKey);
+        try {
+          sessionStorage.removeItem(receiptKey);
+        } catch {}
       }
-      resolve(data as T);
-    };
-    request.send(body);
-  });
+      const transient =
+        error instanceof TypeError ||
+        (error instanceof DOMException && error.name === 'TimeoutError') ||
+        (error instanceof ApiError &&
+          (error.status === 0 ||
+            [500, 502, 503, 504].includes(error.status) ||
+            error.code === 'UPLOAD_PENDING'));
+      if (!reliable || !transient || attempt >= 3) throw error;
+      progress?.({ phase: 'save', loaded: file.size, total: file.size });
+      await new Promise((resolve) => setTimeout(resolve, Math.min(8000, 1000 * 2 ** attempt)));
+    }
+  }
 }
 export async function uploadBatch<T extends { revision: number }>(
   files: File[],

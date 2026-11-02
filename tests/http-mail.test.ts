@@ -95,30 +95,46 @@ test('HTTP mail hides provider response secrets and rejects error/malformed/over
     mail.close();
   }
 });
-test('HTTP mail aborts stalled requests and close cancels in-flight sends without leaking transport errors', async () => {
-  const request: typeof fetch = async (_input, init) =>
-    new Promise((_resolve, reject) => {
-      if (init?.signal?.aborted) {
-        reject(new Error('secret-fixture-transport'));
-        return;
-      }
-      init?.signal?.addEventListener('abort', () => reject(new Error('secret-fixture-transport')), {
-        once: true,
+test(
+  'HTTP mail aborts stalled requests and close cancels in-flight sends without leaking transport errors',
+  { timeout: 10000 },
+  async () => {
+    // A real fetch retains its request signal. The mock must retain it across GC too.
+    const signals = new Set<AbortSignal>();
+    const request: typeof fetch = async (_input, init) =>
+      new Promise((_resolve, reject) => {
+        if (init?.signal?.aborted) {
+          reject(new Error('secret-fixture-transport'));
+          return;
+        }
+        if (init?.signal) signals.add(init.signal);
+        init?.signal?.addEventListener(
+          'abort',
+          () => {
+            if (init?.signal) signals.delete(init.signal);
+            reject(new Error('secret-fixture-transport'));
+          },
+          {
+            once: true,
+          },
+        );
       });
-    });
-  const timer = setTimeout(() => {}, 200);
-  try {
-    const mail = createMailer('unused', config('brevo'), { fetch: request, timeoutMs: 20 });
-    await assert.rejects(mail.send(message), /unavailable_or_invalid_response/);
-    mail.close();
-    const closing = createMailer('unused', config('resend'), { fetch: request });
-    const pending = closing.send(message);
-    closing.close();
-    await assert.rejects(pending, /unavailable_or_invalid_response/);
-  } finally {
-    clearTimeout(timer);
-  }
-});
+    // AbortSignal.timeout is unref'ed; keep the mock alive even under a busy test runner.
+    const timer = setInterval(() => {}, 100);
+    try {
+      const mail = createMailer('unused', config('brevo'), { fetch: request, timeoutMs: 20 });
+      await assert.rejects(mail.send(message), /unavailable_or_invalid_response/);
+      mail.close();
+      const closing = createMailer('unused', config('resend'), { fetch: request });
+      const pending = closing.send(message);
+      closing.close();
+      await assert.rejects(pending, /unavailable_or_invalid_response/);
+    } finally {
+      clearInterval(timer);
+      signals.clear();
+    }
+  },
+);
 test('provider rejection invalidates undelivered auth token; accepted HTTPS receipts keep single-use verification/reset', async () => {
   const db = new Repository({
     dataDir: path.resolve('test-results/http-mail-auth', crypto.randomUUID()),

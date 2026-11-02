@@ -46,6 +46,7 @@ try {
       'tests/profile-location.test.ts',
       'tests/journal-community.test.ts',
       'tests/journal-album.test.ts',
+      'tests/library-performance.test.ts',
     ]),
   );
   results.push(await run('api', ['scripts/smoke-api.ts']));

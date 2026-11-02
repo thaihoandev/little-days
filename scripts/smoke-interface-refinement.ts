@@ -210,7 +210,7 @@ try {
           multipart: { file: { name: 'photo.png', mimeType: 'image/png', buffer: picture } },
         })
       ).json();
-      await page.route('**/api/journal', async (r) => {
+      await page.route('**/api/library/photos?**', async (r) => {
         if (r.request().method() === 'GET')
           await new Promise((resolve) => setTimeout(resolve, 700));
         await r.continue();
