@@ -54,4 +54,3 @@ Tile trang trí dùng khung ảnh và padding đồng nhất. Thumbnail cắt kh
 CI/deploy và dữ liệu thật phải được xác nhận riêng khi bàn giao; kiểm thử tự động không là pilot người thật.
 
 Kết quả local 03/11/2026: 140 unit đạt; API và PostgreSQL/API/load/backup đạt, sau đó các ca mới được kiểm tra lại trên schema PostgreSQL riêng (9 đạt, 1 ca backup SQLite được bỏ qua có lý do). Suite Góc chúng mình đạt tại 1600/390/320px, gồm mất phản hồi rồi reload/gửi lại không nhân đôi. Các suite hồi quy design, shared-plans và journal đạt; typecheck, build, production smoke và format đạt. Container/service QA do agent tạo đã được dọn; không gửi mail thật hoặc dùng database/ảnh người dùng thật.
-

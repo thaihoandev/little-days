@@ -197,11 +197,14 @@ try {
       await marker.click();
       await expect(page.locator('.map-memory-row img')).toBeVisible();
       const thumb = await page.locator('.map-memory-row img').evaluate((img) => ({
-        w: img.getBoundingClientRect().width,
-        h: img.getBoundingClientRect().height,
+        // DOMRect subtraction can contain subpixel floating-point noise on translated Leaflet layers.
+        w: Number(img.getBoundingClientRect().width.toFixed(3)),
+        h: Number(img.getBoundingClientRect().height.toFixed(3)),
+        cssWidth: getComputedStyle(img).width,
+        cssHeight: getComputedStyle(img).height,
         fit: getComputedStyle(img).objectFit,
       }));
-      assert.deepEqual(thumb, { w: 42, h: 42, fit: 'cover' });
+      assert.deepEqual(thumb, { w: 42, h: 42, cssWidth: '42px', cssHeight: '42px', fit: 'cover' });
       await page.screenshot({ path: 'test-results/design-spaces-map-' + mobile + '.png' });
       await page.getByRole('button', { name: 'Chia sẻ dòng thời gian', exact: true }).click();
       await expect(
