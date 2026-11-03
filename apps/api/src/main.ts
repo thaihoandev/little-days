@@ -80,6 +80,7 @@ import { holidaysForYear } from './holidays.js';
 import { timingSafeEqual } from 'node:crypto';
 import { ProfileService } from './profiles.js';
 import { JournalSocial } from './journal-social.js';
+import { CoupleRituals } from './couple-rituals.js';
 import { profileView } from './profile-view.js';
 import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 import { videoDurationFrames } from '../../../packages/domain/video.js';
@@ -115,6 +116,7 @@ const library = new LibraryService(repository, journal);
 const imagePreviews = new ImagePreviews(store);
 const profiles = new ProfileService(repository, store, resources, deletion, journal.sharing);
 const journalSocial = new JournalSocial(repository, journal);
+const coupleRituals = new CoupleRituals(repository, journal, deletion, resources);
 const journalAlbums = new JournalAlbumService(repository, store, resources, deletion);
 const security = new AccountSecurity(
   repository,
@@ -189,6 +191,72 @@ function validateReferences(album: Album) {
 
 @Controller('api')
 class AppController {
+  @Get('together/:spaceId') async together(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+    @Query() query: unknown,
+  ) {
+    return coupleRituals.state(req.userId, spaceId, query);
+  }
+  @Post('together/:spaceId/answers') async coupleAnswer(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+    @Body() body: unknown,
+  ) {
+    await security.rateLimit('couple-write:' + req.userId, 30, 60000);
+    return coupleRituals.answer(req.userId, spaceId, body);
+  }
+  @Post('together/:spaceId/questions/:id/withdraw') async withdrawAnswer(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    await security.rateLimit('couple-write:' + req.userId, 30, 60000);
+    return coupleRituals.withdraw(req.userId, spaceId, id, body);
+  }
+  @Post('together/:spaceId/questions/:id/memory') async questionMemory(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    await security.rateLimit('couple-write:' + req.userId, 30, 60000);
+    return coupleRituals.saveMemory(req.userId, spaceId, id, body);
+  }
+  @Post('together/:spaceId/notes') async loveNote(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+    @Body() body: unknown,
+  ) {
+    await security.rateLimit('couple-write:' + req.userId, 30, 60000);
+    return coupleRituals.addNote(req.userId, spaceId, body);
+  }
+  @Post('together/:spaceId/draw') async drawLoveNote(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+  ) {
+    await security.rateLimit('couple-draw:' + req.userId, 30, 60000);
+    return coupleRituals.draw(req.userId, spaceId);
+  }
+  @Patch('together/:spaceId/notes/:id') async voteLoveNote(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    await security.rateLimit('couple-write:' + req.userId, 30, 60000);
+    return coupleRituals.vote(req.userId, spaceId, id, body);
+  }
+  @Delete('together/:spaceId/notes/:id') async deleteLoveNote(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+    @Param('id') id: string,
+    @Body() body: unknown,
+  ) {
+    await security.rateLimit('couple-write:' + req.userId, 30, 60000);
+    return coupleRituals.removeNote(req.userId, spaceId, id, body);
+  }
   @Get('journal-state') async journalState(@Req() req: UserRequest) {
     return journal.state(req.userId);
   }
@@ -490,6 +558,7 @@ class AppController {
       fontCatalogVersion: 1,
       libraryVersion: 1,
       remindersVersion: 1,
+      coupleRitualsVersion: 1,
       sharedPlansVersion: 1,
       spacesVersion: 2,
       designCatalogVersion: 2,

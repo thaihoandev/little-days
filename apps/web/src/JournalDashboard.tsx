@@ -115,6 +115,7 @@ export default function JournalDashboard({
   focusDate,
   notifications = [],
   onOpenDay,
+  homeActions,
 }: {
   albums: Album[];
   mode: 'home' | 'timeline' | 'calendar';
@@ -134,6 +135,7 @@ export default function JournalDashboard({
   focusDate?: string;
   notifications?: NotificationView[];
   onOpenDay?: (date: string) => void;
+  homeActions?: import('react').ReactNode;
 }) {
   const [today, setToday] = useState(() =>
     todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone),
@@ -677,6 +679,7 @@ export default function JournalDashboard({
           </button>
         </div>
       )}
+      {mode === 'home' && homeActions}
       {mode === 'timeline' &&
         (separateSpaces || timelineOptions.length > 1 || sharing.spaces?.some((s) => s.shared)) && (
           <div className="timeline-scope">

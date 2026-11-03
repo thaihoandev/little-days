@@ -4,6 +4,8 @@ Ngày cập nhật: **03/11/2026**.
 
 ## Kết quả hiện tại
 
+Góc chúng mình (`/together`) có câu hỏi hằng ngày mở sau khi cả hai trả lời và Lọ điều thương cho nhiều lần gửi, mở theo ngày hoặc đồng thuận toàn bộ thành viên lúc gửi. Nội dung kín được lọc ở server; phân trang/quota/backup/xóa tài khoản cùng cơ chế hiện có. Chuẩn hóa thumbnail trang trí và tỉ lệ preview bộ đếm; hướng dẫn, giới hạn và kiểm chứng trong [COUPLE_RITUALS.md](COUPLE_RITUALS.md).
+
 Tách dữ liệu không gian riêng/chung bằng quyền API thực tế; giữ tương thích dấu mốc cũ và cho chủ dữ liệu chủ động đổi đích lưu. Sửa crop avatar/map và bộ chọn không gian; thêm 24 trang trí, 12 ký hiệu vector, năm kiểu bộ đếm, màu/ngày/lời nhắn và hiệu ứng lặp, sao chép/dán kiểu. Hướng dẫn và phạm vi kiểm chứng: [DESIGN_SPACES_REFRESH.md](DESIGN_SPACES_REFRESH.md).
 
 Không gian chung có cùng ID/tên/thành viên cho hai phía, thẻ dấu mốc hiển thị tên/avatar người đăng thực tế; album cá nhân vẫn tách khỏi feed không gian chung. Thêm checklist, phân công, trạng thái và chuyển kế hoạch thành kỉ niệm trên cùng ID. Focus/visibility chỉ đối chiếu fingerprint trước khi tải lại danh sách, giữ nội dung khi refresh. Xem [SHARED_PLANS.md](SHARED_PLANS.md) về quyền, cache và giới hạn lifecycle.

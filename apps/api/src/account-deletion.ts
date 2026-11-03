@@ -208,6 +208,18 @@ export class AccountDeletion {
         await this.db.remove('timeline-member-index', grant.id);
         await this.db.remove('timeline-grant', grant.id);
       }
+      // Text contributions belong to their author; remove them immediately on deletion.
+      // When the space anchor is deleted, remove orphaned contributions by other members too.
+      const spaceField =
+        this.db.driver === 'postgresql'
+          ? "payload::jsonb->>'spaceId'"
+          : "json_extract(payload,'$.spaceId')";
+      await this.db.query(
+        "DELETE FROM records WHERE kind IN ('couple-answer','love-note') AND (owner=? OR " +
+          spaceField +
+          '=?) RETURNING id',
+        [userId, userId],
+      );
       await this.db.query(
         "UPDATE render_jobs SET cancel_requested=1,phase=CASE WHEN queue_state='queued' THEN 'canceled' ELSE phase END,queue_state=CASE WHEN queue_state='queued' THEN 'canceled' ELSE queue_state END WHERE owner=? AND queue_state IN ('queued','running') RETURNING id",
         [userId],

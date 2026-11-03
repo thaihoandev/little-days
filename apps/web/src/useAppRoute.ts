@@ -5,6 +5,7 @@ export const sectionPaths = {
   calendar: '/calendar',
   albums: '/albums',
   photos: '/photos',
+  together: '/together',
 } as const;
 export type AppSection = keyof typeof sectionPaths;
 export function parseRoute(path: string): {

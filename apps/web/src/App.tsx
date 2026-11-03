@@ -74,6 +74,8 @@ import { TextOverflowWarning } from './TextOverflowWarning.js';
 import JournalDashboard, { clearDashboardMemory } from './JournalDashboard.js';
 import { useAppRoute, sectionPaths, type AppSection } from './useAppRoute.js';
 import { UserAvatar } from './UserAvatar.js';
+import { DecorationPreview, CounterPresetPreview } from './DecorationPreview.js';
+const TogetherPage = lazy(() => import('./TogetherPage.js'));
 import { PhotosLibrary } from './PhotosLibrary.js';
 import type { ProfileView } from './ProfileSettings.js';
 import { uploadImage, uploadBatch, configureUploads } from './image-upload.js';
@@ -314,7 +316,7 @@ export default function App() {
   }, [pathname, loading, user?.id, albumOpenVersion]);
   useEffect(() => {
     if (!token && !authLink)
-      document.title = `${active?.title || { home: 'Hôm nay', timeline: 'Dòng thời gian', calendar: 'Lịch của mình', albums: 'Album của mình', photos: 'Ảnh đã lưu' }[section]} · Little Days`;
+      document.title = `${active?.title || { home: 'Hôm nay', timeline: 'Dòng thời gian', calendar: 'Lịch của mình', albums: 'Album của mình', photos: 'Ảnh đã lưu', together: 'Góc chúng mình' }[section]} · Little Days`;
   }, [section, active?.title, token, authLink]);
   useEffect(() => {
     if (!toast) return;
@@ -429,6 +431,15 @@ export default function App() {
               <Images size={19} />
               Ảnh đã lưu
             </button>
+            {user?.coupleRitualsVersion === 1 && (
+              <button
+                className={section === 'together' ? 'nav-item active' : 'nav-item'}
+                onClick={() => setSection('together')}
+              >
+                <Sparkles size={19} />
+                Góc chúng mình
+              </button>
+            )}
           </nav>
           <div className="sidebar-note">
             <Flower2 size={30} />
@@ -493,6 +504,7 @@ export default function App() {
                   calendar: 'Lịch',
                   albums: 'Thư viện album',
                   photos: 'Ảnh đã lưu',
+                  together: 'Góc chúng mình',
                 }[section]
               }
             </span>
@@ -521,6 +533,18 @@ export default function App() {
               </button>
             </div>
           </header>
+          {user && section === 'together' && (
+            <Suspense fallback={<p role="status">Đang mở Góc chúng mình…</p>}>
+              <TogetherPage
+                key={user.id}
+                userId={user.id}
+                ready={user.coupleRitualsVersion === 1}
+                search={search}
+                onNavigate={navigate}
+                onAccount={() => setModal('account')}
+              />
+            </Suspense>
+          )}
           {user && ['home', 'timeline', 'calendar'].includes(section) && (
             <JournalDashboard
               key={user.id}
@@ -531,6 +555,26 @@ export default function App() {
               communityReady={user.journalFeatures === 1}
               libraryReady={user.libraryVersion === 1}
               remindersReady={user.remindersVersion === 1}
+              homeActions={
+                user.coupleRitualsVersion === 1 ? (
+                  <div className="ritual-home-links">
+                    <button onClick={() => navigate('/together?tab=questions')}>
+                      <Sparkles size={25} />
+                      <span>
+                        <strong>Câu hỏi dành cho hai người</strong>
+                        <small>Mỗi ngày một câu, cùng hiểu nhau thêm một chút.</small>
+                      </span>
+                    </button>
+                    <button onClick={() => navigate('/together?tab=jar')}>
+                      <Heart size={25} />
+                      <span>
+                        <strong>Lọ điều thương</strong>
+                        <small>Để dành lời thương đến đúng ngày, hoặc cùng đồng ý mở.</small>
+                      </span>
+                    </button>
+                  </div>
+                ) : undefined
+              }
               sharedPlansReady={user.sharedPlansVersion === 1}
               separateSpaces={user.spacesVersion === 2}
               onRefreshAlbums={async (force = false) => {
@@ -1512,13 +1556,14 @@ function Editor({
                         <button
                           key={p.id}
                           aria-label={'Thêm bộ đếm ' + p.name}
+                          title={p.name}
                           onClick={() => add(counterPreset(p.id))}
                         >
-                          <span className="counter-preset-art">
-                            <span style={{ width: e.width, height: e.height }}>
-                              <ElementContent element={e} album={album} referenceDate={reference} />
-                            </span>
-                          </span>
+                          <CounterPresetPreview
+                            element={e}
+                            album={album}
+                            referenceDate={reference}
+                          />
                           <strong>{p.name}</strong>
                         </button>
                       );
@@ -1559,6 +1604,7 @@ function Editor({
                     .map((d) => (
                       <button
                         key={d.id}
+                        title={d.name}
                         aria-label={'Thêm trang trí ' + d.name}
                         onClick={() =>
                           add(
@@ -1573,7 +1619,7 @@ function Editor({
                           )
                         }
                       >
-                        <img src={d.src} alt="" />
+                        <DecorationPreview src={d.src} />
                         <span>{d.name}</span>
                       </button>
                     ))}
@@ -1605,7 +1651,7 @@ function Editor({
                                   )
                                 }
                               >
-                                <img src={symbol.src} alt="" style={{ width: 38, height: 38 }} />
+                                <DecorationPreview src={symbol.src} small />
                               </button>
                             ))}
                         </div>

@@ -1,0 +1,984 @@
+/* Unified catalogue tiles: only previews are trimmed; document coordinates are untouched. */
+.decoration-gallery > button {
+  display: grid;
+  grid-template-rows: 80px 30px;
+  align-items: center;
+  justify-items: center;
+  gap: 6px;
+  padding: 10px;
+  min-width: 0;
+  min-height: 136px;
+  box-sizing: border-box;
+}
+.decoration-preview {
+  width: 100%;
+  height: 80px;
+  display: grid;
+  place-items: center;
+  padding: 6px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+.decoration-gallery .decoration-preview img,
+.symbol-groups .decoration-preview img {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  display: block;
+}
+.decoration-gallery > button > span {
+  width: 100%;
+  align-self: center;
+  font-size: 10px;
+  line-height: 1.4;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.decoration-preview.small {
+  width: 40px;
+  height: 40px;
+  padding: 2px;
+}
+.symbol-groups .sticker-grid > button {
+  padding: 6px;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 48px;
+}
+.counter-preset-art {
+  height: 88px;
+  flex: none;
+}
+.counter-presets > button {
+  min-height: 140px;
+  padding: 10px;
+  gap: 6px;
+}
+.counter-presets > button > strong {
+  min-height: 30px;
+  display: grid;
+  place-items: center;
+}
+.together-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-bottom: 36px;
+}
+.ritual-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin: 22px 0 30px;
+}
+.ritual-heading h1 {
+  font:
+    38px Lora,
+    serif;
+  margin: 12px 0;
+  color: #535d48;
+}
+.ritual-heading p,
+.ritual-intro p {
+  color: #8c897a;
+  line-height: 1.8;
+  font-size: 13px;
+}
+.ritual-heading-icon {
+  display: grid;
+  place-items: center;
+  width: 82px;
+  height: 82px;
+  background: #e9eddc;
+  border-radius: 28px;
+  color: #8f9f77;
+  transform: rotate(6deg);
+  flex: none;
+}
+.ritual-space-picker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: #fffdf6;
+  border: 1px solid #e2dfd0;
+  border-radius: 15px;
+  padding: 18px 20px;
+  margin-bottom: 22px;
+}
+.ritual-space-picker label {
+  display: grid;
+  gap: 7px;
+  font-size: 11px;
+  color: #8a8778;
+  min-width: 0;
+  width: min(100%, 380px);
+}
+.ritual-space-picker select {
+  width: 100%;
+}
+.ritual-members {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.ritual-members > span {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  font-size: 11px;
+}
+.ritual-members .user-avatar {
+  width: 28px;
+  height: 28px;
+}
+.ritual-tabs {
+  display: flex;
+  gap: 8px;
+  background: #efeee3;
+  padding: 6px;
+  border-radius: 13px;
+  margin-bottom: 26px;
+}
+.ritual-tabs button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 14px 10px;
+  border: 0;
+  background: transparent;
+  color: #8c8b7b;
+  border-radius: 9px;
+  font-size: 12px;
+  min-height: 46px;
+}
+.ritual-tabs button.active {
+  background: #fffdf7;
+  color: #5f6f4b;
+  box-shadow: 0 2px 8px #534b2e0a;
+}
+.ritual-intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  padding: 24px 28px;
+  margin-bottom: 22px;
+  border: 1px solid #dfdfce;
+  border-radius: 16px;
+  background: linear-gradient(110deg, #edf0e2, #f3e9da);
+}
+.ritual-intro h2,
+.jar-layout h2 {
+  font:
+    25px Lora,
+    serif;
+  color: #656c54;
+  margin: 12px 0;
+}
+.ritual-letter-art {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  min-width: 120px;
+  color: #ac8377;
+  transform: rotate(-6deg);
+}
+.ritual-letter-art span {
+  font:
+    17px 'Patrick Hand',
+    cursive;
+}
+.question-card {
+  border: 1px solid #e1dac9;
+  border-radius: 16px;
+  background: #fffdf7;
+  padding: 28px;
+  box-shadow: 0 4px 18px #594b3105;
+}
+.question-card.revealed {
+  border-color: #c9d5b8;
+}
+.question-card-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.question-card-title h3 {
+  font:
+    23px/1.6 Lora,
+    serif;
+  margin: 0;
+  color: #635747;
+}
+.question-number {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  color: #b08679;
+  background: #f3e7dd;
+  flex: none;
+}
+.question-participants {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.question-participants > div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 10px;
+  background: #f4f3e9;
+  min-width: 0;
+}
+.question-participants > div > div {
+  flex: 1;
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.question-participants strong {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.question-participants small {
+  font-size: 10px;
+  color: #92927e;
+}
+.question-participants .user-avatar {
+  width: 32px;
+  height: 32px;
+}
+.answer-form label,
+.jar-composer label {
+  display: grid;
+  gap: 10px;
+  font-size: 12px;
+  color: #6f705c;
+}
+.answer-form textarea,
+.jar-composer textarea {
+  resize: vertical;
+  min-height: 130px;
+  max-height: 350px;
+  width: 100%;
+  box-sizing: border-box;
+  line-height: 1.8;
+}
+.answer-form-footer {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+.answer-form small,
+.jar-composer small {
+  font-size: 10px;
+  color: #989581;
+}
+.answer-waiting {
+  text-align: center;
+  background: #f6f3e9;
+  border: 1px dashed #dcd5bc;
+  padding: 24px;
+  border-radius: 12px;
+  color: #898d72;
+}
+.answer-waiting h4 {
+  font:
+    20px Lora,
+    serif;
+  color: #727a5c;
+  margin: 12px 0;
+}
+.answer-waiting p {
+  font-size: 12px;
+  line-height: 1.9;
+}
+.answer-mine {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #6c6253;
+  padding: 14px;
+  text-align: left;
+  background: #fffdf6;
+  border-radius: 8px;
+}
+.question-replies {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+.question-replies > section {
+  background: #f1f2e6;
+  padding: 20px;
+  border-radius: 12px;
+  min-width: 0;
+}
+.question-replies > section:nth-child(2) {
+  background: #f5eae3;
+}
+.question-replies strong {
+  font-size: 12px;
+  color: #7f8265;
+}
+.question-replies p,
+.jar-message {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font:
+    20px/1.8 'Patrick Hand',
+    cursive;
+  color: #665a4d;
+  margin: 12px 0;
+}
+.ritual-history {
+  margin-top: 38px;
+}
+.ritual-history .section-heading,
+.jar-collection .section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.ritual-history h2,
+.jar-collection h2 {
+  font:
+    23px Lora,
+    serif;
+  color: #666e53;
+}
+.ritual-history .section-heading > span,
+.jar-collection .section-heading p {
+  font-size: 11px;
+  color: #95917f;
+  line-height: 1.8;
+}
+.ritual-question-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.ritual-question-list > button {
+  text-align: left;
+  display: grid;
+  gap: 12px;
+  border: 1px solid #e2ddcd;
+  background: #fffdf6;
+  border-radius: 12px;
+  padding: 20px;
+  min-height: 130px;
+}
+.ritual-question-list small {
+  font-size: 10px;
+  color: #aaa18d;
+}
+.ritual-question-list strong {
+  font:
+    16px/1.7 Lora,
+    serif;
+  color: #706958;
+}
+.ritual-question-list span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #8e9876;
+}
+.jar-layout {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.85fr) minmax(0, 1.15fr);
+  gap: 24px;
+  margin-bottom: 36px;
+}
+.jar-paper {
+  border-radius: 16px;
+  padding: 28px;
+  background: radial-gradient(#ab957d16 0.7px, transparent 0.7px), #f3eddf;
+  background-size: 7px 7px;
+  border: 1px solid #e2d9c5;
+  text-align: center;
+}
+.jar-paper p {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #8d8371;
+}
+.jar-paper > small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.8;
+  margin-top: 12px;
+  color: #a29783;
+}
+.jar-illustration {
+  position: relative;
+  border: 3px solid #b4bea1;
+  border-radius: 15px 15px 55px 55px;
+  height: 160px;
+  width: 150px;
+  margin: 42px auto 28px;
+  background: #e6ecd84d;
+  display: grid;
+  place-items: center;
+  color: #bc8a7e;
+}
+.jar-lid {
+  position: absolute;
+  height: 20px;
+  top: -22px;
+  left: -9px;
+  right: -9px;
+  background: repeating-linear-gradient(90deg, #a4af91 0 5px, #929f7d 5px 7px);
+  border-radius: 6px;
+}
+.jar-note {
+  position: absolute;
+  background: #f6e0d3;
+  color: #a88776;
+  font:
+    16px 'Patrick Hand',
+    cursive;
+  padding: 12px 9px;
+  border-radius: 3px;
+  box-shadow: 0 3px 8px #6f543a0d;
+}
+.jar-note.one {
+  top: 16px;
+  left: -26px;
+  transform: rotate(-14deg);
+}
+.jar-note.two {
+  bottom: 13px;
+  right: -21px;
+  transform: rotate(11deg);
+  background: #e4eacb;
+}
+.jar-composer {
+  padding: 28px;
+  border: 1px solid #e2ddcd;
+  border-radius: 16px;
+  background: #fffdf7;
+}
+.jar-composer > p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #96917f;
+}
+.jar-composer fieldset {
+  display: grid;
+  gap: 16px;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.jar-composer select,
+.jar-composer input {
+  width: 100%;
+  box-sizing: border-box;
+}
+.jar-consent-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: #f4f4e8;
+  border-radius: 9px;
+  padding: 12px;
+  font-size: 10px;
+  line-height: 1.8;
+  color: #8c9378;
+  margin: 0;
+}
+.jar-consent-hint svg {
+  flex: none;
+  margin-top: 2px;
+}
+.jar-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.jar-card {
+  min-width: 0;
+  padding: 19px;
+  border: 1px solid #e1dcca;
+  border-radius: 13px;
+  background: #fffdf5;
+  display: flex;
+  flex-direction: column;
+}
+.jar-card.opened {
+  background: #f2f3e6;
+  border-color: #d8dfc8;
+}
+.jar-card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #e4e1d4;
+}
+.jar-card header > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.jar-card header span:not(.user-avatar) {
+  display: grid;
+  gap: 4px;
+}
+.jar-card header strong {
+  font-size: 11px;
+  color: #777962;
+}
+.jar-card header small {
+  font-size: 9px;
+  color: #a09a87;
+}
+.jar-card .user-avatar {
+  width: 28px;
+  height: 28px;
+}
+.jar-sealed-body {
+  padding: 22px 4px;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  color: #a79d89;
+  text-align: center;
+  flex: 1;
+}
+.jar-sealed-body strong {
+  font:
+    16px/1.6 Lora,
+    serif;
+  color: #90856f;
+}
+.jar-sealed-body p {
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 0;
+}
+.jar-sealed-body small,
+.jar-card footer > small {
+  font-size: 10px;
+  line-height: 1.8;
+  color: #aaa18c;
+}
+.jar-sealed-body .own-preview {
+  background: #fff9ed;
+  border-radius: 7px;
+  padding: 12px;
+  width: 100%;
+  box-sizing: border-box;
+  font:
+    17px/1.8 'Patrick Hand',
+    cursive;
+  text-align: left;
+}
+.jar-card footer {
+  display: grid;
+  gap: 12px;
+  border-top: 1px dashed #d9dac6;
+  padding-top: 14px;
+  margin-top: auto;
+  font-size: 10px;
+  color: #91977d;
+}
+.jar-card footer .button {
+  font-size: 11px;
+  min-height: 40px;
+}
+.jar-open-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ritual-notice {
+  background: #edf2e2;
+  border: 1px solid #d2ddc1;
+  color: #798d5d;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.ritual-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-height: 200px;
+  color: #92977d;
+  font-size: 13px;
+}
+.ritual-empty {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 48px 24px;
+  background: #fffdf7;
+  border: 1px dashed #d9dbc5;
+  border-radius: 14px;
+  color: #9b9d87;
+}
+.ritual-empty h2,
+.ritual-empty h3 {
+  font:
+    23px/1.6 Lora,
+    serif;
+  color: #747c61;
+  margin: 0;
+}
+.ritual-empty p {
+  font-size: 12px;
+  line-height: 1.9;
+  max-width: 520px;
+  margin: 0;
+}
+.ritual-empty .row {
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.ritual-warning {
+  font-size: 12px;
+  line-height: 1.9;
+  color: #ac8773;
+  background: #f7ede2;
+  border-radius: 9px;
+  padding: 14px;
+}
+.ritual-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin: 22px 0;
+  font-size: 12px;
+  color: #93977f;
+}
+.ritual-history-dialog,
+.ritual-draw-dialog {
+  border: 1px solid #dcd7c5;
+  border-radius: 18px;
+  padding: 24px;
+  background: #fffdf6;
+  color: #746b59;
+  width: min(760px, calc(100vw - 28px));
+  max-height: calc(100dvh - 32px);
+  overflow: auto;
+  box-sizing: border-box;
+}
+.ritual-history-dialog::backdrop,
+.ritual-draw-dialog::backdrop {
+  background: #373b2b70;
+  backdrop-filter: blur(4px);
+}
+.ritual-history-dialog > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.ritual-history-dialog .question-card {
+  padding: 18px;
+  box-shadow: none;
+}
+.ritual-draw-dialog {
+  width: min(470px, calc(100vw - 28px));
+  text-align: center;
+  padding: 40px 30px;
+  position: fixed;
+}
+.ritual-dialog-close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+.ritual-draw-heart {
+  display: block;
+  margin: 22px auto;
+  color: #bf8f7c;
+}
+.ritual-draw-dialog small {
+  display: block;
+  font-size: 11px;
+  color: #9e9681;
+  margin: 18px 0 24px;
+}
+.ritual-home-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 10px 0 28px;
+}
+.ritual-home-links button {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  text-align: left;
+  border: 1px solid #dedfca;
+  border-radius: 13px;
+  background: #f0f2e4;
+  color: #8f9b76;
+}
+.ritual-home-links button:nth-child(2) {
+  background: #f5ece0;
+  color: #b2987f;
+}
+.ritual-home-links button span {
+  display: grid;
+  gap: 6px;
+}
+.ritual-home-links strong {
+  font:
+    16px Lora,
+    serif;
+  color: #757b61;
+}
+.ritual-home-links small {
+  font-size: 10px;
+  color: #a29886;
+  line-height: 1.7;
+}
+@media (max-width: 1050px) {
+  .jar-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .jar-layout {
+    grid-template-columns: 1fr 1.1fr;
+    gap: 16px;
+  }
+}
+@media (max-width: 700px) {
+  .ritual-heading {
+    margin: 10px 0 22px;
+  }
+  .ritual-heading h1 {
+    font-size: 29px;
+  }
+  .ritual-heading-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+  }
+  .ritual-heading p {
+    font-size: 11px;
+  }
+  .ritual-space-picker {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 15px;
+    gap: 13px;
+  }
+  .ritual-space-picker label {
+    width: 100%;
+  }
+  .ritual-tabs button {
+    font-size: 11px;
+    padding: 12px 7px;
+    gap: 6px;
+  }
+  .ritual-intro {
+    padding: 20px;
+  }
+  .ritual-intro h2 {
+    font-size: 22px;
+  }
+  .ritual-letter-art {
+    display: none;
+  }
+  .question-card {
+    padding: 19px;
+  }
+  .question-card-title {
+    gap: 10px;
+  }
+  .question-card-title h3 {
+    font-size: 20px;
+  }
+  .question-participants {
+    gap: 8px;
+  }
+  .question-participants > div {
+    padding: 10px;
+    flex-wrap: wrap;
+  }
+  .question-participants > div > div {
+    min-width: 70px;
+  }
+  .question-participants strong {
+    font-size: 11px;
+  }
+  .question-replies,
+  .ritual-question-list,
+  .jar-layout,
+  .jar-cards {
+    grid-template-columns: 1fr;
+  }
+  .answer-form-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .answer-form-footer .button {
+    justify-content: center;
+  }
+  .jar-paper,
+  .jar-composer {
+    padding: 22px;
+  }
+  .jar-illustration {
+    height: 125px;
+    width: 125px;
+    margin: 35px auto 20px;
+  }
+  .ritual-home-links {
+    grid-template-columns: 1fr;
+  }
+  .ritual-empty {
+    padding: 32px 18px;
+  }
+  .ritual-history-dialog {
+    padding: 14px;
+  }
+  .ritual-history-dialog .question-card {
+    padding: 14px;
+  }
+  .ritual-draw-dialog {
+    padding: 38px 22px;
+  }
+  .jar-card {
+    padding: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ritual-heading-icon,
+  .ritual-letter-art {
+    transform: none;
+  }
+}
+.decoration-gallery > button > span {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  max-height: 28px;
+  overflow: hidden;
+}
+@media (max-width: 380px) {
+  .editor-header {
+    height: 100px;
+    min-height: 100px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    padding: 8px 10px;
+    box-sizing: border-box;
+  }
+  .editor-header > .row:first-child {
+    width: 100%;
+    min-width: 0;
+    gap: 8px;
+  }
+  .editor-header .header-actions {
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+  .editor-header .header-actions .icon-button,
+  .editor-header .header-actions .button {
+    width: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 8px;
+  }
+  .tool-rail {
+    top: 100px;
+    height: calc(100dvh - 100px);
+  }
+  .editor-workspace {
+    min-height: calc(100dvh - 100px);
+  }
+}
+
+@media (max-width: 700px) {
+  .ritual-heading h1 {
+    font-size: 26px;
+    margin: 8px 0;
+  }
+  .ritual-heading-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+  .ritual-heading-icon > svg {
+    width: 28px;
+    height: 28px;
+  }
+  .jar-paper {
+    padding: 17px;
+    text-align: left;
+  }
+  .jar-paper .jar-illustration,
+  .jar-paper > .eyebrow,
+  .jar-paper > p,
+  .jar-paper > small {
+    display: none;
+  }
+  .jar-paper h2 {
+    font-size: 19px;
+    margin: 0 0 14px;
+    line-height: 1.5;
+  }
+}
+.counter-presets > button {
+  height: 146px;
+  min-height: 146px;
+}
+.counter-presets > button > strong {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  height: 32px;
+  min-height: 32px;
+  max-height: 32px;
+  overflow: hidden;
+}
+.symbol-groups .sticker-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.symbol-groups .sticker-grid > button {
+  height: 56px;
+  min-height: 56px;
+  box-sizing: border-box;
+}
+.symbol-groups .decoration-preview.small {
+  width: 100%;
+  max-width: 40px;
+  height: 40px;
+}

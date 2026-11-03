@@ -91,6 +91,7 @@ export class ResourcePolicy {
     };
   }
   async reserve(owner: string, key: string, bytes: number) {
+    // Media admission and text admission share the owner-operation lock.
     validateObjectKey(key);
     if (!Number.isSafeInteger(bytes) || bytes < 0) throw new Error('Invalid media size.');
     await this.db.transaction(async () => {
@@ -116,6 +117,17 @@ export class ResourcePolicy {
   }
   async forget(key: string) {
     await this.db.query('DELETE FROM managed_media WHERE object_key=? RETURNING object_key', [key]);
+  }
+  async admitTextRecord(owner: string, kind: string, maximum: number) {
+    await this.lock('owner-operation:' + owner);
+    const row = (
+      await this.db.query('SELECT COUNT(*) AS count FROM records WHERE owner=? AND kind=?', [
+        owner,
+        kind,
+      ])
+    )[0];
+    if (Number(row.count) >= maximum)
+      throw new AuthError(429, 'Đã đạt hạn mức lưu giữ. Hãy xóa nội dung cũ trước khi thêm mới.');
   }
   async recordRender(
     jobId: string,
