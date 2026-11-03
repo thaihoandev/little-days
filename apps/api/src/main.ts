@@ -491,6 +491,8 @@ class AppController {
       libraryVersion: 1,
       remindersVersion: 1,
       sharedPlansVersion: 1,
+      spacesVersion: 2,
+      designCatalogVersion: 2,
       showHolidays:
         (await repository.get<{ showHolidays: boolean }>('reminder-preferences', req.userId))
           ?.showHolidays ?? true,

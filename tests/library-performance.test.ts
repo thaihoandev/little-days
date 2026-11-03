@@ -193,6 +193,7 @@ test('SQL library pages combine books/memories/journal, exact totals, private cu
         (
           await f.journal.create(owner, {
             ...content,
+            timelineId: owner,
             title: i === 44 ? 'THƯƠNG 100%_!' : 'Ngày ' + i,
           })
         ).id,
@@ -262,7 +263,14 @@ test('SQL library pages combine books/memories/journal, exact totals, private cu
       const first = await f.library.page(member, { limit: 7 });
       reverse = true;
       const second = await f.library.page(member, { limit: 7, cursor: first.nextCursor! });
-      assert.equal(second.total, 46);
+      assert.equal(
+        second.total,
+        45,
+        'The other owners private milestone is not shared by inviting',
+      );
+      assert.ok(
+        second.items.every((item) => !('title' in item) || item.title !== 'Private stranger'),
+      );
       assert.equal(second.items.length, 7);
       const keys = new Set(first.items.map((item) => ('id' in item ? item.id : '')));
       assert.ok(second.items.every((item) => 'id' in item && !keys.has(item.id)));

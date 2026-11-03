@@ -1,6 +1,7 @@
 import React from 'react';
 import { decoration } from '../domain/decorations.js';
-import { counterAppearance } from '../domain/counter.js';
+import { counterAppearance, counterMotif } from '../domain/counter.js';
+import { visualMotion } from '../domain/visual-effects.js';
 import { photoGeometry } from '../domain/photo-edit.js';
 import {
   type Album,
@@ -151,7 +152,7 @@ export function ElementContent({
       </div>
     );
   }
-  const counter = e.type === 'anniversary' && counterAppearance(e.counterStyle);
+  const counter = e.type === 'anniversary' && counterAppearance(e.counterStyle, e);
   if (counter)
     return (
       <div
@@ -187,11 +188,24 @@ export function ElementContent({
               left: 0,
               right: 0,
               height: counter.header,
-              background: '#ad7b6b',
+              background: counter.accent,
             }}
           />
         )}
-        {displayedText(e, album, referenceDate)}
+        {counterMotif(e.counterStyle, e.width, e.height, counter.accent) && (
+          <ImageComponent
+            src={counterMotif(e.counterStyle, e.width, e.height, counter.accent)}
+            alt=""
+            style={{
+              position: 'absolute',
+              inset: 0,
+              width: '100%',
+              height: '100%',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+        <span style={{ position: 'relative' }}>{displayedText(e, album, referenceDate)}</span>
       </div>
     );
   return (
@@ -224,6 +238,7 @@ export function PageArtwork({
   assetData,
   imageComponent,
   elementStyle,
+  effectTime = 0,
 }: {
   page: Page;
   album: Album;
@@ -231,6 +246,7 @@ export function PageArtwork({
   assetData?: Record<string, string>;
   imageComponent?: React.ElementType;
   elementStyle?: (e: ScrapElement, index: number) => React.CSSProperties;
+  effectTime?: number;
 }) {
   return (
     <div
@@ -270,13 +286,23 @@ export function PageArtwork({
               ...elementStyle?.(e, i),
             }}
           >
-            <ElementContent
-              element={e}
-              album={album}
-              referenceDate={referenceDate}
-              assetData={assetData}
-              imageComponent={imageComponent}
-            />
+            <div
+              data-visual-effect={e.visualEffect || 'none'}
+              style={{
+                width: '100%',
+                height: '100%',
+                transform: `translateY(${visualMotion(e.visualEffect, effectTime).y}px) rotate(${visualMotion(e.visualEffect, effectTime).rotation}deg) scale(${visualMotion(e.visualEffect, effectTime).scale})`,
+                transformOrigin: 'center',
+              }}
+            >
+              <ElementContent
+                element={e}
+                album={album}
+                referenceDate={referenceDate}
+                assetData={assetData}
+                imageComponent={imageComponent}
+              />
+            </div>
           </div>
         ))}
     </div>

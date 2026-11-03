@@ -58,6 +58,7 @@ try {
       let entry: JournalEntry = await (
         await alice.request.post(origin + '/api/journal', {
           data: {
+            timelineId: session.id,
             title: 'Cùng giữ một ngày ' + mobile,
             date: new Date().toISOString().slice(0, 10),
             note: 'Câu chuyện do hai người cùng viết',
@@ -94,6 +95,7 @@ try {
         a.getByRole('button', { name: 'Chia sẻ dòng thời gian', exact: true }),
       ).toBeEnabled();
       await a.goto(origin + '/timeline');
+      await a.getByLabel('Chọn dòng thời gian', { exact: true }).selectOption(session.id);
       await expect(a.getByRole('heading', { name: entry.title, exact: true })).toBeVisible();
       await a.getByRole('button', { name: 'Chia sẻ dòng thời gian', exact: true }).click();
       const ad = a.getByRole('dialog', { name: 'Chia sẻ dòng thời gian', exact: true });

@@ -7,11 +7,11 @@
 3. Người nhận mở ứng dụng: lời mời hiện trên Hôm nay/Lịch/Dòng thời gian. Mở lời mời và **Chấp nhận**.
 4. Người nhận có thể xem ảnh, thêm, sửa và xóa các dấu mốc/ghi chú trong dòng thời gian chung. Khi thêm mới, chọn **Lưu vào dòng thời gian**; trên trang Timeline có bộ lọc dòng thời gian riêng/chung.
 
-Ghi chú mới từ Hôm nay/Lịch luôn mặc định vào dòng thời gian riêng. Chọn rõ dòng thời gian chung trong form nếu muốn cùng lưu giữ; sửa mốc có sẵn giữ nguyên dòng thời gian gốc.
+Form luôn hiện đích lưu. Timeline dùng không gian đang chọn; ở Hôm nay/Lịch hoặc khi xem tất cả, form ưu tiên không gian chung có thành viên cộng tác, nếu không thì chọn không gian riêng. Kiểm tra **Lưu vào dòng thời gian** trước khi lưu nội dung riêng tư. Sửa nội dung giữ đích cũ; người quản lý dữ liệu có thể chủ động đổi giữa riêng/chung của mình. Xem [luồng riêng/chung mới](DESIGN_SPACES_REFRESH.md).
 5. **Hiện trên lịch của tôi** mặc định bật sau khi chấp nhận. Tắt lựa chọn này chỉ ẩn các mốc chung khỏi Hôm nay/Lịch của người nhận; không đổi lịch của chủ và không mất quyền cùng chỉnh sửa.
 6. Chủ có thể thu hồi quyền; người nhận có thể từ chối/rời dòng thời gian. Các dấu mốc đã cùng viết vẫn thuộc dòng thời gian gốc. Quyền quản lý thành viên thuộc chủ dòng thời gian.
 
-Lời mời nằm trong ứng dụng, không tự gửi email. Mỗi dòng thời gian có tối đa 10 thành viên/lời mời; mỗi người nhận tối đa 100 dòng thời gian/lời mời. Dữ liệu được tải lại khi quay lại tab hoặc khoảng 30 giây khi đang xem dashboard; không ghi đè form đang mở. Khi hai người cùng sửa một mốc, bản lưu sau với revision cũ nhận thông báo xung đột và giữ nội dung đang nhập.
+Lời mời nằm trong ứng dụng, không tự gửi email. Mỗi dòng thời gian có tối đa 10 thành viên/lời mời; mỗi người nhận tối đa 100 dòng thời gian/lời mời. Khi quay lại tab hoặc khoảng 30 giây, ứng dụng đối chiếu phiên bản trước, chỉ tải lại danh sách khi có thay đổi; không ghi đè form đang mở. Khi hai người cùng sửa một mốc, bản lưu sau với revision cũ nhận thông báo xung đột và giữ nội dung đang nhập.
 
 Chia sẻ này áp dụng cho dấu mốc/ghi chú và ảnh của chúng. Album, ảnh riêng trong album và các mốc tổng hợp từ album không tự được cấp quyền. Tạo scrapbook từ dấu mốc tiếp tục dùng nguồn thuộc tài khoản của người tạo; chia sẻ album công khai vẫn là cơ chế riêng chỉ đọc.
 

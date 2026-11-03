@@ -1,3 +1,4 @@
+import { extraDecorations, smallSymbols } from './extra-decorations.js';
 const art = (width: number, height: number, body: string) =>
   'data:image/svg+xml;charset=utf-8,' +
   encodeURIComponent(
@@ -203,6 +204,8 @@ export const decorationCatalog = [
       '<g fill="none" stroke-width="7" stroke-linecap="round"><path d="M22 28L29 42M101 19L91 31M214 30L221 45M158 116L171 121" stroke="#c78d8c"/><path d="M60 93L51 107M232 135L224 146M88 174L101 181" stroke="#9aaf88"/><path d="M141 49L151 41M30 156L38 169M188 184L201 174" stroke="#d7b66f"/></g><g fill="#d5bb87"><circle cx="174" cy="25" r="5"/><circle cx="127" cy="145" r="5"/><circle cx="204" cy="87" r="4"/></g>',
     ),
   },
+  ...extraDecorations,
+  ...smallSymbols,
 ] as const;
 export type DecorationId = (typeof decorationCatalog)[number]['id'];
 export const decorationIds = decorationCatalog.map((d) => d.id) as [

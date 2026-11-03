@@ -12,6 +12,8 @@ import { JournalService } from '../apps/api/src/journal.js';
 import { LocalMediaStore } from '../apps/api/src/storage.js';
 import { authHash, AccountSecurity, passwordHash } from '../apps/api/src/auth.js';
 import { createBackup, restoreBackup } from '../apps/api/src/backup.js';
+import { privateSpaceId } from '../apps/api/src/journal-privacy.js';
+import { LibraryService } from '../apps/api/src/library.js';
 
 const content = {
   title: 'Ngày chung',
@@ -82,6 +84,95 @@ async function photo() {
     .toBuffer();
   return { buffer, size: buffer.length, originalname: 'shared.png' } as Express.Multer.File;
 }
+
+test('private space remains private before and after inviting; switching scope fences feed, photos, history and collaborators', async () => {
+  const f = await fixture(),
+    [a, b] = f.users;
+  try {
+    let personal = await f.journal.create(a, {
+      ...content,
+      timelineId: privateSpaceId(a),
+      title: 'Nhật ký riêng',
+    });
+    personal = await f.journal.upload(a, personal.id, await photo());
+    const photoId = personal.assets[0].id;
+    const grant = await f.journal.sharing.invite(a, { email: f.emails[1] });
+    await f.journal.sharing.change(b, grant.id, { expectedRevision: 0, action: 'accept' });
+    await assert.rejects(f.journal.read(b, personal.id), status(404));
+    assert.equal((await f.journal.list(b)).length, 0);
+    const library = new LibraryService(f.db, f.journal);
+    assert.equal((await library.page(b, {})).total, 0);
+    assert.equal((await library.page(b, {}, true)).total, 0);
+    const before = await f.journal.state(b);
+    personal = await f.journal.save(a, personal.id, {
+      expectedRevision: personal.revision,
+      content: { ...content, title: 'Vẫn riêng tư' },
+    });
+    assert.deepEqual(
+      await f.journal.state(b),
+      before,
+      'Private journal updates cannot invalidate another member scope',
+    );
+    const spaces = (await f.journal.sharing.state(a)).spaces!;
+    assert.ok(spaces.some((s) => !s.shared && s.id === privateSpaceId(a)));
+    assert.ok(spaces.some((s) => s.shared && s.id === a));
+    personal = await f.journal.save(a, personal.id, {
+      expectedRevision: personal.revision,
+      spaceId: a,
+      content,
+    });
+    assert.equal((await f.journal.read(b, personal.id)).id, personal.id);
+    const sharedVersion = (await f.journal.history(b, personal.id))[0];
+    await assert.rejects(
+      f.journal.save(b, personal.id, {
+        expectedRevision: personal.revision,
+        spaceId: privateSpaceId(b),
+        content,
+      }),
+      status(403),
+    );
+    personal = await f.journal.save(a, personal.id, {
+      expectedRevision: personal.revision,
+      spaceId: privateSpaceId(a),
+      content,
+    });
+    await assert.rejects(f.journal.read(b, personal.id), status(404));
+    await assert.rejects(f.journal.archivedAsset(b, sharedVersion.id, photoId, true), status(404));
+    personal = await f.journal.restore(
+      a,
+      personal.id,
+      { expectedRevision: personal.revision },
+      sharedVersion.id,
+    );
+    assert.equal(
+      personal.visibility,
+      'private',
+      'Restoring old shared history cannot republish a private entry',
+    );
+    assert.equal(personal.assets[0].id, photoId);
+    await assert.rejects(f.journal.read(b, personal.id), status(404));
+  } finally {
+    await f.close();
+  }
+});
+
+test('legacy private records are frozen before first invite while previously shared records remain readable', async () => {
+  const f = await fixture(),
+    [a, b] = f.users;
+  try {
+    const legacy = await f.journal.create(a, content);
+    await f.db.put('journal', legacy.id, a, { ...legacy, visibility: undefined });
+    const grant = await f.journal.sharing.invite(a, { email: f.emails[1] });
+    await f.journal.sharing.change(b, grant.id, { expectedRevision: 0, action: 'accept' });
+    assert.equal((await f.journal.read(a, legacy.id)).visibility, 'private');
+    await assert.rejects(f.journal.read(b, legacy.id), status(404));
+    const priorShared = await f.journal.create(a, { ...content, timelineId: a });
+    await f.db.put('journal', priorShared.id, a, { ...priorShared, visibility: undefined });
+    assert.equal((await f.journal.read(b, priorShared.id)).id, priorShared.id);
+  } finally {
+    await f.close();
+  }
+});
 
 test('shared space identity, authors and version probes agree for both members without attributing a post to its storage owner', async () => {
   const f = await fixture(),
@@ -220,7 +311,7 @@ test('named invitations require consent; collaborators edit shared milestones wi
   const f = await fixture(),
     [alice, bob, other] = f.users;
   try {
-    const original = await f.journal.create(alice, content);
+    const original = await f.journal.create(alice, { ...content, timelineId: alice });
     await f.journal.create(bob, { ...content, title: 'Riêng của Bob' });
     const grant = await f.journal.sharing.invite(alice, { email: f.emails[1] });
     assert.equal(grant.state, 'pending');
@@ -301,7 +392,7 @@ test('revocation immediately fences reads, updates and in-flight uploads without
   const f = await fixture(),
     [alice, bob] = f.users;
   try {
-    const entry = await f.journal.create(alice, content),
+    const entry = await f.journal.create(alice, { ...content, timelineId: alice }),
       grant = await f.journal.sharing.invite(alice, { email: f.emails[1] });
     await f.journal.sharing.change(bob, grant.id, { expectedRevision: 0, action: 'accept' });
     let entered!: () => void, release!: () => void;
@@ -338,12 +429,49 @@ test('revocation immediately fences reads, updates and in-flight uploads without
   }
 });
 
+test('moving shared milestone to private fences in-flight collaborator uploads while membership stays active', async () => {
+  const f = await fixture(),
+    [alice, bob] = f.users;
+  let release: (() => void) | undefined;
+  try {
+    const entry = await f.journal.create(alice, { ...content, timelineId: alice });
+    const grant = await f.journal.sharing.invite(alice, { email: f.emails[1] });
+    await f.journal.sharing.change(bob, grant.id, { expectedRevision: 0, action: 'accept' });
+    let entered!: () => void;
+    const started = new Promise<void>((r) => (entered = r)),
+      resume = new Promise<void>((r) => (release = r));
+    const put = f.store.put.bind(f.store);
+    f.store.put = async (...args) => {
+      await put(...args);
+      entered();
+      await resume;
+    };
+    const checked = assert.rejects(f.journal.upload(bob, entry.id, await photo()), status(404));
+    await started;
+    await f.journal.save(alice, entry.id, {
+      expectedRevision: entry.revision,
+      content,
+      spaceId: privateSpaceId(alice),
+    });
+    release!();
+    await checked;
+    await f.journal.sharing.access(bob, alice);
+    assert.equal((await f.journal.owned(alice, entry.id)).assets.length, 0);
+    assert.equal((await f.resources.usage(alice)).storageBytes, 0);
+    await assert.rejects(f.journal.owned(bob, entry.id), status(404));
+  } finally {
+    release?.();
+    await f.close();
+  }
+});
+
 test('sharing survives backup; deleting a member revokes their memberships without deleting the timeline owner milestones', async () => {
   const f = await fixture(),
     [alice, bob] = f.users;
   try {
     const entry = await f.journal.create(alice, {
         ...content,
+        timelineId: alice,
         kind: 'plan',
         plan: {
           status: 'planned',

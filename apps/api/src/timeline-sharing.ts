@@ -15,6 +15,7 @@ import { Repository } from './database.js';
 import { AccountDeletion } from './account-deletion.js';
 import { authHash, type Account } from './auth.js';
 import { profileView } from './profile-view.js';
+import { privateSpaceId, hasSharedHistory, freezeLegacyPrivate } from './journal-privacy.js';
 
 export class TimelineSharing {
   constructor(
@@ -81,13 +82,28 @@ export class TimelineSharing {
       ]),
     ];
     ids.sort();
+    const spaces = await Promise.all(
+      ids.filter((id) => id !== actor).map((id) => this.space(actor, id)),
+    );
+    if (await hasSharedHistory(this.db, actor)) spaces.push(await this.space(actor, actor));
+    spaces.sort((a, b) => a.id.localeCompare(b.id));
+    spaces.unshift(await this.space(actor, privateSpaceId(actor)));
     return {
       ownId: actor,
       grants: visible,
-      spaces: await Promise.all(ids.map((id) => this.space(actor, id))),
+      spaces,
     };
   }
   async space(actor: string, id: string): Promise<TimelineSpace> {
+    if (id === privateSpaceId(actor)) {
+      await this.access(actor, actor);
+      return {
+        id,
+        title: 'Không gian riêng',
+        shared: false,
+        members: [{ id: actor, ...(await profileView(this.db, actor, 'Bạn')) }],
+      };
+    }
     await this.access(actor, id);
     const active = (await this.db.list<TimelineGrant>('timeline-grant', id)).filter(
       (g) => g.state === 'active',
@@ -103,8 +119,8 @@ export class TimelineSharing {
     const metadata = await this.db.owned<{ title: string }>('timeline-space', id, id);
     return {
       id,
-      title: members.length > 1 ? metadata?.title || 'Không gian chung' : 'Không gian riêng',
-      shared: members.length > 1,
+      title: metadata?.title || 'Không gian chung',
+      shared: true,
       members,
     };
   }
@@ -195,6 +211,7 @@ export class TimelineSharing {
           revision: 0,
           createdAt: new Date().toISOString(),
         };
+        await freezeLegacyPrivate(this.db, actor);
         await this.db.insert('timeline-grant', grant.id, actor, grant);
         await this.db.insert('timeline-space', actor, actor, {
           id: actor,

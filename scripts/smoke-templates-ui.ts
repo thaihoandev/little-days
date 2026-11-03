@@ -80,7 +80,7 @@ try {
   ).json();
   const pieces = counterPresets.flatMap((spec, i) => {
     const counter = counterPreset(spec.id),
-      y = [130, 370, 650][Math.floor(i / 2)];
+      y = [110, 360, 620][Math.floor((i % 6) / 2)];
     counter.x = i % 2 ? 375 : 45;
     counter.y = y;
     counter.width = spec.style === 'seal' ? 230 : 300;
@@ -112,46 +112,51 @@ try {
       expectedRevision: poster.revision,
       content: {
         ...posterContent,
-        pages: [
-          {
-            ...poster.pages[0],
-            elements: [
-              element('text', {
-                text: 'Những kiểu ngày thương',
-                font: 'serif',
-                fontSize: 35,
-                x: 50,
-                y: 45,
-                width: 620,
-                height: 60,
-              }),
-              ...pieces,
-            ],
-          },
-        ],
+        pages: Array.from({ length: Math.ceil(counterPresets.length / 6) }, (_, i) => ({
+          ...poster.pages[0],
+          id: crypto.randomUUID(),
+          elements: [
+            element('text', {
+              text: 'Những kiểu ngày thương',
+              font: 'serif',
+              fontSize: 35,
+              x: 50,
+              y: 45,
+              width: 620,
+              height: 60,
+            }),
+            ...pieces.slice(i * 12, i * 12 + 12),
+          ],
+        })),
       },
     },
   });
-  assert.equal(posterResponse.status(), 200);
+  assert.equal(posterResponse.status(), 200, await posterResponse.text());
   await page.goto(origin + '/albums');
   await page.getByRole('button', { name: 'Mở ' + poster.title, exact: true }).click();
   await page.getByRole('button', { name: 'Xem album', exact: true }).click();
   const posterViewer = page.getByRole('dialog', { name: 'Xem album', exact: true });
-  await expect(posterViewer.locator('[data-counter-style]')).toHaveCount(5);
-  assert.ok(
-    await posterViewer
-      .locator('[data-counter-style]')
-      .evaluateAll((nodes) =>
-        nodes.every(
-          (node) =>
-            node.scrollWidth <= node.clientWidth + 1 && node.scrollHeight <= node.clientHeight + 1,
+  for (let i = 0; i < Math.ceil(counterPresets.length / 6); i++) {
+    const styled = counterPresets.slice(i * 6, i * 6 + 6).filter((p) => p.style !== 'plain').length;
+    await expect(posterViewer.locator('[data-counter-style]')).toHaveCount(styled);
+    assert.ok(
+      await posterViewer
+        .locator('[data-counter-style]')
+        .evaluateAll((nodes) =>
+          nodes.every(
+            (node) =>
+              node.scrollWidth <= node.clientWidth + 1 &&
+              node.scrollHeight <= node.clientHeight + 1,
+          ),
         ),
-      ),
-    'Styled counters must fit their own boxes',
-  );
-  await posterViewer
-    .locator('.viewer-page > div')
-    .screenshot({ path: 'test-results/counter-designs.png' });
+      'Styled counters must fit their own boxes',
+    );
+    await posterViewer
+      .locator('.viewer-page > div')
+      .screenshot({ path: 'test-results/counter-designs-' + i + '.png' });
+    if (i + 1 < Math.ceil(counterPresets.length / 6))
+      await page.getByRole('button', { name: 'Trang sau', exact: true }).click();
+  }
   await page.getByRole('button', { name: 'Đóng album', exact: true }).click();
   assert.deepEqual(errors, []);
   console.log(

@@ -107,14 +107,17 @@ export function TimelineSharingPanel({
         </header>
         <p>
           Cùng sử dụng một không gian: cả hai thêm dấu mốc, chuẩn bị kế hoạch và lưu ảnh tại đây.
-          Album cá nhân vẫn riêng tư.
+          Chỉ dấu mốc lưu ở Không gian chung mới được cùng xem. Không gian riêng và album cá nhân
+          không tự động được chia sẻ.
         </p>
         {!verified && (
           <p className="sharing-hint">
             Đăng nhập và xác minh email trong Tài khoản để mời hoặc chấp nhận lời mời.
           </p>
         )}
-        {(!spaceId || spaceId === state.ownId) && (
+        {(!spaceId ||
+          spaceId === state.ownId ||
+          state.spaces?.some((s) => s.id === spaceId && !s.shared)) && (
           <form onSubmit={(e) => void invite(e)} className="timeline-invite-form">
             <label>
               Email người cùng xây dựng

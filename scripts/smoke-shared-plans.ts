@@ -220,7 +220,9 @@ try {
       await pb.getByRole('button', { name: 'Sửa dấu mốc ' + privateTitle, exact: true }).click();
       const privateEdit = pb.getByRole('dialog', { name: 'Sửa dấu mốc', exact: true });
       await expect(privateEdit.getByLabel('Lưu vào dòng thời gian', { exact: true })).toHaveValue(
-        bob.id,
+        (await (await b.request.get(origin + '/api/timeline-sharing')).json()).spaces.find(
+          (s: any) => !s.shared,
+        ).id,
       );
       await privateEdit.getByRole('button', { name: 'Đóng dấu mốc', exact: true }).click();
       await pb.getByRole('button', { name: 'Dòng thời gian', exact: true }).click();

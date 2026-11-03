@@ -50,6 +50,21 @@ export const elementSchema = z.object({
   animation: z.enum(['none', 'fade', 'rise', 'drop']),
   dateMode: z.enum(['elapsed', 'annual', 'milestone']).optional(),
   counterStyle: z.enum(counterStyleIds).optional(),
+  counterFill: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
+  counterStroke: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
+  counterAccent: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
+  counterCaption: z.string().trim().max(80).optional(),
+  counterDate: dateString.optional(),
+  visualEffect: z.enum(['none', 'float', 'pulse', 'swing']).optional(),
   milestoneDays: z.number().int().min(1).max(50000).optional(),
 });
 export type ScrapElement = z.infer<typeof elementSchema>;
@@ -397,9 +412,10 @@ export function displayedText(
   reference: string,
 ): string {
   if (e.type !== 'anniversary') return e.text;
-  const days = daysTogether(album.startDate, reference);
+  const anchor = e.counterDate || album.startDate;
+  const days = daysTogether(anchor, reference);
   if (e.dateMode === 'annual') {
-    const next = nextAnnual(album.startDate, reference);
+    const next = nextAnnual(anchor, reference);
     return next.days === 0
       ? `Hôm nay tròn ${next.years} năm\nbên nhau ♡`
       : `Còn ${next.days} ngày\nđến kỉ niệm ${next.years} năm`;
@@ -414,7 +430,7 @@ export function displayedText(
         : `Mốc ${target.toLocaleString('vi-VN')} ngày\nđã qua ${-remaining} ngày`;
   }
   return days >= 0
-    ? `${days.toLocaleString('vi-VN')} ngày\nbên nhau`
+    ? `${days.toLocaleString('vi-VN')} ngày\n${e.counterCaption || 'bên nhau'}`
     : `Còn ${Math.abs(days)} ngày\nđến ngày của mình`;
 }
 export function assetUrl(id: string | null, album: Album): string | undefined {

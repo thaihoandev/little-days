@@ -25,6 +25,7 @@ import './memory-community.css';
 import './interface-refinement.css';
 import './reminders.css';
 import './shared-plans.css';
+import './design-refresh.css';
 class Boundary extends React.Component<{ children: React.ReactNode }, { error: boolean }> {
   state = { error: false };
   static getDerivedStateFromError() {

@@ -356,7 +356,7 @@ export default function VideoModal({
               <div className={`job-card ${job.status}`}>
                 <strong>
                   {job.status === 'completed' ? <Check size={17} /> : <Film size={17} />}{' '}
-                  {jobLabels[job.status]}
+                  {active && job.cancelRequested ? 'Đang hủy xuất video…' : jobLabels[job.status]}
                 </strong>
                 <progress value={job.progress} max={100} />
                 <div className="row between">
@@ -366,13 +366,18 @@ export default function VideoModal({
                   {active && (
                     <button
                       className="text-button"
+                      disabled={job.cancelRequested}
                       onClick={() =>
-                        void api(`/exports/${job.id}/cancel`, { method: 'POST' })
-                          .then(load)
+                        void api<JobView>(`/exports/${job.id}/cancel`, { method: 'POST' })
+                          .then((canceled) =>
+                            setJobs((previous) =>
+                              previous.map((item) => (item.id === canceled.id ? canceled : item)),
+                            ),
+                          )
                           .catch((e) => setError(e.message))
                       }
                     >
-                      Hủy tác vụ
+                      {job.cancelRequested ? 'Đã gửi yêu cầu hủy' : 'Hủy tác vụ'}
                     </button>
                   )}
                 </div>

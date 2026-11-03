@@ -7,6 +7,7 @@ import {
 import { randomUUID, createHash } from 'node:crypto';
 import { normalizePhoto } from './images.js';
 import { z } from 'zod';
+import { sharedJournalSql } from './journal-privacy.js';
 import {
   journalContentSchema,
   timelineHeadingSchema,
@@ -23,6 +24,12 @@ import { logEvent } from './observability.js';
 import { TimelineSharing } from './timeline-sharing.js';
 import { profileView } from './profile-view.js';
 import { UploadReceipts, type UploadCommit } from './upload-receipts.js';
+import {
+  privateSpaceId,
+  privateEntry,
+  hasSharedHistory,
+  freezeLegacyPrivate,
+} from './journal-privacy.js';
 
 export class JournalService {
   readonly sharing: TimelineSharing;
@@ -38,6 +45,9 @@ export class JournalService {
     const owner = await this.db.owner('journal', id);
     if (!owner) throw new NotFoundException('Không tìm thấy dấu mốc.');
     await this.sharing.access(actor, owner);
+    const entry = await this.db.get<JournalEntry>('journal', id);
+    if (!entry || (actor !== owner && (await privateEntry(this.db, owner, entry))))
+      throw new NotFoundException('Không tìm thấy dấu mốc.');
     return owner;
   }
   private async present(actor: string, owner: string, entry: JournalEntry): Promise<JournalEntry> {
@@ -69,7 +79,9 @@ export class JournalService {
       );
       for (const row of rows) creators.set(String(row.entry_id), String(row.actor_id));
     }
+    const legacyShared = await hasSharedHistory(this.db, owner);
     return entries.map((entry) => {
+      const isPrivate = entry.visibility ? entry.visibility === 'private' : !legacyShared;
       const createdBy = entry.createdBy || creators.get(entry.id),
         author = createdBy ? members.get(createdBy) : undefined;
       return {
@@ -77,8 +89,10 @@ export class JournalService {
         createdBy,
         authorName: author?.displayName || (createdBy ? 'Thành viên trước đây' : 'Thành viên'),
         authorAvatarUrl: author?.avatarUrl,
-        spaceId: space.id,
-        spaceTitle: space.title,
+        visibility: isPrivate ? ('private' as const) : ('shared' as const),
+        canChangeSpace: actor === owner,
+        spaceId: isPrivate ? privateSpaceId(owner) : space.id,
+        spaceTitle: isPrivate ? 'Không gian riêng' : space.title,
       };
     });
   }
@@ -93,8 +107,8 @@ export class JournalService {
         ]),
       ].sort();
     const rows = await this.db.query(
-      `SELECT kind,id,owner,revision FROM records WHERE kind IN ('journal','profile','timeline-heading','timeline-space') AND owner IN (${owners.map(() => '?').join(',')}) ORDER BY kind,id`,
-      owners,
+      `SELECT kind,id,owner,revision FROM records r WHERE kind IN ('journal','profile','timeline-heading','timeline-space') AND owner IN (${owners.map(() => '?').join(',')}) AND (r.kind<>'journal' OR r.owner=? OR ${sharedJournalSql(this.db.driver)}) AND (r.kind<>'timeline-heading' OR r.owner=?) ORDER BY kind,id`,
+      [...owners, actor, actor],
     );
     const scope = createHash('sha256')
       .update(
@@ -122,9 +136,14 @@ export class JournalService {
     owner: string,
     content: z.infer<typeof journalContentSchema>,
     current?: JournalEntry,
+    personal = false,
   ) {
     if (!content.plan) return;
-    const members = new Set((await this.sharing.space(actor, owner)).members.map((m) => m.id));
+    const members = new Set(
+      (await this.sharing.space(actor, personal ? privateSpaceId(owner) : owner)).members.map(
+        (m) => m.id,
+      ),
+    );
     for (const task of content.plan.checklist) {
       if (!task.assigneeId || members.has(task.assigneeId)) continue;
       const old = current?.plan?.checklist.find((t) => t.id === task.id);
@@ -165,7 +184,7 @@ export class JournalService {
       await this.sharing.access(owner, grant.timelineOwner);
       entries.push(
         ...(await this.db.list<JournalEntry>('journal', grant.timelineOwner))
-          .filter((e) => !e.deletedAt)
+          .filter((e) => !e.deletedAt && e.visibility !== 'private')
           .map((entry) => ({
             ...entry,
             timelineId: grant.timelineOwner,
@@ -232,7 +251,8 @@ export class JournalService {
   async create(actor: string, body: unknown) {
     const content = journalContentSchema.parse(body);
     const { timelineId } = z.object({ timelineId: z.uuid().optional() }).parse(body);
-    const owner = timelineId || actor;
+    const personal = timelineId === privateSpaceId(actor);
+    const owner = personal ? actor : timelineId || actor;
     return this.withTimeline(actor, owner, () =>
       this.db.transaction(async () => {
         if (this.db.driver === 'postgresql')
@@ -242,6 +262,10 @@ export class JournalService {
         const now = new Date().toISOString(),
           entry: JournalEntry = {
             ...content,
+            visibility:
+              personal || (!timelineId && !(await hasSharedHistory(this.db, owner)))
+                ? 'private'
+                : 'shared',
             createdBy: actor,
             updatedBy: actor,
             id: randomUUID(),
@@ -250,7 +274,14 @@ export class JournalService {
             createdAt: now,
             updatedAt: now,
           };
-        await this.validatePlan(actor, owner, content);
+        await this.validatePlan(actor, owner, content, undefined, entry.visibility === 'private');
+        if (entry.visibility === 'shared') {
+          await freezeLegacyPrivate(this.db, owner);
+          await this.db.insert('timeline-space', owner, owner, {
+            id: owner,
+            title: 'Không gian chung',
+          });
+        }
         await this.db.insert('journal', entry.id, owner, entry);
         await this.checkpoint(owner, actor, entry, 'create');
         return this.present(actor, owner, entry);
@@ -261,9 +292,13 @@ export class JournalService {
     const owner = await this.ownerOf(actor, id);
     return this.withTimeline(actor, owner, async () => {
       const input = z
-        .object({ expectedRevision: z.number().int().nonnegative(), content: journalContentSchema })
+        .object({
+          expectedRevision: z.number().int().nonnegative(),
+          content: journalContentSchema,
+          spaceId: z.uuid().optional(),
+        })
         .parse(body);
-      const current = await this.owned(owner, id),
+      const current = await this.owned(actor, id),
         entry = {
           ...current,
           ...input.content,
@@ -272,7 +307,27 @@ export class JournalService {
           revision: input.expectedRevision + 1,
           updatedAt: new Date().toISOString(),
         };
-      await this.validatePlan(actor, owner, input.content, current);
+      if (input.spaceId) {
+        if (actor !== owner)
+          throw new ForbiddenException('Chỉ người quản lý dữ liệu được đổi không gian lưu.');
+        if (input.spaceId !== owner && input.spaceId !== privateSpaceId(owner))
+          throw new BadRequestException('Không gian lưu không hợp lệ.');
+        entry.visibility = input.spaceId === owner ? 'shared' : 'private';
+        if (entry.visibility === 'shared') {
+          await freezeLegacyPrivate(this.db, owner, id);
+          await this.db.insert('timeline-space', owner, owner, {
+            id: owner,
+            title: 'Không gian chung',
+          });
+        }
+      }
+      await this.validatePlan(
+        actor,
+        owner,
+        input.content,
+        current,
+        await privateEntry(this.db, owner, entry),
+      );
       if (current.kind === 'plan' && entry.kind === 'memory')
         entry.plan = { ...(entry.plan || { checklist: [] }), status: 'completed' };
       entry.completedAt =
@@ -463,7 +518,7 @@ export class JournalService {
         const { expectedRevision } = z
             .object({ expectedRevision: z.number().int().nonnegative() })
             .parse(body),
-          current = await this.owned(owner, id);
+          current = await this.owned(actor, id);
         if (!current.assets.some((a) => a.id === assetId))
           throw new NotFoundException('Không tìm thấy ảnh.');
         const entry = {
@@ -491,6 +546,8 @@ export class JournalService {
     return this.withTimeline(actor, owner, async () => {
       const entry = await this.db.get<JournalEntry>('journal', id);
       if (!entry || (!trashed && entry.deletedAt))
+        throw new NotFoundException('Không tìm thấy dấu mốc.');
+      if (actor !== owner && (await privateEntry(this.db, owner, entry)))
         throw new NotFoundException('Không tìm thấy dấu mốc.');
       return action(entry, owner);
     });
@@ -558,7 +615,7 @@ export class JournalService {
     for (const owner of owners) {
       await this.sharing.access(actor, owner);
       for (const entry of await this.db.list<JournalEntry>('journal', owner))
-        if (entry.deletedAt)
+        if (entry.deletedAt && (owner === actor || !(await privateEntry(this.db, owner, entry))))
           rows.push({
             ...(await this.present(actor, owner, entry)),
             assets: entry.assets.map((a) => ({
@@ -585,6 +642,7 @@ export class JournalService {
       await this.checkpoint(owner, owner, current, 'previous');
       const next: JournalEntry = {
         ...(version?.snapshot || current),
+        visibility: (await privateEntry(this.db, owner, current)) ? 'private' : 'shared',
         deletedAt: undefined,
         revision: current.revision + 1,
         updatedAt: new Date().toISOString(),

@@ -45,6 +45,8 @@ export const defaultTimelineHeading = {
 };
 export type TimelineHeading = z.infer<typeof timelineHeadingSchema> & { revision: number };
 export type JournalEntry = JournalContent & {
+  visibility?: 'private' | 'shared';
+  canChangeSpace?: boolean;
   createdBy?: string;
   updatedBy?: string;
   authorName?: string;

@@ -4,7 +4,7 @@ import type Konva from 'konva';
 import { bounds, expandSelection } from '../../../packages/domain/layout.js';
 import { elementSchema } from '../../../packages/domain/index.js';
 import { decoration } from '../../../packages/domain/decorations.js';
-import { counterAppearance } from '../../../packages/domain/counter.js';
+import { counterAppearance, counterMotif } from '../../../packages/domain/counter.js';
 import { photoGeometry } from '../../../packages/domain/photo-edit.js';
 import {
   type Album,
@@ -45,7 +45,8 @@ function CounterArt({
   album: Album;
   referenceDate: string;
 }) {
-  const style = counterAppearance(e.counterStyle)!;
+  const style = counterAppearance(e.counterStyle, e)!;
+  const motif = useImage(counterMotif(e.counterStyle, e.width, e.height, style.accent));
   return (
     <Group>
       <Rect
@@ -58,8 +59,14 @@ function CounterArt({
         dash={style.dash}
       />
       {style.header > 0 && (
-        <Rect width={e.width} height={style.header} fill="#ad7b6b" cornerRadius={[12, 12, 0, 0]} />
+        <Rect
+          width={e.width}
+          height={style.header}
+          fill={style.accent}
+          cornerRadius={[Math.min(12, style.radius), Math.min(12, style.radius), 0, 0]}
+        />
       )}
+      {motif && <KonvaImage image={motif} width={e.width} height={e.height} />}
       <Text
         x={style.padding}
         y={style.padding + style.header}

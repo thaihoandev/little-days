@@ -88,7 +88,18 @@ import {
   textPresets,
   textPreset,
 } from '../../../packages/domain/presets.js';
-import { counterStyleNames } from '../../../packages/domain/counter.js';
+import {
+  counterStyleNames,
+  counterThemes,
+  counterAppearance,
+} from '../../../packages/domain/counter.js';
+import {
+  captureDesign,
+  applyDesign,
+  type ElementDesign,
+} from '../../../packages/domain/design-tools.js';
+import { smallSymbols } from '../../../packages/domain/extra-decorations.js';
+import { visualEffects } from '../../../packages/domain/visual-effects.js';
 import { ElementContent } from '../../../packages/scrapbook-renderer/index.js';
 import { LegalLinks } from './LegalLinks.js';
 import { InlineTitle } from './InlineTitle.js';
@@ -358,6 +369,7 @@ export default function App() {
           initial={active}
           userId={user.id}
           extendedFonts={user.fontCatalogVersion === 1}
+          advancedDesign={user.designCatalogVersion === 2}
           notify={notify}
           onBack={() => {
             setActive(null);
@@ -520,6 +532,7 @@ export default function App() {
               libraryReady={user.libraryVersion === 1}
               remindersReady={user.remindersVersion === 1}
               sharedPlansReady={user.sharedPlansVersion === 1}
+              separateSpaces={user.spacesVersion === 2}
               onRefreshAlbums={async (force = false) => {
                 if (!force && Date.now() - libraryLoadedAt.current < 15000) return;
                 const actor = user.id;
@@ -837,12 +850,14 @@ function Editor({
   onBack,
   notify,
   extendedFonts,
+  advancedDesign,
 }: {
   initial: Album;
   userId: string;
   onBack: () => void;
   notify: (s: string) => void;
   extendedFonts: boolean;
+  advancedDesign: boolean;
 }) {
   const doc = useDocument(initial, userId);
   const { album } = doc;
@@ -864,6 +879,11 @@ function Editor({
   const [panel, setPanel] = useState<
     'pages' | 'photos' | 'decorations' | 'memories' | 'settings' | 'layers'
   >('pages');
+  const [decorationSearch, setDecorationSearch] = useState('');
+  const [styleClipboard, setStyleClipboard] = useState<ElementDesign | null>(null);
+  const activeDecorations = (
+    advancedDesign ? decorationCatalog : decorationCatalog.slice(0, 18)
+  ).filter((d) => !d.collection.startsWith('Ký hiệu'));
   const [zoom, setZoom] = useState(1);
   const [keepPhotoRatio, setKeepPhotoRatio] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<string | null>(null);
@@ -1480,27 +1500,40 @@ function Editor({
                 </div>
                 <h4>Bộ đếm & ngày kỉ niệm</h4>
                 <div className="creative-presets counter-presets">
-                  {counterPresets.map((p) => {
-                    const e = counterPreset(p.id);
-                    return (
-                      <button
-                        key={p.id}
-                        aria-label={'Thêm bộ đếm ' + p.name}
-                        onClick={() => add(counterPreset(p.id))}
-                      >
-                        <span className="counter-preset-art">
-                          <span style={{ width: e.width, height: e.height }}>
-                            <ElementContent element={e} album={album} referenceDate={reference} />
+                  {counterPresets
+                    .filter(
+                      (p) =>
+                        advancedDesign ||
+                        ['card', 'ticket', 'seal', 'calendar', 'milestone', 'plain'].includes(p.id),
+                    )
+                    .map((p) => {
+                      const e = counterPreset(p.id);
+                      return (
+                        <button
+                          key={p.id}
+                          aria-label={'Thêm bộ đếm ' + p.name}
+                          onClick={() => add(counterPreset(p.id))}
+                        >
+                          <span className="counter-preset-art">
+                            <span style={{ width: e.width, height: e.height }}>
+                              <ElementContent element={e} album={album} referenceDate={reference} />
+                            </span>
                           </span>
-                        </span>
-                        <strong>{p.name}</strong>
-                      </button>
-                    );
-                  })}
+                          <strong>{p.name}</strong>
+                        </button>
+                      );
+                    })}
                 </div>
                 <h4>Một chút trang trí</h4>
+                <input
+                  aria-label="Tìm trang trí"
+                  placeholder="Tìm hoa, cà phê, chuyến đi…"
+                  value={decorationSearch}
+                  onChange={(e) => setDecorationSearch(e.target.value)}
+                  maxLength={100}
+                />
                 <div className="decoration-collections" role="group" aria-label="Bộ trang trí">
-                  {['Tất cả', ...new Set(decorationCatalog.map((d) => d.collection))].map(
+                  {['Tất cả', ...new Set(activeDecorations.map((d) => d.collection))].map(
                     (name) => (
                       <button
                         key={name}
@@ -1513,10 +1546,15 @@ function Editor({
                   )}
                 </div>
                 <div className="decoration-gallery">
-                  {decorationCatalog
+                  {activeDecorations
                     .filter(
                       (d) =>
-                        decorationCollection === 'Tất cả' || d.collection === decorationCollection,
+                        (decorationCollection === 'Tất cả' ||
+                          d.collection === decorationCollection) &&
+                        (!decorationSearch ||
+                          (d.name + ' ' + d.collection)
+                            .toLocaleLowerCase('vi')
+                            .includes(decorationSearch.toLocaleLowerCase('vi'))),
                     )
                     .map((d) => (
                       <button
@@ -1541,6 +1579,40 @@ function Editor({
                     ))}
                 </div>
                 <h4>Ký hiệu nhỏ</h4>
+                {advancedDesign && (
+                  <div className="symbol-groups">
+                    {[...new Set(smallSymbols.map((s) => s.group))].map((group) => (
+                      <section key={group}>
+                        <h5>{group}</h5>
+                        <div className="sticker-grid">
+                          {smallSymbols
+                            .filter((s) => s.group === group)
+                            .map((symbol) => (
+                              <button
+                                key={symbol.id}
+                                aria-label={'Thêm ký hiệu ' + symbol.name}
+                                title={symbol.name}
+                                onClick={() =>
+                                  add(
+                                    element('sticker', {
+                                      decorationId: symbol.id,
+                                      text: symbol.name,
+                                      width: 72,
+                                      height: 72,
+                                      x: 300,
+                                      y: 380,
+                                    }),
+                                  )
+                                }
+                              >
+                                <img src={symbol.src} alt="" style={{ width: 38, height: 38 }} />
+                              </button>
+                            ))}
+                        </div>
+                      </section>
+                    ))}
+                  </div>
+                )}
                 <div className="sticker-grid">
                   {stickerOptions.map((s, i) => (
                     <button
@@ -1802,6 +1874,43 @@ function Editor({
                 <Images size={16} />
                 Tải ảnh
               </button>
+              <button
+                disabled={!selectedElement}
+                onClick={() => selectedElement && setStyleClipboard(captureDesign(selectedElement))}
+                title="Lưu kiểu chữ, màu và hiệu ứng của phần tử đang chọn"
+              >
+                Sao chép kiểu
+              </button>
+              <button
+                disabled={
+                  !styleClipboard ||
+                  !selectedIdsHere.length ||
+                  page.elements.some((e) => selectedIdsHere.includes(e.id) && e.locked)
+                }
+                onClick={() =>
+                  styleClipboard &&
+                  changeElements(applyDesign(page.elements, selectedIdsHere, styleClipboard))
+                }
+                title="Áp dụng kiểu, giữ vị trí, nội dung và ảnh"
+              >
+                Dán kiểu
+              </button>
+              <button
+                disabled={
+                  !selectedIdsHere.length ||
+                  page.elements.some((e) => selectedIdsHere.includes(e.id) && e.locked)
+                }
+                onClick={() =>
+                  changeElements(
+                    page.elements.map((e) =>
+                      selectedIdsHere.includes(e.id) ? { ...e, rotation: 0 } : e,
+                    ),
+                  )
+                }
+                title="Đặt góc của lựa chọn về 0 độ"
+              >
+                Đặt lại góc
+              </button>
             </div>
             <Suspense
               fallback={
@@ -1871,6 +1980,7 @@ function Editor({
               <>
                 <ElementProperties
                   extendedFonts={extendedFonts}
+                  advancedDesign={advancedDesign}
                   e={selectedElement}
                   keepPhotoRatio={keepPhotoRatio}
                   onKeepPhotoRatio={setKeepPhotoRatio}
@@ -2209,6 +2319,7 @@ function ElementProperties({
   onKeepPhotoRatio,
   onEditPhoto,
   extendedFonts,
+  advancedDesign,
 }: {
   e: ScrapElement;
   patch: (p: Partial<ScrapElement>) => void;
@@ -2217,6 +2328,7 @@ function ElementProperties({
   onKeepPhotoRatio: (value: boolean) => void;
   onEditPhoto: () => void;
   extendedFonts: boolean;
+  advancedDesign: boolean;
 }) {
   const asset = album.assets.find((a) => a.id === e.assetId),
     crop = photoWindow(e, asset);
@@ -2263,6 +2375,16 @@ function ElementProperties({
                 const style = ev.target.value as NonNullable<ScrapElement['counterStyle']>;
                 patch({
                   counterStyle: style,
+                  ...(!e.counterFill
+                    ? {
+                        color:
+                          style === 'midnight'
+                            ? '#f4e7c6'
+                            : e.counterStyle === 'midnight' && e.color === '#f4e7c6'
+                              ? '#687952'
+                              : e.color,
+                      }
+                    : {}),
                   ...(style === 'plain'
                     ? {}
                     : style === 'seal'
@@ -2271,11 +2393,17 @@ function ElementProperties({
                 });
               }}
             >
-              {Object.entries(counterStyleNames).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
+              {Object.entries(counterStyleNames)
+                .filter(
+                  ([value]) =>
+                    advancedDesign ||
+                    ['plain', 'card', 'ticket', 'seal', 'calendar'].includes(value),
+                )
+                .map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
             </select>
           </label>
           <label>
@@ -2290,6 +2418,73 @@ function ElementProperties({
               <option value="milestone">Mốc số ngày tùy chỉnh</option>
             </select>
           </label>
+          {advancedDesign && (
+            <>
+              <label>
+                Ngày riêng của bộ đếm
+                <input
+                  aria-label="Ngày riêng của bộ đếm"
+                  type="date"
+                  min="1900-01-01"
+                  max="2200-12-31"
+                  value={e.counterDate || album.startDate}
+                  onChange={(ev) => patch({ counterDate: ev.target.value || undefined })}
+                />
+              </label>
+              {(!e.dateMode || e.dateMode === 'elapsed') && (
+                <label>
+                  Lời nhắn bộ đếm
+                  <input
+                    aria-label="Lời nhắn bộ đếm"
+                    maxLength={80}
+                    value={e.counterCaption || ''}
+                    placeholder="bên nhau"
+                    onChange={(ev) => patch({ counterCaption: ev.target.value })}
+                  />
+                </label>
+              )}
+              {e.counterStyle && e.counterStyle !== 'plain' && (
+                <>
+                  <div className="counter-theme-list" aria-label="Bảng màu bộ đếm">
+                    {counterThemes.map((theme) => (
+                      <button
+                        type="button"
+                        key={theme.id}
+                        title={theme.name}
+                        aria-label={'Bộ đếm màu ' + theme.name}
+                        style={{ background: theme.fill, outlineColor: theme.stroke }}
+                        onClick={() =>
+                          patch({
+                            counterFill: theme.fill,
+                            counterStroke: theme.stroke,
+                            counterAccent: theme.accent,
+                            color: theme.color,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                  {(['counterFill', 'counterStroke', 'counterAccent'] as const).map((key, i) => (
+                    <label key={key}>
+                      {['Màu nền bộ đếm', 'Màu viền bộ đếm', 'Màu nhấn bộ đếm'][i]}
+                      <input
+                        type="color"
+                        aria-label={['Màu nền bộ đếm', 'Màu viền bộ đếm', 'Màu nhấn bộ đếm'][i]}
+                        value={
+                          e[key] ||
+                          counterAppearance(e.counterStyle, e)?.[
+                            (['fill', 'stroke', 'accent'] as const)[i]
+                          ] ||
+                          '#ffffff'
+                        }
+                        onChange={(ev) => patch({ [key]: ev.target.value })}
+                      />
+                    </label>
+                  ))}
+                </>
+              )}
+            </>
+          )}
           {e.dateMode === 'milestone' && (
             <label>
               Mốc số ngày
@@ -2499,6 +2694,24 @@ function ElementProperties({
           <option value="drop">Ảnh rơi vào trang</option>
         </select>
       </label>
+      {advancedDesign && (
+        <label>
+          Hiệu ứng lặp trong xem trước & video
+          <select
+            aria-label="Hiệu ứng lặp"
+            value={e.visualEffect || 'none'}
+            onChange={(ev) =>
+              patch({ visualEffect: ev.target.value as ScrapElement['visualEffect'] })
+            }
+          >
+            {Object.entries(visualEffects).map(([id, label]) => (
+              <option key={id} value={id}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
       <p className="small muted">Nếu chữ bị khuất, tăng chiều cao khung hoặc giảm cỡ chữ.</p>
     </fieldset>
   );

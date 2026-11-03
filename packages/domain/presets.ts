@@ -83,6 +83,39 @@ export function textPreset(id: string) {
   });
 }
 export const counterPresets = [
+  {
+    id: 'postcard',
+    name: 'Bưu thiếp ngày thương',
+    style: 'postcard',
+    mode: 'elapsed',
+    width: 350,
+    height: 190,
+  },
+  {
+    id: 'midnight',
+    name: 'Ngày đêm sao',
+    style: 'midnight',
+    mode: 'elapsed',
+    width: 340,
+    height: 190,
+  },
+  { id: 'stamp', name: 'Tem ngày hẹn', style: 'stamp', mode: 'annual', width: 310, height: 210 },
+  {
+    id: 'notebook',
+    name: 'Trang vở bên nhau',
+    style: 'notebook',
+    mode: 'elapsed',
+    width: 350,
+    height: 185,
+  },
+  {
+    id: 'ribbon',
+    name: 'Dải ngày thương',
+    style: 'ribbon',
+    mode: 'milestone',
+    width: 350,
+    height: 205,
+  },
   { id: 'card', name: 'Thẻ đếm ngày', style: 'card', mode: 'elapsed', width: 330, height: 180 },
   { id: 'ticket', name: 'Vé bên nhau', style: 'ticket', mode: 'elapsed', width: 350, height: 170 },
   { id: 'seal', name: 'Dấu tròn kỉ niệm', style: 'seal', mode: 'elapsed', width: 230, height: 230 },
@@ -121,7 +154,7 @@ export function counterPreset(id: string) {
     text: 'ngày bên nhau',
     font: spec.style === 'seal' ? 'serif' : 'sans',
     fontSize: spec.style === 'seal' ? 25 : 27,
-    color: spec.style === 'seal' ? '#a16e64' : '#687952',
+    color: spec.style === 'midnight' ? '#f4e7c6' : spec.style === 'seal' ? '#a16e64' : '#687952',
     width: spec.width,
     height: spec.height,
     x: 180,

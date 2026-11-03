@@ -73,9 +73,14 @@ try {
       current = await saved();
       assert.equal(current.pages[0].elements.at(-1)!.type, 'sticker');
       await page.getByRole('button', { name: 'Trang trí', exact: true }).click();
-      await expect(page.locator('.counter-presets > button')).toHaveCount(6);
+      await expect(page.locator('.counter-presets > button')).toHaveCount(11);
       await expect(page.locator('.text-presets > button')).toHaveCount(6);
       for (const name of [
+        'Bưu thiếp ngày thương',
+        'Ngày đêm sao',
+        'Tem ngày hẹn',
+        'Trang vở bên nhau',
+        'Dải ngày thương',
         'Thẻ đếm ngày',
         'Vé bên nhau',
         'Dấu tròn kỉ niệm',

@@ -267,7 +267,7 @@ test('revocation, reinvitation, trash, date edits and disabled rules fence notif
   const f = await fixture(),
     [owner, member] = f.users;
   try {
-    let entry = await f.journal.create(owner, content);
+    let entry = await f.journal.create(owner, { ...content, timelineId: owner });
     const grant = await f.journal.sharing.invite(owner, { email: member + '@fixture.test' });
     await f.journal.sharing.change(member, grant.id, { expectedRevision: 0, action: 'accept' });
     const r = await rule(f, member, entry.id, true);
@@ -343,7 +343,7 @@ test('bounded scheduler batches advance fairly; backup/restore preserves deliver
         await restored.close();
       }
     }
-    const entry = await f.journal.create(owner, content),
+    const entry = await f.journal.create(owner, { ...content, timelineId: owner }),
       grant = await f.journal.sharing.invite(owner, { email: member + '@fixture.test' });
     await f.journal.sharing.change(member, grant.id, { expectedRevision: 0, action: 'accept' });
     await preferences(f, member, { emailEnabled: true });

@@ -109,6 +109,7 @@ export default function JournalDashboard({
   libraryReady = false,
   remindersReady = false,
   sharedPlansReady = false,
+  separateSpaces = false,
   onRefreshAlbums,
   showHolidays = true,
   focusDate,
@@ -127,6 +128,7 @@ export default function JournalDashboard({
   libraryReady?: boolean;
   remindersReady?: boolean;
   sharedPlansReady?: boolean;
+  separateSpaces?: boolean;
   onRefreshAlbums?: (force?: boolean) => Promise<void>;
   showHolidays?: boolean;
   focusDate?: string;
@@ -186,10 +188,13 @@ export default function JournalDashboard({
       (!selectionReady.current ||
         (!spaceSelection.has(userId) &&
           selectedTimeline === 'all' &&
-          state.spaces?.some((s) => s.shared)))
+          state.spaces?.some((s) => s.shared && s.members.length > 1)))
     ) {
       const desired =
-        spaceSelection.get(userId) || state.spaces?.find((s) => s.shared)?.id || 'all';
+        spaceSelection.get(userId) ||
+        state.spaces?.find((s) => s.shared && s.members.length > 1)?.id ||
+        (separateSpaces ? state.spaces?.find((s) => !s.shared)?.id : undefined) ||
+        'all';
       setSelectedTimeline(
         desired === 'all' || state.spaces?.some((s) => s.id === desired) ? desired : 'all',
       );
@@ -350,13 +355,19 @@ export default function JournalDashboard({
       setError('');
       if (
         selectedTimeline !== 'all' &&
-        selectedTimeline !== userId &&
-        !state?.grants.some(
-          (g) =>
-            g.memberId === userId && g.timelineOwner === selectedTimeline && g.state === 'active',
-        )
+        (separateSpaces
+          ? !state?.spaces?.some((s) => s.id === selectedTimeline)
+          : selectedTimeline !== userId &&
+            !state?.grants.some(
+              (g) =>
+                g.memberId === userId &&
+                g.timelineOwner === selectedTimeline &&
+                g.state === 'active',
+            ))
       )
-        setSelectedTimeline('all');
+        setSelectedTimeline(
+          separateSpaces ? state?.spaces?.find((s) => !s.shared)?.id || 'all' : 'all',
+        );
     } finally {
       refreshBusy.current = false;
     }
@@ -427,12 +438,30 @@ export default function JournalDashboard({
   );
   const all: Item[] = useMemo(
     () =>
-      (paged ? feed.items.map(fromFeed) : [...entries, ...albumItems]).filter((e) =>
+      (paged ? feed.items.map(fromFeed) : [...entries, ...albumItems]).filter((e: Item) =>
         mode === 'timeline'
-          ? selectedTimeline === 'all' || (e.timelineId || userId) === selectedTimeline
+          ? paged ||
+            selectedTimeline === 'all' ||
+            (e.spaceId ||
+              (e.album && separateSpaces
+                ? sharing.spaces?.find((s) => !s.shared)?.id
+                : undefined) ||
+              e.timelineId ||
+              userId) === selectedTimeline
           : e.calendarVisible !== false,
       ),
-    [paged, feed.items, entries, albumItems, albums, mode, selectedTimeline, userId],
+    [
+      paged,
+      feed.items,
+      entries,
+      albumItems,
+      albums,
+      mode,
+      selectedTimeline,
+      userId,
+      separateSpaces,
+      sharing.spaces,
+    ],
   );
   const upcoming = all
     .map((entry) => ({ entry, next: nextOccurrence(entry, today) }))
@@ -642,9 +671,19 @@ export default function JournalDashboard({
         </div>
       )}
       {mode === 'timeline' &&
-        (timelineOptions.length > 1 || sharing.spaces?.some((s) => s.shared)) && (
-          <label className="timeline-scope">
-            Dòng thời gian đang xem
+        (separateSpaces || timelineOptions.length > 1 || sharing.spaces?.some((s) => s.shared)) && (
+          <div className="timeline-scope">
+            <div>
+              <span className="eyebrow">NƠI GIỮ NHỮNG NGÀY</span>
+              <strong>Không gian đang mở</strong>
+              <small>
+                {selectedTimeline === 'all'
+                  ? 'Tổng hợp nội dung từ các không gian bạn được xem.'
+                  : currentSpace?.shared
+                    ? 'Các thành viên cùng xem và chỉnh sửa tại đây.'
+                    : 'Nội dung riêng chỉ mình bạn xem.'}
+              </small>
+            </div>
             <select
               aria-label="Chọn dòng thời gian"
               value={selectedTimeline}
@@ -656,14 +695,14 @@ export default function JournalDashboard({
                 setChosen([]);
               }}
             >
-              <option value="all">Tất cả dòng thời gian</option>
+              <option value="all">Tất cả không gian của tôi</option>
               {timelineOptions.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.label}
                 </option>
               ))}
             </select>
-          </label>
+          </div>
         )}
       {mode === 'timeline' && (
         <div className="journey-intro">
@@ -1588,13 +1627,17 @@ export default function JournalDashboard({
         <JournalDialog
           enhancedReady={enhancedReady}
           sharedPlansReady={sharedPlansReady}
+          separateSpaces={separateSpaces}
+          ownerId={userId}
           convertPlan={convertingPlan}
           spaces={sharing.spaces || []}
           timelines={timelineOptions}
           defaultTimeline={
             selectedTimeline !== 'all'
               ? selectedTimeline
-              : sharing.spaces?.find((s) => s.shared)?.id || userId
+              : sharing.spaces?.find((s) => s.shared && s.members.length > 1)?.id ||
+                (separateSpaces ? sharing.spaces?.find((s) => !s.shared)?.id : undefined) ||
+                userId
           }
           initial={editing}
           draft={editing === null ? holidayDraft : undefined}
@@ -1665,6 +1708,8 @@ function FlowerMark() {
 function JournalDialog({
   enhancedReady,
   sharedPlansReady,
+  separateSpaces,
+  ownerId,
   convertPlan,
   spaces,
   timelines,
@@ -1679,6 +1724,8 @@ function JournalDialog({
 }: {
   enhancedReady: boolean;
   sharedPlansReady: boolean;
+  separateSpaces: boolean;
+  ownerId: string;
   convertPlan: boolean;
   spaces: TimelineSpace[];
   timelines: { id: string; label: string }[];
@@ -1739,6 +1786,7 @@ function JournalDialog({
     try {
       if (
         !entry ||
+        (separateSpaces && entry.canChangeSpace && timelineId !== entry.spaceId) ||
         Object.entries(content).some(
           ([key, value]) =>
             JSON.stringify(value) !== JSON.stringify(entry[key as keyof JournalEntry]),
@@ -1747,7 +1795,13 @@ function JournalDialog({
         current = await api<JournalEntry>(entry ? '/journal/' + entry.id : '/journal', {
           method: entry ? 'PATCH' : 'POST',
           body: JSON.stringify(
-            entry ? { expectedRevision: entry.revision, content } : { ...content, timelineId },
+            entry
+              ? {
+                  expectedRevision: entry.revision,
+                  content,
+                  ...(separateSpaces && entry.canChangeSpace ? { spaceId: timelineId } : {}),
+                }
+              : { ...content, timelineId },
           ),
         });
       if (!current) throw new Error('Chưa lưu được dấu mốc.');
@@ -1811,14 +1865,22 @@ function JournalDialog({
             <select
               aria-label="Lưu vào dòng thời gian"
               value={timelineId}
-              disabled={busy || !!entry}
+              disabled={busy || (!!entry && (!separateSpaces || !entry.canChangeSpace))}
               onChange={(e) => setTimelineId(e.target.value)}
             >
-              {timelines.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
-                </option>
-              ))}
+              {timelines
+                .filter(
+                  (t) =>
+                    !separateSpaces ||
+                    !entry?.canChangeSpace ||
+                    t.id === ownerId ||
+                    spaces.some((s) => s.id === t.id && !s.shared),
+                )
+                .map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.label}
+                  </option>
+                ))}
             </select>
           </label>
         )}
@@ -1885,7 +1947,7 @@ function JournalDialog({
             {sharedPlansReady && (content.kind === 'plan' || content.plan) && (
               <PlanFields
                 value={content.plan || { status: 'planned', checklist: [] }}
-                members={spaces.find((s) => s.id === (entry?.spaceId || timelineId))?.members || []}
+                members={spaces.find((s) => s.id === timelineId)?.members || []}
                 onChange={(plan) => setContent({ ...content, plan })}
               />
             )}

@@ -56,6 +56,7 @@ function Scene({
           referenceDate={referenceDate}
           assetData={assetData}
           imageComponent={Img}
+          effectTime={frame / fps}
           elementStyle={(e, i) => {
             if (e.animation === 'none') return {};
             const progress = spring({ fps, frame: frame - i * 3, config: { damping: 20 } });

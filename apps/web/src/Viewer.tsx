@@ -19,12 +19,47 @@ export function PagePreview({
   index = 0,
   width = 300,
   thumbnails = false,
+  animateEffects = false,
 }: {
   album: Album;
   index?: number;
   width?: number;
   thumbnails?: boolean;
+  animateEffects?: boolean;
 }) {
+  const [reduced, setReduced] = useState(
+      () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    ),
+    [effectTime, setEffectTime] = useState(0);
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReduced(media.matches);
+    media.addEventListener('change', update);
+    update();
+    return () => media.removeEventListener('change', update);
+  }, []);
+  const hasEffects = album.pages[index]?.elements.some(
+    (element) => element.visualEffect && element.visualEffect !== 'none',
+  );
+  useEffect(() => {
+    if (!animateEffects || reduced || !hasEffects) {
+      setEffectTime(0);
+      return;
+    }
+    let handle = 0,
+      last = -1;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const frame = Math.floor(((now - start) * 30) / 1000);
+      if (frame !== last) {
+        setEffectTime(frame / 30);
+        last = frame;
+      }
+      handle = requestAnimationFrame(tick);
+    };
+    handle = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(handle);
+  }, [animateEffects, reduced, index, hasEffects]);
   return (
     <div style={{ width, height: (width / PAGE_WIDTH) * PAGE_HEIGHT, overflow: 'hidden' }}>
       <div style={{ transform: `scale(${width / PAGE_WIDTH})`, transformOrigin: 'top left' }}>
@@ -37,6 +72,7 @@ export function PagePreview({
           }
           imageComponent={thumbnails ? PreviewImage : undefined}
           referenceDate={todayIn(album.timezone)}
+          effectTime={effectTime}
         />
       </div>
     </div>
@@ -231,7 +267,7 @@ export function Viewer({ album, onClose }: { album: Album; onClose?: () => void 
               }}
               style={{ transformOrigin: 'left center' }}
             >
-              <PagePreview album={album} index={index} width={width} />
+              <PagePreview album={album} index={index} width={width} animateEffects />
             </motion.div>
           </AnimatePresence>
         </div>

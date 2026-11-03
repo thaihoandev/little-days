@@ -86,7 +86,15 @@ try {
             multipart: { file: { name, mimeType: 'image/png', buffer: photo } },
           })
         ).json();
-      const base = { title, date: today, note: 'Lời nhắn ban đầu', kind: 'memory', annual: false };
+      const ownerSession = await (await context.request.get(origin + '/api/session')).json();
+      const base = {
+        title,
+        date: today,
+        note: 'Lời nhắn ban đầu',
+        kind: 'memory',
+        annual: false,
+        timelineId: ownerSession.id,
+      };
       let entry = await (
         await context.request.post(origin + '/api/journal', { data: base })
       ).json();

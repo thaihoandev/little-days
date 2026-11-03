@@ -4,6 +4,7 @@ Cập nhật 03/11/2026. FE/API cần cùng phiên bản hỗ trợ `sharedPlans
 
 ## Không gian và người đăng
 
+- Không gian riêng nay có ID và phạm vi dữ liệu tách khỏi không gian chung. Mời người khác không công bố dấu mốc chưa từng chia sẻ; chủ dữ liệu có thể chủ động đổi đích lưu khi sửa. Chi tiết dữ liệu cũ, quyền ảnh/lịch sử và giới hạn chuyển sở hữu: [DESIGN_SPACES_REFRESH.md](DESIGN_SPACES_REFRESH.md).
 - Sau khi chấp nhận lời mời, hai người mở cùng một không gian có ID ổn định, tên **Không gian chung** và danh sách thành viên giống nhau. Timeline ưu tiên mở không gian chung; bộ chọn vẫn cho xem tất cả hoặc không gian riêng có quyền truy cập.
 - Tạo dấu mốc từ không gian đang chọn mặc định lưu vào không gian đó. Form hiện đích lưu trước khi tạo; dấu mốc đã lưu không tự bị di chuyển khi chỉnh sửa. Album cá nhân không tự chia sẻ hoặc xuất hiện trong feed của không gian chung.
 - Mỗi thẻ dấu mốc có tên/avatar người đăng. `createdBy` được server ghi từ phiên tạo, không nhận từ client; người cùng chỉnh sửa không trở thành người đăng. Dữ liệu cũ lấy người tạo từ checkpoint `create` nếu còn, không suy đoán người đăng từ tài khoản đang giữ storage. Nếu không còn bằng chứng, hiển thị tên chung; thành viên đã rời không gian không tiếp tục lộ hồ sơ riêng.

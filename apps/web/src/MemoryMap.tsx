@@ -105,6 +105,17 @@ export default function MemoryMap({
         image.src = thumbnailUrl(photo.url);
         image.alt = '';
         image.decoding = 'async';
+        Object.assign(image.style, {
+          width: '100%',
+          height: '100%',
+          maxWidth: '100%',
+          maxHeight: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center',
+          borderRadius: '8px',
+          margin: '0',
+          padding: '0',
+        });
         image.onerror = () => {
           image.remove();
           icon.classList.remove('has-photo');
@@ -132,6 +143,19 @@ export default function MemoryMap({
           img.loading = 'lazy';
           img.src = thumbnailUrl(thumbnail.url);
           img.alt = '';
+          Object.assign(img.style, {
+            width: '42px',
+            height: '42px',
+            minWidth: '42px',
+            maxWidth: '42px',
+            maxHeight: '42px',
+            flex: '0 0 42px',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            borderRadius: '7px',
+            margin: '0',
+            padding: '0',
+          });
           img.onerror = () => img.remove();
           row.append(img);
         }

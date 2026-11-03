@@ -111,7 +111,30 @@ try {
   const jobs = await (await context.request.get(base + '/albums/' + id + '/exports')).json();
   assert.equal(jobs[0].config.audioId, tracks[0].id);
   assert.equal(jobs[0].config.sceneDurations[album.pages[1].id], 4);
+  const cancellation = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'POST' &&
+      new URL(response.url()).pathname === '/api/exports/' + jobs[0].id + '/cancel',
+  );
   await page.getByRole('button', { name: 'Hủy tác vụ', exact: true }).click();
+  const accepted = await cancellation;
+  assert.equal(accepted.status(), 201);
+  const cancelState = await accepted.json();
+  assert.equal(cancelState.cancelRequested, true);
+  if (cancelState.status !== 'canceled') {
+    await expect(page.getByText('Đang hủy xuất video…', { exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Đã gửi yêu cầu hủy', exact: true }),
+    ).toBeDisabled();
+  }
+  // Running workers acknowledge cancellation on heartbeat, separately from accepting the request.
+  await expect
+    .poll(
+      async () =>
+        (await (await context.request.get(base + '/exports/' + jobs[0].id)).json()).status,
+      { timeout: 15000 },
+    )
+    .toBe('canceled');
   await expect(page.getByText('Đã hủy xuất video', { exact: true })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator('.audio-waveform').scrollIntoViewIfNeeded();

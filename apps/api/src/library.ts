@@ -12,6 +12,7 @@ import { JournalService } from './journal.js';
 import { dateString } from '../../../packages/domain/index.js';
 import type { TimelineGrant } from '../../../packages/domain/journal.js';
 import type { StoredProfile } from './profile-view.js';
+import { privateSpaceId, sharedJournalSql } from './journal-privacy.js';
 
 const querySchema = z.object({
   limit: z.coerce.number().int().min(1).max(60).default(20),
@@ -85,9 +86,12 @@ export class LibraryService {
       };
     });
     const owners = [...new Set([actor, ...grants.map((g) => g.timelineOwner)])].sort();
-    if (timeline !== 'all' && !owners.includes(timeline))
+    if (timeline !== 'all' && timeline !== privateSpaceId(actor) && !owners.includes(timeline))
       throw new NotFoundException('Không tìm thấy dòng thời gian.');
-    return { owners: timeline === 'all' ? owners : [timeline], grants };
+    return {
+      owners: timeline === 'all' ? owners : [timeline === privateSpaceId(actor) ? actor : timeline],
+      grants,
+    };
   }
   async summaries(actor: string): Promise<AlbumSummary[]> {
     const p = 'payload';
@@ -130,12 +134,21 @@ export class LibraryService {
       ).length > 0
     );
   }
-  private sources(owners: string[], actor: string, photos: boolean, includeAlbums = true) {
-    const albumOwner = includeAlbums && owners.includes(actor) ? actor : '';
+  private sources(
+    owners: string[],
+    actor: string,
+    photos: boolean,
+    view: 'all' | 'private' | 'shared',
+  ) {
+    const albumOwner = view !== 'shared' && owners.includes(actor) ? actor : '';
     const p = 'r.payload',
       t = (key: string) => this.text(p, key),
       j = (key: string) => this.json(p, key);
-    const allowed = `r.owner IN (${owners.map(() => '?').join(',')}) AND ${t('deletedAt')} IS NULL`;
+    const shared = sharedJournalSql(this.db.driver);
+    const privacy =
+      view === 'all' ? `(r.owner=? OR ${shared})` : view === 'private' ? `NOT ${shared}` : shared;
+    const allowed = `r.owner IN (${owners.map(() => '?').join(',')}) AND ${t('deletedAt')} IS NULL AND ${privacy}`;
+    const scopeValues = view === 'all' ? [...owners, actor] : owners;
     if (photos) {
       const item = (origin: 'album' | 'milestone') =>
         this.object({
@@ -149,7 +162,7 @@ export class LibraryService {
       return {
         sql: `SELECT ${item('milestone')} AS item,r.owner FROM documents r,${this.each(j('assets'), 'a')} WHERE r.kind='journal' AND ${allowed}
         UNION ALL SELECT ${item('album')} AS item,r.owner FROM documents r,${this.each(j('assets'), 'a')} WHERE r.kind='album' AND r.owner=?`,
-        values: [...owners, albumOwner],
+        values: [...scopeValues, albumOwner],
       };
     }
     const common = {
@@ -185,7 +198,7 @@ export class LibraryService {
       sql: `SELECT ${this.pg ? 'r.payload' : 'json(r.payload)'} AS item,r.owner FROM documents r WHERE r.kind='journal' AND ${allowed}
       UNION ALL SELECT ${start} AS item,r.owner FROM documents r WHERE r.kind='album' AND r.owner=?
       UNION ALL SELECT ${memory} AS item,r.owner FROM documents r,${this.each(j('memories'), 'm')} WHERE r.kind='album' AND r.owner=?`,
-      values: [...owners, albumOwner, albumOwner],
+      values: [...scopeValues, albumOwner, albumOwner],
     };
   }
   async page(
@@ -196,9 +209,13 @@ export class LibraryService {
   ): Promise<LibraryPage<FeedEntry | LibraryPhoto>> {
     const input = querySchema.parse(raw),
       { owners, grants } = await this.scope(actor, input.timeline);
-    const sharedSpace =
-      input.timeline !== 'all' && (await this.journal.sharing.space(actor, input.timeline)).shared;
-    const source = this.sources(owners, actor, photos, !sharedSpace),
+    const view =
+      input.timeline === 'all'
+        ? 'all'
+        : input.timeline === privateSpaceId(actor)
+          ? 'private'
+          : 'shared';
+    const source = this.sources(owners, actor, photos, view),
       date = this.text('item', 'date'),
       created = photos ? date : `COALESCE(${this.text('item', 'createdAt')},${date})`,
       key = this.text('item', photos ? 'key' : 'id');
@@ -233,18 +250,7 @@ export class LibraryService {
       : `jsonb(json_remove(payload,${omitted.map((key) => `'$.${key}'`).join(',')}))`;
     const base = `WITH documents AS MATERIALIZED (SELECT kind,id,owner,${projection} AS payload FROM records WHERE (kind='journal' AND owner IN (${owners.map(() => '?').join(',')})) OR (kind='album' AND owner=?)),feed AS (${source.sql}) SELECT item,owner FROM feed${clauses.length ? ' WHERE ' + clauses.join(' AND ') : ''}`;
     const fingerprint = createHash('sha256')
-      .update(
-        JSON.stringify([
-          actor,
-          owners,
-          input.q,
-          input.kind,
-          input.source,
-          photos,
-          map,
-          sharedSpace,
-        ]),
-      )
+      .update(JSON.stringify([actor, owners, input.q, input.kind, input.source, photos, map, view]))
       .digest('hex')
       .slice(0, 24);
     let after = '',
@@ -349,10 +355,9 @@ export class LibraryService {
   }
   private mapProjection() {
     const fields = Object.fromEntries(
-      ['id', 'title', 'date', 'kind', 'createdAt', 'updatedAt', 'createdBy'].map((key) => [
-        key,
-        this.text('item', key),
-      ]),
+      ['id', 'title', 'date', 'kind', 'createdAt', 'updatedAt', 'createdBy', 'visibility'].map(
+        (key) => [key, this.text('item', key)],
+      ),
     );
     const first = this.json('item', this.pg ? 'assets.0' : 'assets[0]');
     const assets = this.pg
