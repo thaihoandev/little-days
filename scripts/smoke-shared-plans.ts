@@ -93,6 +93,11 @@ try {
       await expect(
         pa.getByRole('heading', { name: 'Dòng thời gian của mình.', exact: true }),
       ).toBeVisible();
+      const privateSpace = (
+        await (await a.request.get(origin + '/api/timeline-sharing')).json()
+      ).spaces.find((s: any) => !s.shared).id;
+      // Finish the initial private selection before creating a partnership; don't rely on a load race.
+      await expect(pa.getByLabel('Chọn dòng thời gian', { exact: true })).toHaveValue(privateSpace);
       const grant = await (
         await a.request.post(origin + '/api/timeline-sharing', { data: { email: bob.email } })
       ).json();
@@ -149,6 +154,24 @@ try {
         .locator('article.journal-entry')
         .filter({ has: pa.getByRole('heading', { name: title, exact: true }) });
       await expect(acard).toContainText('Đăng bởi Bình');
+      // An explicit personal choice must survive a subsequent version refresh.
+      await pa.getByLabel('Chọn dòng thời gian', { exact: true }).selectOption(privateSpace);
+      await a.request.post(origin + '/api/journal', {
+        data: {
+          title: 'Ghi riêng sau cộng tác',
+          date: new Date().toISOString().slice(0, 10),
+          note: '',
+          kind: 'note',
+          annual: false,
+          timelineId: privateSpace,
+        },
+      });
+      await pa.evaluate(() => window.dispatchEvent(new Event('focus')));
+      await expect(
+        pa.getByRole('heading', { name: 'Ghi riêng sau cộng tác', exact: true }),
+      ).toBeVisible();
+      await expect(pa.getByLabel('Chọn dòng thời gian', { exact: true })).toHaveValue(privateSpace);
+      await pa.getByLabel('Chọn dòng thời gian', { exact: true }).selectOption(alice.id);
       await pa.getByRole('button', { name: /^Album của mình/ }).click();
       await expect(
         pa.getByRole('button', { name: 'Mở Sổ riêng của An', exact: true }),

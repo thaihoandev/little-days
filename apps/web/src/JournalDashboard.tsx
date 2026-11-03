@@ -187,7 +187,6 @@ export default function JournalDashboard({
       state &&
       (!selectionReady.current ||
         (!spaceSelection.has(userId) &&
-          selectedTimeline === 'all' &&
           state.spaces?.some((s) => s.shared && s.members.length > 1)))
     ) {
       const desired =
