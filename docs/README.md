@@ -20,6 +20,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Triển khai và vận hành
 
+- [Ping Render mỗi 10 phút bằng GitHub Actions](RENDER_KEEPALIVE.md)
 - [Bật email nhắc ngày bằng GitHub Actions](REMINDERS_HOLIDAYS.md#bật-email-theo-lịch-trên-render--github-actions)
 - [Hosting miễn phí, Vercel/Render](FREE_HOSTING.md)
 - [Mail và tài khoản](AUTH_EMAIL.md)
