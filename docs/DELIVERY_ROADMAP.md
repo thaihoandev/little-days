@@ -2,6 +2,7 @@
 
 Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → staging/PostgreSQL → load test và pilot, cùng cải thiện editor/video và quy trình backup.
 
+- [x] Mã thiệp mời trong album, bốn mẫu sửa được; nhạc/hiệu ứng cho link chỉ xem, quyền nhạc theo token, chuẩn hóa ký hiệu và bỏ tự đồng ý trong lọ. Xem [hướng dẫn và kiểm chứng](INVITATIONS_AND_SHARED_PREVIEW.md); CI/deploy phải đối chiếu commit.
 - [x] Mã Góc chúng mình: câu hỏi hằng ngày kín đến khi đủ hai câu trả lời; Lọ điều thương nhiều lần gửi, mở theo ngày hoặc đủ đồng thuận; thumbnail trang trí đồng đều. Xem `COUPLE_RITUALS.md` về quyền, hạn mức và phạm vi kiểm chứng.
 - [x] Tách riêng/chung thực tế, chủ dữ liệu đổi đích lưu; sửa avatar/map, bộ chọn và bổ sung trang trí/ký hiệu/bộ đếm/hiệu ứng, sao chép kiểu. Xem `DESIGN_SPACES_REFRESH.md`; trạng thái CI/deploy phải đối chiếu commit khi bàn giao.
 - [x] Mã không gian chung, danh tính người đăng; checklist/phân công/trạng thái và chuyển kế hoạch thành kỉ niệm; kiểm tra phiên bản trước khi refresh khi quay lại ứng dụng. Xem `SHARED_PLANS.md` về quyền, giới hạn lifecycle và kiểm chứng.

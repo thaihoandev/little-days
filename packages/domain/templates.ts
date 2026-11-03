@@ -1,6 +1,35 @@
 import { createPage, element, type Page, type Theme } from './index.js';
 import { decoration, type DecorationId } from './decorations.js';
+import { invitationPage } from './invitations.js';
 export const builtInTemplates = [
+  {
+    id: 'invite-date',
+    name: 'Một cuộc hẹn',
+    theme: 'letter',
+    color: '#f3e3d9',
+    description: 'Thiệp hẹn hò với nét giấy mộc và một tấm ảnh.',
+  },
+  {
+    id: 'invite-birthday',
+    name: 'Mừng ngày của bạn',
+    theme: 'polaroid',
+    color: '#f9e6aa',
+    description: 'Thiệp sinh nhật tươi vui, ảnh và những ngôi sao.',
+  },
+  {
+    id: 'invite-anniversary',
+    name: 'Hẹn ngày yêu thương',
+    theme: 'letter',
+    color: '#e3eada',
+    description: 'Thiệp kỉ niệm trang nhã với hoa và lời mời.',
+  },
+  {
+    id: 'invite-evening',
+    name: 'Một tối dưới sao',
+    theme: 'letter',
+    color: '#24364e',
+    description: 'Thiệp bữa tối màu xanh đêm và ánh vàng.',
+  },
   {
     id: 'polaroid',
     name: 'Nhật ký Polaroid',
@@ -104,6 +133,7 @@ export type BuiltInTemplateId = (typeof builtInTemplates)[number]['id'];
 export function templatePage(id: string, assets: string[] = []): Page {
   const spec = builtInTemplates.find((t) => t.id === id);
   if (!spec) throw new Error('Unknown template.');
+  if (id.startsWith('invite-')) return invitationPage(id, assets);
   const decor = (
     id: DecorationId,
     x: number,

@@ -21,7 +21,7 @@ Mỗi người được gửi nhiều lời nhắn vào bất kỳ lúc nào. M�
 
 1. Viết lời cảm ơn hoặc chuyện nhỏ, tối đa 1.200 ký tự.
 2. Chọn **Cuối tháng này** hoặc **Chọn một ngày**. Form hiển thị ngày cụ thể trước khi gửi; mở lúc 00:00 theo giờ Việt Nam. Cuối tháng là ngày cuối cùng của tháng, không phải ngày đầu tháng sau.
-3. Chọn **Bỏ lời thương vào lọ**. Khi gửi, tác giả đồng ý mở sớm; điều này được giải thích ngay trên form. Có thể rút lại sự đồng ý trước khi lời nhắn mở.
+3. Chọn **Bỏ lời thương vào lọ**. Gửi không tự đồng ý mở sớm: ban đầu 0 phiếu; tác giả cũng phải bấm đồng ý nếu muốn mở trước ngày. Có thể rút lại sự đồng ý trước khi lời nhắn mở. Lời cũ còn kín yêu cầu đồng ý lại theo [cơ chế mới](INVITATIONS_AND_SHARED_PREVIEW.md#lọ-điều-thương-đồng-ý-phải-chủ-động); lời đã mở giữ nguyên.
 4. Người khác chưa thấy nội dung. Lời nhắn chỉ mở khi **đến ngày hẹn HOẶC tất cả thành viên tại thời điểm gửi đã đồng ý mở sớm**. Server kiểm tra ngày, thành viên và biểu quyết; đổi đồng hồ trình duyệt hoặc gửi `openedAt` giả không mở được nội dung.
 5. **Rút một điều thương đã mở** chỉ chọn trong các lời đã đến ngày hoặc đã đủ đồng thuận. Rút ngẫu nhiên không phải cách vượt điều kiện mở; có thể rút lại một lời đã xem trước đó.
 

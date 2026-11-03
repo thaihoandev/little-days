@@ -50,6 +50,7 @@ export type LoveNote = {
   text: string;
   mode: keyof typeof jarModes;
   approvals: string[];
+  consentVersion?: 2;
   unlockAt: string;
   createdAt: string;
   openedAt?: string;

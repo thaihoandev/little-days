@@ -48,7 +48,22 @@ try {
       )
       .toBe(true);
     const path = 'test-results/template-design-' + template.id + '.png';
-    await viewer.locator('.viewer-page > div').screenshot({ path });
+    await expect
+      .poll(() =>
+        viewer.locator('.book-paper [data-visual-effect]').evaluateAll(
+          (nodes, expected) =>
+            nodes.every(
+              (n, i) =>
+                Math.abs(Number((n.parentElement as HTMLElement).style.opacity) - expected[i]) <
+                0.001,
+            ),
+          album.pages[0].elements
+            .filter((e: { visible?: boolean }) => e.visible !== false)
+            .map((e: { opacity: number }) => e.opacity),
+        ),
+      )
+      .toBe(true);
+    await viewer.locator('.book-shell').screenshot({ path });
     thumbnails.push(
       await sharp(await readFile(path))
         .resize(288, 360)
@@ -152,7 +167,7 @@ try {
       'Styled counters must fit their own boxes',
     );
     await posterViewer
-      .locator('.viewer-page > div')
+      .locator('.book-shell')
       .screenshot({ path: 'test-results/counter-designs-' + i + '.png' });
     if (i + 1 < Math.ceil(counterPresets.length / 6))
       await page.getByRole('button', { name: 'Trang sau', exact: true }).click();

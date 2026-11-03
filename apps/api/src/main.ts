@@ -178,7 +178,7 @@ async function ownedAudio(req: UserRequest, albumId: string, audioId: string) {
     throw new NotFoundException('Không tìm thấy nhạc.');
   return audio;
 }
-function validateReferences(album: Album) {
+async function validateReferences(album: Album) {
   const ids = new Set(album.assets.map((a) => a.id));
   for (const page of album.pages)
     for (const e of page.elements)
@@ -187,6 +187,25 @@ function validateReferences(album: Album) {
   for (const memory of album.memories)
     if (memory.assetId && !ids.has(memory.assetId) && !/^demo-[123]$/.test(memory.assetId))
       throw new BadRequestException('Ảnh kỉ niệm không thuộc album.');
+  if (album.presentation?.musicId === 'custom') {
+    const audioId = album.presentation.audioId!;
+    const audio = await repository.get<AudioAsset>('audio', audioId);
+    if (
+      !audio ||
+      audio.albumId !== album.id ||
+      (await repository.owner('audio', audioId)) !== (await repository.owner('album', album.id))
+    )
+      throw new BadRequestException('Nhạc không thuộc album hoặc đã bị xóa.');
+  }
+}
+async function albumWrite<T>(owner: string, action: () => Promise<T>) {
+  return repository.transaction(async () => {
+    if (repository.driver === 'postgresql')
+      await repository.query('SELECT pg_advisory_xact_lock(hashtext(?))', [
+        'owner-operation:' + owner,
+      ]);
+    return action();
+  });
 }
 
 @Controller('api')
@@ -559,6 +578,7 @@ class AppController {
       libraryVersion: 1,
       remindersVersion: 1,
       coupleRitualsVersion: 1,
+      albumPresentationVersion: 1,
       sharedPlansVersion: 1,
       spacesVersion: 2,
       designCatalogVersion: 2,
@@ -750,12 +770,14 @@ class AppController {
       .object({
         title: z.string().trim().min(1).max(120).optional(),
         theme: z.enum(['polaroid', 'letter', 'timeline']).optional(),
+        documentKind: z.enum(['album', 'invitation']).optional(),
         templateId: z.enum(builtInTemplates.map((t) => t.id) as [string, ...string[]]).optional(),
       })
       .parse(body ?? {});
     if ((await repository.list('album', req.userId)).length >= 30)
       throw new BadRequestException('Tối đa 30 album cho bản local.');
     const content = createAlbumContent();
+    if (input.documentKind) content.documentKind = input.documentKind;
     if (input.theme) {
       content.theme = input.theme;
       content.pages = [createPage(input.theme)];
@@ -765,6 +787,16 @@ class AppController {
       const template = builtInTemplates.find((t) => t.id === input.templateId)!;
       content.theme = template.theme;
       content.pages = [templatePage(template.id)];
+      if (template.id.startsWith('invite-')) {
+        content.documentKind = 'invitation';
+        content.presentation = {
+          binding: 'linen',
+          transition: 'soft',
+          ambience: 'petals',
+          musicId: 'none',
+          volume: 0.4,
+        };
+      }
     }
     const album: Album = {
       ...content,
@@ -802,11 +834,13 @@ class AppController {
       revision: expectedRevision + 1,
       updatedAt: new Date().toISOString(),
     };
-    validateReferences(album);
-    if (!(await repository.compareAndSwap('album', id, req.userId, expectedRevision, album)))
-      throw new ConflictException(
-        'Album đã được sửa ở một phiên khác. Bản nháp của bạn vẫn được giữ.',
-      );
+    await albumWrite(req.userId, async () => {
+      await validateReferences(album);
+      if (!(await repository.compareAndSwap('album', id, req.userId, expectedRevision, album)))
+        throw new ConflictException(
+          'Album đã được sửa ở một phiên khác. Bản nháp của bạn vẫn được giữ.',
+        );
+    });
     return album;
   }
   @Get('albums/:id/versions') async versions(@Req() req: UserRequest, @Param('id') id: string) {
@@ -867,11 +901,21 @@ class AppController {
       revision: input.expectedRevision + 1,
       updatedAt: new Date().toISOString(),
     };
-    validateReferences(restored);
-    if (
-      !(await repository.compareAndSwap('album', id, req.userId, input.expectedRevision, restored))
-    )
-      throw new ConflictException('Album đang được sửa ở phiên khác. Tải lại trước khi khôi phục.');
+    await albumWrite(req.userId, async () => {
+      await validateReferences(restored);
+      if (
+        !(await repository.compareAndSwap(
+          'album',
+          id,
+          req.userId,
+          input.expectedRevision,
+          restored,
+        ))
+      )
+        throw new ConflictException(
+          'Album đang được sửa ở phiên khác. Tải lại trước khi khôi phục.',
+        );
+    });
     return restored;
   }
   @Delete('albums/:id') async removeAlbum(@Req() req: UserRequest, @Param('id') id: string) {
@@ -1187,19 +1231,34 @@ class AppController {
     @Param('id') id: string,
     @Param('audioId') audioId: string,
   ) {
-    await ownedAudio(req, id, audioId);
-    if (
-      (await jobs.list(req.userId)).some(
-        (j) =>
-          j.albumId === id &&
-          j.config.audioId === audioId &&
-          !['completed', 'failed', 'canceled'].includes(j.status),
-      )
-    )
-      throw new ConflictException('Nhạc đang được dùng để xuất video. Hãy đợi hoặc hủy tác vụ.');
-    await repository.remove('audio', audioId);
-    await resources.remove('audio/' + audioId + '.mp3');
-    return { ok: true };
+    const operation = await deletion.begin(req.userId);
+    try {
+      await albumWrite(req.userId, async () => {
+        await ownedAudio(req, id, audioId);
+        await deletion.track(operation, ['audio/' + audioId + '.mp3']);
+        const album = await ownedAlbum(req, id);
+        if (album.presentation?.musicId === 'custom' && album.presentation.audioId === audioId)
+          throw new ConflictException(
+            'Nhạc đang dùng cho bản chia sẻ. Đổi nhạc trong Thiết lập trước khi xóa.',
+          );
+        if (
+          (await jobs.list(req.userId)).some(
+            (j) =>
+              j.albumId === id &&
+              j.config.audioId === audioId &&
+              !['completed', 'failed', 'canceled'].includes(j.status),
+          )
+        )
+          throw new ConflictException(
+            'Nhạc đang được dùng để xuất video. Hãy đợi hoặc hủy tác vụ.',
+          );
+        await repository.remove('audio', audioId);
+      });
+      await resources.remove('audio/' + audioId + '.mp3');
+      return { ok: true };
+    } finally {
+      await deletion.end(operation);
+    }
   }
   @Get('albums/:id/exports') async exports(@Req() req: UserRequest, @Param('id') id: string) {
     await ownedAlbum(req, id);
@@ -1238,7 +1297,7 @@ class AppController {
       )
     )
       throw new ConflictException('Album đã có một video đang xuất.');
-    validateReferences(album);
+    await validateReferences(album);
     if (
       album.pages.some(
         (p) =>
@@ -1363,8 +1422,46 @@ class AppController {
     if (!album) throw new NotFoundException('Link đã được thu hồi hoặc album không còn tồn tại.');
     return {
       ...album,
+      ...(album.presentation?.musicId === 'custom' && album.presentation.audioId
+        ? {
+            previewAudio: { url: `/api/shared/${token}/audio/${album.presentation.audioId}` },
+          }
+        : {}),
       assets: album.assets.map((a) => ({ ...a, url: `/api/shared/${token}/assets/${a.id}` })),
     };
+  }
+  @Get('shared/:token/audio/:id') async sharedAudio(
+    @Param('token') token: string,
+    @Param('id') id: string,
+    @Req() req: UserRequest,
+    @Res() res: Response,
+  ) {
+    const album = await this.shared(token);
+    if (album.presentation?.musicId !== 'custom' || album.presentation.audioId !== id)
+      throw new NotFoundException();
+    const audio = await repository.get<AudioAsset>('audio', id);
+    if (
+      !audio ||
+      audio.albumId !== album.id ||
+      (await repository.owner('audio', id)) !== (await repository.owner('album', album.id))
+    )
+      throw new NotFoundException();
+    const bytes = await store.read('audio/' + id + '.mp3', MAX_AUDIO_BYTES);
+    res.type('audio/mpeg').set({ 'Cache-Control': 'no-store', 'Accept-Ranges': 'bytes' });
+    try {
+      const range = byteRange(req.headers.range, bytes.length);
+      if (range)
+        res
+          .status(206)
+          .set('Content-Range', `bytes ${range.start}-${range.end}/${bytes.length}`)
+          .send(bytes.subarray(range.start, range.end + 1));
+      else res.send(bytes);
+    } catch {
+      res
+        .status(416)
+        .set('Content-Range', 'bytes */' + bytes.length)
+        .end();
+    }
   }
   @Get('shared/:token/assets/:id') async sharedAsset(
     @Param('token') token: string,

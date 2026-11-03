@@ -4,6 +4,8 @@ Ngày cập nhật: **03/11/2026**.
 
 ## Kết quả hiện tại
 
+Thiệp mời là loại thiết kế trong album với bốn mẫu thật, sửa chữ nhanh và giữ toàn bộ editor. Chủ album lưu gáy/hiệu ứng/nhạc gốc hoặc audio riêng cho viewer; người nhận link chỉ xem, lật trang và bật/tắt nhạc. Chuẩn hóa input/tag và các ký hiệu; Lọ điều thương bắt đầu 0 phiếu, tác giả phải đồng ý chủ động. Phạm vi, quyền nhạc, tương thích và kiểm chứng trong [INVITATIONS_AND_SHARED_PREVIEW.md](INVITATIONS_AND_SHARED_PREVIEW.md).
+
 Góc chúng mình (`/together`) có câu hỏi hằng ngày mở sau khi cả hai trả lời và Lọ điều thương cho nhiều lần gửi, mở theo ngày hoặc đồng thuận toàn bộ thành viên lúc gửi. Nội dung kín được lọc ở server; phân trang/quota/backup/xóa tài khoản cùng cơ chế hiện có. Chuẩn hóa thumbnail trang trí và tỉ lệ preview bộ đếm; hướng dẫn, giới hạn và kiểm chứng trong [COUPLE_RITUALS.md](COUPLE_RITUALS.md).
 
 Tách dữ liệu không gian riêng/chung bằng quyền API thực tế; giữ tương thích dấu mốc cũ và cho chủ dữ liệu chủ động đổi đích lưu. Sửa crop avatar/map và bộ chọn không gian; thêm 24 trang trí, 12 ký hiệu vector, năm kiểu bộ đếm, màu/ngày/lời nhắn và hiệu ứng lặp, sao chép/dán kiểu. Hướng dẫn và phạm vi kiểm chứng: [DESIGN_SPACES_REFRESH.md](DESIGN_SPACES_REFRESH.md).

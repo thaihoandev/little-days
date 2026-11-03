@@ -155,6 +155,12 @@ try {
       await pb.getByRole('button', { name: 'Rút một điều thương đã mở', exact: true }).click();
       await expect(pb.getByRole('alert')).toContainText('Chưa có lời nhắn đủ điều kiện mở');
       await pb.getByRole('button', { name: 'Đồng ý mở sớm', exact: true }).click();
+      await expect(pb.locator('.jar-card.sealed')).toContainText('1/2');
+      await expect(pb.getByText(secret, { exact: true })).toHaveCount(0);
+      await pa.evaluate(() => window.dispatchEvent(new Event('focus')));
+      await expect(pa.locator('.jar-card.sealed')).toContainText('1/2');
+      await pa.getByRole('button', { name: 'Đồng ý mở sớm', exact: true }).click();
+      await pb.evaluate(() => window.dispatchEvent(new Event('focus')));
       await expect(pb.locator('.jar-card.opened')).toContainText(secret);
       await pa.evaluate(() => window.dispatchEvent(new Event('focus')));
       await expect(pa.locator('.jar-card.opened')).toContainText(secret);
@@ -169,6 +175,11 @@ try {
       const added = await (await a.request.get(root)).json();
       assert.equal(added.jarTotal, 2);
       assert.notEqual(added.jar[0].id, added.jar[1].id);
+      await expect(pa.locator('.jar-card.sealed')).toContainText('0/2');
+      await pa
+        .locator('.jar-card.sealed')
+        .getByRole('button', { name: 'Đồng ý mở sớm', exact: true })
+        .click();
       await pa
         .locator('.jar-card.sealed')
         .getByRole('button', { name: 'Rút lại đồng ý', exact: true })

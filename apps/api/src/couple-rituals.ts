@@ -24,6 +24,9 @@ import type { AccountDeletion } from './account-deletion.js';
 import type { ResourcePolicy } from './resource-policy.js';
 const TZ = 'Asia/Ho_Chi_Minh';
 const digest = (s: string) => createHash('sha256').update(s).digest('hex');
+// Legacy sealed notes included an implicit author vote. Require fresh explicit votes.
+const explicitApprovals = (n: LoveNote) =>
+  n.consentVersion === 2 || n.openedAt ? n.approvals : [];
 function uuid(s: string) {
   const x = digest(s).slice(0, 32).split('');
   x[12] = '5';
@@ -140,7 +143,8 @@ export class CoupleRituals {
     const changed = n.epoch !== c.epoch,
       opened = !!n.openedAt || this.now() >= n.unlockAt,
       author = c.members.find((m) => m.id === n.authorId);
-    const { epoch: _, participants: __, text, approvals, ...view } = n;
+    const { epoch: _, participants: __, text, approvals: _approvals, ...view } = n;
+    const approvals = explicitApprovals(n);
     return {
       ...view,
       opened,
@@ -390,7 +394,8 @@ export class CoupleRituals {
         authorId: actor,
         text: input.text,
         mode: input.mode,
-        approvals: [actor],
+        approvals: [],
+        consentVersion: 2,
         unlockAt,
         createdAt: this.now(),
         revision: 0,
@@ -422,11 +427,12 @@ export class CoupleRituals {
       if (n.epoch !== c.epoch || n.openedAt || this.now() >= n.unlockAt)
         throw new BadRequestException('Lời nhắn này không thể thay đổi biểu quyết.');
       const approvals = input.approve
-          ? [...new Set([...n.approvals, actor])]
-          : n.approvals.filter((x) => x !== actor),
+          ? [...new Set([...explicitApprovals(n), actor])]
+          : explicitApprovals(n).filter((x) => x !== actor),
         next = {
           ...n,
           approvals,
+          consentVersion: 2 as const,
           revision: n.revision + 1,
           ...(n.participants.every((p) => approvals.includes(p)) ? { openedAt: this.now() } : {}),
         };

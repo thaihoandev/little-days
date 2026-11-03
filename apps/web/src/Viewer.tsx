@@ -1,18 +1,35 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { ArrowLeft, ArrowRight, Heart, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { ArrowLeft, ArrowRight, Heart, X, Music2, VolumeX } from 'lucide-react';
 import {
   type Album,
   PAGE_HEIGHT,
   PAGE_WIDTH,
   todayIn,
   daysTogether,
+  defaultPresentation,
+  type AlbumPresentation,
 } from '../../../packages/domain/index.js';
 import { PageArtwork } from '../../../packages/scrapbook-renderer/index.js';
 import { thumbnailUrl } from './thumbnail.js';
 import { useBodyScrollLock } from './Overlays.js';
 import { LegalLinks } from './LegalLinks.js';
+import { builtInMusic } from '../../../packages/domain/music.js';
+
+function useMotionPreference() {
+  const [reduced, setReduced] = useState(
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+  useEffect(() => {
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setReduced(media.matches);
+    media.addEventListener('change', update);
+    update();
+    return () => media.removeEventListener('change', update);
+  }, []);
+  return reduced;
+}
 
 export function PagePreview({
   album,
@@ -41,8 +58,15 @@ export function PagePreview({
   const hasEffects = album.pages[index]?.elements.some(
     (element) => element.visualEffect && element.visualEffect !== 'none',
   );
+  const hasEntrance = album.pages[index]?.elements.some((e) => e.animation !== 'none');
+  const [visible, setVisible] = useState(() => !document.hidden);
   useEffect(() => {
-    if (!animateEffects || reduced || !hasEffects) {
+    const update = () => setVisible(!document.hidden);
+    document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
+  }, []);
+  useEffect(() => {
+    if (!animateEffects || reduced || !visible || (!hasEffects && !hasEntrance)) {
       setEffectTime(0);
       return;
     }
@@ -55,11 +79,11 @@ export function PagePreview({
         setEffectTime(frame / 30);
         last = frame;
       }
-      handle = requestAnimationFrame(tick);
+      if (hasEffects || frame < 90) handle = requestAnimationFrame(tick);
     };
     handle = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(handle);
-  }, [animateEffects, reduced, index, hasEffects]);
+  }, [animateEffects, reduced, visible, index, hasEffects, hasEntrance]);
   return (
     <div style={{ width, height: (width / PAGE_WIDTH) * PAGE_HEIGHT, overflow: 'hidden' }}>
       <div style={{ transform: `scale(${width / PAGE_WIDTH})`, transformOrigin: 'top left' }}>
@@ -73,6 +97,19 @@ export function PagePreview({
           imageComponent={thumbnails ? PreviewImage : undefined}
           referenceDate={todayIn(album.timezone)}
           effectTime={effectTime}
+          elementStyle={
+            animateEffects && !reduced && visible
+              ? (e, i) => {
+                  if (e.animation === 'none') return {};
+                  const t = Math.min(1, Math.max(0, (effectTime - i * 0.04) / 0.5));
+                  const progress = 1 - (1 - t) ** 3;
+                  return {
+                    opacity: e.opacity * progress,
+                    transform: `translateY(${(1 - progress) * (e.animation === 'drop' ? -65 : e.animation === 'fade' ? 0 : 35)}px) rotate(${e.rotation}deg)`,
+                  };
+                }
+              : undefined
+          }
         />
       </div>
     </div>
@@ -81,13 +118,43 @@ export function PagePreview({
 function PreviewImage(props: React.ImgHTMLAttributes<HTMLImageElement>) {
   return <img {...props} loading="lazy" decoding="async" />;
 }
-export function Viewer({ album, onClose }: { album: Album; onClose?: () => void }) {
+export function Viewer({
+  album,
+  onClose,
+  onPresentationChange,
+}: {
+  album: Album;
+  onClose?: () => void;
+  onPresentationChange?: (value: AlbumPresentation) => void;
+}) {
   useBodyScrollLock();
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
-  const [transition, setTransition] = useState<'turn' | 'slide' | 'soft'>('turn');
-  const [binding, setBinding] = useState<'stitched' | 'spiral' | 'linen'>('stitched');
-  const reducedMotion = useReducedMotion();
+  const presentation = album.presentation || defaultPresentation;
+  const [transition, setTransition] = useState(presentation.transition);
+  const [binding, setBinding] = useState(presentation.binding);
+  const audio = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false),
+    [audioError, setAudioError] = useState('');
+  const track = builtInMusic(presentation.musicId);
+  const source = track
+    ? `/audio/${track.file}`
+    : presentation.musicId === 'custom'
+      ? onClose
+        ? `/api/albums/${album.id}/audio/${presentation.audioId}`
+        : album.previewAudio?.url
+      : undefined;
+  useEffect(() => {
+    if (audio.current) audio.current.volume = presentation.volume;
+  }, [presentation.volume, source]);
+  useEffect(() => {
+    const pause = () => {
+      if (document.hidden) audio.current?.pause();
+    };
+    document.addEventListener('visibilitychange', pause);
+    return () => document.removeEventListener('visibilitychange', pause);
+  }, []);
+  const reducedMotion = useMotionPreference();
   const swipe = useRef<{ x: number; y: number } | null>(null);
   const turn = (delta: number) => {
     setDirection(delta < 0 ? -1 : 1);
@@ -147,7 +214,11 @@ export function Viewer({ album, onClose }: { album: Album; onClose?: () => void 
     <div
       ref={root}
       tabIndex={-1}
-      className="viewer"
+      className={
+        'viewer' +
+        (!onClose ? ' shared-viewer' : '') +
+        (album.documentKind === 'invitation' ? ' invitation-viewer' : '')
+      }
       role="dialog"
       aria-modal={!!onClose}
       aria-label="Xem album"
@@ -195,16 +266,22 @@ export function Viewer({ album, onClose }: { album: Album; onClose?: () => void 
         <a className="wordmark" href="/">
           little days<span>♡</span>
         </a>
-        <select
-          className="viewer-binding"
-          aria-label="Phong cách cuốn sổ"
-          value={binding}
-          onChange={(e) => setBinding(e.target.value as typeof binding)}
-        >
-          <option value="stitched">Sổ khâu chỉ</option>
-          <option value="spiral">Sổ gáy xoắn</option>
-          <option value="linen">Sổ bìa vải</option>
-        </select>
+        {onClose && (
+          <select
+            className="viewer-binding"
+            aria-label="Phong cách cuốn sổ"
+            value={binding}
+            onChange={(e) => {
+              const binding = e.target.value as typeof presentation.binding;
+              setBinding(binding);
+              onPresentationChange?.({ ...presentation, binding });
+            }}
+          >
+            <option value="stitched">Sổ khâu chỉ</option>
+            <option value="spiral">Sổ gáy xoắn</option>
+            <option value="linen">Sổ bìa vải</option>
+          </select>
+        )}
         {onClose && (
           <button className="icon-button" aria-label="Đóng album" onClick={onClose}>
             <X />
@@ -212,15 +289,41 @@ export function Viewer({ album, onClose }: { album: Album; onClose?: () => void 
         )}
       </header>
       <div className="viewer-intro">
-        <span className="eyebrow">MỘT CUỐN SỔ CỦA HAI ĐỨA</span>
-        <h1>{album.names.join(' & ')}</h1>
+        <span className="eyebrow">
+          {album.documentKind === 'invitation'
+            ? 'MỘT LỜI MỜI DÀNH CHO BẠN'
+            : 'MỘT CUỐN SỔ CỦA HAI ĐỨA'}
+        </span>
+        <h1>{album.documentKind === 'invitation' ? album.title : album.names.join(' & ')}</h1>
         <p>
-          {days >= 0
-            ? `${days.toLocaleString('vi-VN')} ngày cùng nhau, và còn nhiều hơn thế.`
-            : `Còn ${-days} ngày đến ngày của mình.`}
+          {album.documentKind === 'invitation'
+            ? 'Một ngày đặc biệt, mong có bạn ở đây.'
+            : days >= 0
+              ? `${days.toLocaleString('vi-VN')} ngày cùng nhau, và còn nhiều hơn thế.`
+              : `Còn ${-days} ngày đến ngày của mình.`}
         </p>
       </div>
       <div className="viewer-page" ref={host}>
+        {presentation.ambience !== 'none' && !reducedMotion && (
+          <div className={'viewer-ambience ambience-' + presentation.ambience} aria-hidden="true">
+            {Array.from({ length: 12 }, (_, i) => (
+              <span
+                key={i}
+                style={{
+                  left: `${5 + ((i * 37) % 90)}%`,
+                  animationDelay: `${-i * 1.7}s`,
+                  animationDuration: `${11 + (i % 5)}s`,
+                }}
+              >
+                {presentation.ambience === 'hearts'
+                  ? '♡'
+                  : presentation.ambience === 'petals'
+                    ? '❀'
+                    : '✧'}
+              </span>
+            ))}
+          </div>
+        )}
         <div
           className={'book-shell book-' + binding}
           style={{ width, height: (width / PAGE_WIDTH) * PAGE_HEIGHT }}
@@ -292,15 +395,59 @@ export function Viewer({ album, onClose }: { album: Album; onClose?: () => void 
         >
           <ArrowRight />
         </button>
-        <select
-          aria-label="Hiệu ứng lật trang"
-          value={transition}
-          onChange={(e) => setTransition(e.target.value as typeof transition)}
-        >
-          <option value="turn">Lật trang sổ</option>
-          <option value="slide">Trượt giấy</option>
-          <option value="soft">Mờ nhẹ</option>
-        </select>
+        {onClose && (
+          <select
+            aria-label="Hiệu ứng lật trang"
+            value={transition}
+            onChange={(e) => {
+              const transition = e.target.value as typeof presentation.transition;
+              setTransition(transition);
+              onPresentationChange?.({ ...presentation, transition });
+            }}
+          >
+            <option value="turn">Lật trang sổ</option>
+            <option value="slide">Trượt giấy</option>
+            <option value="soft">Mờ nhẹ</option>
+          </select>
+        )}
+        {source && (
+          <>
+            <audio
+              ref={audio}
+              src={source}
+              preload="none"
+              loop
+              onPlay={() => setPlaying(true)}
+              onPause={() => setPlaying(false)}
+              onError={() => {
+                setPlaying(false);
+                setAudioError('Chưa phát được nhạc. Bạn vẫn có thể xem các trang.');
+              }}
+            />
+            <button
+              className="viewer-music"
+              aria-label={playing ? 'Tắt nhạc' : 'Bật nhạc'}
+              aria-pressed={playing}
+              onClick={() => {
+                if (playing) audio.current?.pause();
+                else {
+                  setAudioError('');
+                  void audio.current?.play().catch(() => {
+                    setAudioError('Chưa phát được nhạc. Bấm bật nhạc để thử lại.');
+                  });
+                }
+              }}
+            >
+              {playing ? <VolumeX size={17} /> : <Music2 size={17} />}
+              <span>{playing ? 'Tắt nhạc' : 'Bật nhạc'}</span>
+            </button>
+          </>
+        )}
+        {audioError && (
+          <span className="viewer-audio-error" role="status">
+            {audioError}
+          </span>
+        )}
       </nav>
       <div className="semantic-album">
         <h2>{album.title}</h2>

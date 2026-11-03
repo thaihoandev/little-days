@@ -281,6 +281,7 @@ try {
   assert.ok(audio.duration >= 7.9 && audio.duration <= 8.1);
   assert.equal((await bob(audio.url.replace('/api', ''))).status, 404);
   assert.equal((await bob('/albums/' + id + '/audio')).status, 404);
+  assert.equal((await bob('/albums/' + id + '/audio/' + audio.id, 'DELETE')).status, 404);
   assert.ok(
     (await (await alice('/albums/' + id + '/audio')).json()).some(
       (a: { id: string }) => a.id === audio.id,
@@ -297,6 +298,87 @@ try {
   assert.equal((await bob(`/shared/${shared.token}`)).status, 200);
   await alice(`/albums/${id}/share`, 'DELETE');
   assert.equal((await bob(`/shared/${shared.token}`)).status, 404);
+  // Presentation uses album CAS/history and only exposes the selected, album-owned audio.
+  let invitation: Album = await (
+    await alice('/albums', 'POST', { title: 'Lời mời fixture', templateId: 'invite-anniversary' })
+  ).json();
+  assert.equal(invitation.documentKind, 'invitation');
+  assert.equal(invitation.presentation?.binding, 'linen');
+  assert.equal(
+    (
+      await alice(`/albums/${invitation.id}`, 'PATCH', {
+        expectedRevision: invitation.revision,
+        content: {
+          ...invitation,
+          presentation: { ...invitation.presentation, musicId: 'custom', audioId: audio.id },
+        },
+      })
+    ).status,
+    400,
+  );
+  const inviteAudioForm = new FormData();
+  inviteAudioForm.append('file', new Blob([audioFixture()]), 'invite.wav');
+  const inviteAudio = await (
+    await alice(`/albums/${invitation.id}/audio`, 'POST', inviteAudioForm)
+  ).json();
+  invitation = await (
+    await alice(`/albums/${invitation.id}`, 'PATCH', {
+      expectedRevision: invitation.revision,
+      content: {
+        ...invitation,
+        presentation: { ...invitation.presentation, musicId: 'custom', audioId: inviteAudio.id },
+      },
+    })
+  ).json();
+  assert.equal(invitation.revision, 1);
+  assert.equal(
+    (await alice(`/albums/${invitation.id}/audio/${inviteAudio.id}`, 'DELETE')).status,
+    409,
+  );
+  const inviteShare = await (await alice(`/albums/${invitation.id}/share`, 'POST')).json();
+  const shareRoute = `/shared/${inviteShare.token}`;
+  const sharedInvite = await (await client()(shareRoute)).json();
+  assert.equal(sharedInvite.presentation.audioId, inviteAudio.id);
+  assert.equal(sharedInvite.previewAudio.url, `/api${shareRoute}/audio/${inviteAudio.id}`);
+  const publicAudio = await fetch(base + shareRoute + '/audio/' + inviteAudio.id, {
+    headers: { Range: 'bytes=0-63' },
+  });
+  assert.equal(publicAudio.status, 206);
+  assert.equal((await publicAudio.arrayBuffer()).byteLength, 64);
+  assert.equal(publicAudio.headers.get('cache-control'), 'no-store');
+  assert.equal((await client()(shareRoute + '/audio/' + audio.id)).status, 404);
+  assert.equal(
+    (await bob(`/albums/${invitation.id}`, 'PATCH', { expectedRevision: 1, content: invitation }))
+      .status,
+    404,
+  );
+  const missingBefore = invitation.revision;
+  invitation = await (
+    await alice(`/albums/${invitation.id}`, 'PATCH', {
+      expectedRevision: invitation.revision,
+      content: {
+        ...invitation,
+        presentation: { ...invitation.presentation, musicId: 'gentle', audioId: undefined },
+      },
+    })
+  ).json();
+  assert.equal((await client()(shareRoute + '/audio/' + inviteAudio.id)).status, 404);
+  invitation = await (
+    await alice(`/albums/${invitation.id}/versions/${missingBefore}/restore`, 'POST', {
+      expectedRevision: invitation.revision,
+    })
+  ).json();
+  assert.equal(invitation.presentation?.audioId, inviteAudio.id);
+  await alice(`/albums/${invitation.id}/share`, 'DELETE');
+  assert.equal((await client()(shareRoute + '/audio/' + inviteAudio.id)).status, 404);
+  assert.equal((await client()(shareRoute)).status, 404);
+  assert.ok(
+    (await (await alice('/albums?summary=1')).json()).some(
+      (a: Album) => a.id === invitation.id && a.documentKind === 'invitation',
+    ),
+  );
+  await alice(`/albums/${invitation.id}`, 'DELETE');
+  assert.equal((await alice(`/albums/${invitation.id}/audio/${inviteAudio.id}`)).status, 404);
   const email = `smoke-${crypto.randomUUID()}@example.test`,
     password = 'a-long-test-password';
   assert.equal((await alice('/auth/register', 'POST', { email, password })).status, 201);

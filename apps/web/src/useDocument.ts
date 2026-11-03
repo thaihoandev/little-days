@@ -7,6 +7,8 @@ import {
 import { api, ApiError } from './api.js';
 export function contentOf(album: Album): AlbumContent {
   return {
+    ...(album.documentKind ? { documentKind: album.documentKind } : {}),
+    ...(album.presentation ? { presentation: album.presentation } : {}),
     title: album.title,
     names: album.names,
     startDate: album.startDate,

@@ -941,8 +941,8 @@ function JarComposer({
           )}
           <p className="jar-consent-hint">
             <LockKeyhole size={17} />
-            Đến ngày hẹn sẽ mở. Có thể mở sớm nếu mọi người đều đồng ý. Khi gửi, bạn là người đồng ý
-            đầu tiên.
+            Đến ngày hẹn sẽ mở. Mở sớm cần mọi người bấm đồng ý, kể cả người viết. Gửi lời nhắn
+            không tự tính là đồng ý.
           </p>
           <small>Ngày mở: {prettyDate(chosenDate || today)} · 00:00, giờ Việt Nam.</small>
           <button className="button primary full" disabled={!text.trim()}>

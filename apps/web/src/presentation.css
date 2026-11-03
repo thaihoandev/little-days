@@ -1,0 +1,235 @@
+/* Catalogue sections remain separate flow items inside the scrolling flex panel. */
+.library-panel > .decoration-search {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  box-sizing: border-box;
+  margin: 0 0 12px;
+}
+.library-panel > .decoration-collections {
+  flex: 0 0 auto;
+  position: static;
+}
+.symbol-groups .sticker-grid,
+.text-symbols {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.symbol-groups .sticker-grid > button,
+.text-symbols > button {
+  display: grid;
+  place-items: center;
+  height: 56px;
+  min-height: 56px;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #e3dfd3;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.symbol-groups .decoration-preview.small,
+.text-symbols .decoration-preview.small {
+  width: 100%;
+  max-width: 38px;
+  height: 38px;
+  padding: 0;
+}
+.text-symbols .decoration-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.document-kind-picker {
+  display: flex;
+  gap: 8px;
+  padding: 5px;
+  background: #eeeade;
+  border-radius: 14px;
+}
+.document-kind-picker > button {
+  flex: 1;
+  padding: 13px 10px;
+  border-radius: 10px;
+  color: #6c7360;
+}
+.document-kind-picker > button[aria-pressed='true'] {
+  background: #fffdf7;
+  box-shadow: 0 2px 6px #534c3512;
+  color: #486343;
+}
+.presentation-settings {
+  display: grid;
+  gap: 13px;
+  padding: 16px;
+  border: 1px solid #dce2cf;
+  background: #f4f6ec;
+  border-radius: 14px;
+}
+.presentation-settings h4 {
+  margin: 0;
+  font-size: 18px;
+}
+.presentation-settings label {
+  display: grid;
+  gap: 7px;
+  font-size: 12px;
+}
+.presentation-settings label > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.presentation-settings small {
+  font-size: 10px;
+  line-height: 1.7;
+  color: #737762;
+}
+.presentation-settings .music-upload {
+  display: flex;
+  position: relative;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 44px;
+}
+.music-upload input[type='file'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.music-upload:focus-within {
+  outline: 2px solid #7b8f65;
+  outline-offset: 3px;
+}
+.invitation-outline {
+  display: grid;
+  gap: 8px;
+  padding-block: 14px;
+}
+.invitation-outline h4 {
+  margin: 0;
+}
+.invitation-text-button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  padding: 12px;
+  border: 1px solid #e1dccf;
+  border-radius: 9px;
+  background: #fffdf7;
+  min-width: 0;
+}
+.invitation-text-button svg {
+  flex: none;
+  color: #7c8968;
+}
+.invitation-text-button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+.shared-viewer > header {
+  display: flex;
+  justify-content: center;
+}
+.viewer-page {
+  position: relative;
+  isolation: isolate;
+}
+.viewer-ambience {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 3;
+}
+.viewer-ambience > span {
+  position: absolute;
+  top: -30px;
+  color: #b682795c;
+  font-size: 22px;
+  animation: invitation-drift linear infinite;
+}
+.ambience-sparkles > span {
+  color: #bb99479e;
+}
+@keyframes invitation-drift {
+  from {
+    transform: translate(0, -30px) rotate(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.65;
+  }
+  85% {
+    opacity: 0.65;
+  }
+  to {
+    transform: translate(30px, 85dvh) rotate(160deg);
+    opacity: 0;
+  }
+}
+.viewer-music {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 13px;
+  border: 1px solid #bcc7aa;
+  border-radius: 25px;
+  background: #f3f5e8;
+  color: #45583c;
+  font-size: 11px;
+}
+.viewer-music[aria-pressed='true'] {
+  background: #e0e7d3;
+}
+.viewer-audio-error {
+  position: absolute;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 9px 13px;
+  border-radius: 10px;
+  background: #fff7ec;
+  color: #775f4d;
+  font-size: 11px;
+  width: min(320px, 80vw);
+  text-align: center;
+}
+.invitation-viewer .book-linen::before {
+  border-radius: 8px;
+}
+@media (max-width: 500px) {
+  .viewer-controls {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .viewer-controls .viewer-music {
+    padding: 8px;
+  }
+  .viewer-music span {
+    font-size: 10px;
+  }
+}
+@media (max-height: 460px) {
+  .viewer-intro {
+    display: none;
+  }
+  .viewer {
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .viewer-ambience {
+    display: none;
+  }
+}

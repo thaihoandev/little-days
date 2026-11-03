@@ -122,6 +122,7 @@ const CanvasEditor = lazy(() =>
   import('./CanvasEditor.js').then((m) => ({ default: m.CanvasEditor })),
 );
 import { PagePreview, Viewer } from './Viewer.js';
+import { PresentationSettings } from './PresentationSettings.js';
 const VideoModal = lazy(() => import('./VideoModal.js'));
 const VersionHistory = lazy(() => import('./VersionHistory.js'));
 type User = PublicUser;
@@ -372,6 +373,7 @@ export default function App() {
           userId={user.id}
           extendedFonts={user.fontCatalogVersion === 1}
           advancedDesign={user.designCatalogVersion === 2}
+          presentationEnabled={user.albumPresentationVersion === 1}
           notify={notify}
           onBack={() => {
             setActive(null);
@@ -633,7 +635,11 @@ export default function App() {
                         <div className="cover-preview">
                           <PagePreview album={album} width={246} thumbnails />
                         </div>
-                        <span className="cover-tag">{themeNames[album.theme]}</span>
+                        <span className="cover-tag">
+                          {album.documentKind === 'invitation'
+                            ? 'Thiệp mời'
+                            : themeNames[album.theme]}
+                        </span>
                       </button>
                       <div className="album-info">
                         <button onClick={() => openAlbum(album)}>
@@ -697,6 +703,7 @@ export default function App() {
       )}
       {modal === 'create' && (
         <CreateModal
+          presentationEnabled={user?.albumPresentationVersion === 1}
           onClose={() => setModal(null)}
           onCreated={(album) => {
             setAlbums((a) => [album, ...a]);
@@ -771,13 +778,16 @@ export default function App() {
 function CreateModal({
   onClose,
   onCreated,
+  presentationEnabled,
 }: {
   onClose: () => void;
   onCreated: (album: Album) => void;
+  presentationEnabled: boolean;
 }) {
   const [title, setTitle] = useState('Ngày mình bên nhau');
   const [theme, setTheme] = useState<Theme>('polaroid');
   const [templateId, setTemplateId] = useState('polaroid');
+  const [kind, setKind] = useState<'album' | 'invitation'>('album');
   const previewAlbum: Album = {
     ...createAlbumContent(),
     id: 'preview',
@@ -796,7 +806,12 @@ function CreateModal({
       onCreated(
         await api<Album>('/albums', {
           method: 'POST',
-          body: JSON.stringify({ title, theme, templateId }),
+          body: JSON.stringify({
+            title,
+            theme,
+            templateId,
+            ...(presentationEnabled ? { documentKind: kind } : {}),
+          }),
         }),
       );
     } catch (e) {
@@ -808,6 +823,25 @@ function CreateModal({
     <Modal title="Bắt đầu một cuốn sổ" onClose={onClose} className="create-album-modal">
       <form onSubmit={(e) => void submit(e)} className="form-stack">
         <div className="create-album-fields">
+          {presentationEnabled && (
+            <div className="document-kind-picker" role="group" aria-label="Loại thiết kế">
+              {(['album', 'invitation'] as const).map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  aria-pressed={kind === value}
+                  onClick={() => {
+                    setKind(value);
+                    setTemplateId(value === 'album' ? 'polaroid' : 'invite-date');
+                    setTheme(value === 'album' ? 'polaroid' : 'letter');
+                    setTitle(value === 'album' ? 'Ngày mình bên nhau' : 'Một lời mời dành cho bạn');
+                  }}
+                >
+                  {value === 'album' ? 'Sổ kỉ niệm' : 'Thiệp mời'}
+                </button>
+              ))}
+            </div>
+          )}
           <label>
             Tên cuốn sổ
             <input
@@ -819,28 +853,30 @@ function CreateModal({
           </label>
           <label>Chọn một phong cách</label>
           <div className="template-picker">
-            {builtInTemplates.map((t) => (
-              <button
-                type="button"
-                key={t.id}
-                aria-label={t.name}
-                aria-pressed={templateId === t.id}
-                className={templateId === t.id ? 'chosen' : ''}
-                onClick={() => {
-                  setTheme(t.theme);
-                  setTemplateId(t.id);
-                }}
-              >
-                <span className="built-in-preview">
-                  <PagePreview
-                    album={{ ...previewAlbum, pages: [templatePage(t.id)] }}
-                    width={105}
-                  />
-                </span>
-                <span className="template-name">{t.name}</span>
-                {templateId === t.id && <Check size={15} />}
-              </button>
-            ))}
+            {builtInTemplates
+              .filter((t) => t.id.startsWith('invite-') === (kind === 'invitation'))
+              .map((t) => (
+                <button
+                  type="button"
+                  key={t.id}
+                  aria-label={t.name}
+                  aria-pressed={templateId === t.id}
+                  className={templateId === t.id ? 'chosen' : ''}
+                  onClick={() => {
+                    setTheme(t.theme);
+                    setTemplateId(t.id);
+                  }}
+                >
+                  <span className="built-in-preview">
+                    <PagePreview
+                      album={{ ...previewAlbum, pages: [templatePage(t.id)] }}
+                      width={105}
+                    />
+                  </span>
+                  <span className="template-name">{t.name}</span>
+                  {templateId === t.id && <Check size={15} />}
+                </button>
+              ))}
           </div>
           <p className="muted small">
             Bạn có thể đổi ảnh, chữ và bố cục từng trang sau khi chọn mẫu.
@@ -895,6 +931,7 @@ function Editor({
   notify,
   extendedFonts,
   advancedDesign,
+  presentationEnabled,
 }: {
   initial: Album;
   userId: string;
@@ -902,6 +939,7 @@ function Editor({
   notify: (s: string) => void;
   extendedFonts: boolean;
   advancedDesign: boolean;
+  presentationEnabled: boolean;
 }) {
   const doc = useDocument(initial, userId);
   const { album } = doc;
@@ -958,6 +996,14 @@ function Editor({
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [pageToDelete, setPageToDelete] = useState<string | null>(null);
   const [decorationCollection, setDecorationCollection] = useState('Tất cả');
+  const filteredDecorations = activeDecorations.filter(
+    (d) =>
+      (decorationCollection === 'Tất cả' || d.collection === decorationCollection) &&
+      (!decorationSearch ||
+        (d.name + ' ' + d.collection)
+          .toLocaleLowerCase('vi')
+          .includes(decorationSearch.toLocaleLowerCase('vi'))),
+  );
   const [reference, setReference] = useState(todayIn(album.timezone));
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -1572,6 +1618,7 @@ function Editor({
                 <h4>Một chút trang trí</h4>
                 <input
                   aria-label="Tìm trang trí"
+                  className="decoration-search"
                   placeholder="Tìm hoa, cà phê, chuyến đi…"
                   value={decorationSearch}
                   onChange={(e) => setDecorationSearch(e.target.value)}
@@ -1591,39 +1638,34 @@ function Editor({
                   )}
                 </div>
                 <div className="decoration-gallery">
-                  {activeDecorations
-                    .filter(
-                      (d) =>
-                        (decorationCollection === 'Tất cả' ||
-                          d.collection === decorationCollection) &&
-                        (!decorationSearch ||
-                          (d.name + ' ' + d.collection)
-                            .toLocaleLowerCase('vi')
-                            .includes(decorationSearch.toLocaleLowerCase('vi'))),
-                    )
-                    .map((d) => (
-                      <button
-                        key={d.id}
-                        title={d.name}
-                        aria-label={'Thêm trang trí ' + d.name}
-                        onClick={() =>
-                          add(
-                            element('sticker', {
-                              decorationId: d.id,
-                              text: d.name,
-                              width: d.width,
-                              height: d.height,
-                              x: 220,
-                              y: 300,
-                            }),
-                          )
-                        }
-                      >
-                        <DecorationPreview src={d.src} />
-                        <span>{d.name}</span>
-                      </button>
-                    ))}
+                  {filteredDecorations.map((d) => (
+                    <button
+                      key={d.id}
+                      title={d.name}
+                      aria-label={'Thêm trang trí ' + d.name}
+                      onClick={() =>
+                        add(
+                          element('sticker', {
+                            decorationId: d.id,
+                            text: d.name,
+                            width: d.width,
+                            height: d.height,
+                            x: 220,
+                            y: 300,
+                          }),
+                        )
+                      }
+                    >
+                      <DecorationPreview src={d.src} />
+                      <span>{d.name}</span>
+                    </button>
+                  ))}
                 </div>
+                {!filteredDecorations.length && (
+                  <p className="muted small" role="status">
+                    Chưa tìm thấy trang trí phù hợp. Thử từ khóa khác hoặc chọn Tất cả.
+                  </p>
+                )}
                 <h4>Ký hiệu nhỏ</h4>
                 {advancedDesign && (
                   <div className="symbol-groups">
@@ -1659,10 +1701,11 @@ function Editor({
                     ))}
                   </div>
                 )}
-                <div className="sticker-grid">
+                <div className="sticker-grid text-symbols">
                   {stickerOptions.map((s, i) => (
                     <button
                       key={s}
+                      aria-label={'Thêm ký tự ' + s}
                       style={{ color: ['#a35a48', '#bf7557', '#758058'][i % 3] }}
                       onClick={() =>
                         add(
@@ -1676,7 +1719,15 @@ function Editor({
                         )
                       }
                     >
-                      {s}
+                      <DecorationPreview
+                        small
+                        src={
+                          'data:image/svg+xml;charset=utf-8,' +
+                          encodeURIComponent(
+                            `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><text x="50" y="78" text-anchor="middle" font-family="serif" font-size="80" fill="${['#a35a48', '#bf7557', '#758058'][i % 3]}">${s}</text></svg>`,
+                          )
+                        }
+                      />
                     </button>
                   ))}
                 </div>
@@ -1689,6 +1740,36 @@ function Editor({
             )}
             {panel === 'settings' && (
               <div className="form-stack">
+                {presentationEnabled && (
+                  <PresentationSettings
+                    album={album}
+                    onChange={(patch) => doc.edit((a) => ({ ...a, ...patch }))}
+                  />
+                )}
+                {album.documentKind === 'invitation' && (
+                  <section className="invitation-outline" aria-label="Sửa nội dung thiệp">
+                    <h4>Lời mời trên trang này</h4>
+                    <p className="small muted">
+                      Chọn một dòng để đổi tên, giờ hẹn hoặc địa điểm. Mọi chi tiết đều có thể kéo
+                      và sắp xếp trên trang.
+                    </p>
+                    {page.elements
+                      .filter((e) => e.type === 'text' && e.visible !== false)
+                      .map((e) => (
+                        <button
+                          className="invitation-text-button"
+                          key={e.id}
+                          onClick={() => {
+                            setSelected(e.id);
+                            setEditText(true);
+                          }}
+                        >
+                          <Type size={15} />
+                          <span>{e.text}</span>
+                        </button>
+                      ))}
+                  </section>
+                )}
                 <label>
                   Tên cuốn sổ
                   <input
@@ -2159,7 +2240,17 @@ function Editor({
             onConfirm={() => deletePage(pageToDelete)}
           />
         )}
-        {viewer && <Viewer album={album} onClose={() => setViewer(false)} />}
+        {viewer && (
+          <Viewer
+            album={album}
+            onClose={() => setViewer(false)}
+            onPresentationChange={
+              presentationEnabled
+                ? (presentation) => doc.edit((a) => ({ ...a, presentation }))
+                : undefined
+            }
+          />
+        )}
         <Suspense
           fallback={
             <div className="modal-backdrop">

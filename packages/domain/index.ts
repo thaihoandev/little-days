@@ -97,8 +97,30 @@ export const memorySchema = z.object({
   assetId: z.string().nullable(),
 });
 export type Memory = z.infer<typeof memorySchema>;
+export const presentationSchema = z
+  .object({
+    binding: z.enum(['stitched', 'spiral', 'linen']).default('stitched'),
+    transition: z.enum(['turn', 'slide', 'soft']).default('turn'),
+    ambience: z.enum(['none', 'petals', 'sparkles', 'hearts']).default('none'),
+    musicId: z
+      .enum(['none', 'gentle', 'warm-piano', 'little-waltz', 'evening', 'custom'])
+      .default('none'),
+    audioId: z.uuid().optional(),
+    volume: finite.min(0).max(1).default(0.4),
+  })
+  .refine((p) => p.musicId !== 'custom' || !!p.audioId, 'Chọn một bản nhạc của album.');
+export type AlbumPresentation = z.infer<typeof presentationSchema>;
+export const defaultPresentation: AlbumPresentation = {
+  binding: 'stitched',
+  transition: 'turn',
+  ambience: 'none',
+  musicId: 'none',
+  volume: 0.4,
+};
 export const albumContentSchema = z
   .object({
+    documentKind: z.enum(['album', 'invitation']).optional(),
+    presentation: presentationSchema.optional(),
     title: z.string().trim().min(1).max(120),
     names: z.tuple([z.string().trim().min(1).max(60), z.string().trim().min(1).max(60)]),
     startDate: dateString,
@@ -131,6 +153,7 @@ export type Album = AlbumContent & {
   updatedAt: string;
   assets: Asset[];
   schemaVersion: 1;
+  previewAudio?: { url: string };
 };
 export type AlbumVersionSummary = {
   revision: number;

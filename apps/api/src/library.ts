@@ -96,9 +96,17 @@ export class LibraryService {
   async summaries(actor: string): Promise<AlbumSummary[]> {
     const p = 'payload';
     const fields = Object.fromEntries(
-      ['id', 'title', 'theme', 'startDate', 'timezone', 'createdAt', 'updatedAt', 'revision'].map(
-        (key) => [key, this.text(p, key)],
-      ),
+      [
+        'id',
+        'title',
+        'theme',
+        'documentKind',
+        'startDate',
+        'timezone',
+        'createdAt',
+        'updatedAt',
+        'revision',
+      ].map((key) => [key, this.text(p, key)]),
     );
     const array = (value: string) =>
       this.pg ? `jsonb_build_array(${value})` : `json_array(json(${value}))`;

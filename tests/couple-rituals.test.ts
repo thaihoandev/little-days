@@ -151,6 +151,8 @@ test('multiple jar deposits are distinct, exact retries are not duplicated, secr
   try {
     const input = note('Chỉ mình biết'),
       first = await f.rituals.addNote(f.a, f.a, input);
+    assert.equal(first.approvalCount, 0);
+    assert.equal(first.approvedByMe, false);
     assert.equal((await f.rituals.addNote(f.a, f.a, input)).id, first.id);
     const second = await f.rituals.addNote(f.a, f.a, note('Chỉ mình biết'));
     assert.notEqual(first.id, second.id);
@@ -162,7 +164,14 @@ test('multiple jar deposits are distinct, exact retries are not duplicated, secr
       f.rituals.removeNote(f.b, f.a, first.id, { expectedRevision: 0 }),
       status(404),
     );
-    const opened = await f.rituals.vote(f.b, f.a, first.id, { expectedRevision: 0, approve: true });
+    const peerVoted = await f.rituals.vote(f.b, f.a, first.id, {
+      expectedRevision: 0,
+      approve: true,
+    });
+    assert.equal(peerVoted.opened, false);
+    assert.equal(peerVoted.text, undefined);
+    await assert.rejects(f.rituals.draw(f.b, f.a), status(400));
+    const opened = await f.rituals.vote(f.a, f.a, first.id, { expectedRevision: 1, approve: true });
     assert.equal(opened.text, 'Chỉ mình biết');
     assert.equal(opened.opened, true);
     const drawn = await f.rituals.draw(f.b, f.a);
@@ -184,6 +193,30 @@ test('multiple jar deposits are distinct, exact retries are not duplicated, secr
     await f.close();
   }
 });
+test('legacy sealed notes discard implicit votes until everyone explicitly consents; opened notes stay opened', async () => {
+  const f = await couple();
+  try {
+    const n = await f.rituals.addNote(f.a, f.a, note('Lời cũ cần đồng ý lại'));
+    const legacy = (await f.db.get<any>('love-note', n.id))!;
+    delete legacy.consentVersion;
+    legacy.approvals = [f.a];
+    await f.db.put('love-note', n.id, f.a, legacy);
+    assert.equal((await f.rituals.state(f.a, f.a)).jar[0].approvalCount, 0);
+    const voted = await f.rituals.vote(f.b, f.a, n.id, { expectedRevision: 0, approve: true });
+    assert.equal(voted.opened, false);
+    assert.equal(voted.text, undefined);
+    assert.equal(voted.approvalCount, 1);
+    const opened = await f.rituals.vote(f.a, f.a, n.id, { expectedRevision: 1, approve: true });
+    assert.equal(opened.opened, true);
+    const record = (await f.db.get<any>('love-note', n.id))!;
+    delete record.consentVersion;
+    await f.db.put('love-note', n.id, f.a, record);
+    assert.equal((await f.rituals.state(f.b, f.a)).jar[0].text, legacy.text);
+  } finally {
+    await f.close();
+  }
+});
+
 test('jar date uses server Vietnam midnight, month-end opens on the last calendar day and invalid/past dates are rejected', async () => {
   const f = await couple();
   try {
@@ -223,12 +256,14 @@ test('membership changes cannot open old sealed items or reveal them to new memb
     const voted = await f.rituals.vote(f.b, f.a, n.id, { expectedRevision: 0, approve: true });
     assert.equal(voted.opened, false);
     assert.equal(voted.text, undefined);
-    assert.equal(voted.approvalCount, 2);
+    assert.equal(voted.approvalCount, 1);
     const retracted = await f.rituals.vote(f.b, f.a, n.id, { expectedRevision: 1, approve: false });
-    assert.equal(retracted.approvalCount, 1);
+    assert.equal(retracted.approvalCount, 0);
     const vc = await f.rituals.vote(f.c, f.a, n.id, { expectedRevision: 2, approve: true });
     assert.equal(vc.opened, false);
-    const all = await f.rituals.vote(f.b, f.a, n.id, { expectedRevision: 3, approve: true });
+    const two = await f.rituals.vote(f.b, f.a, n.id, { expectedRevision: 3, approve: true });
+    assert.equal(two.opened, false);
+    const all = await f.rituals.vote(f.a, f.a, n.id, { expectedRevision: 4, approve: true });
     assert.equal(all.opened, true);
     await f.journal.sharing.change(f.a, f.grant.id, { expectedRevision: 1 }, true);
     await assert.rejects(f.rituals.state(f.b, f.a), status(404));
@@ -390,7 +425,7 @@ test('local backup restores sealed answers, jar schedule, identities and consent
       assert.ok(!JSON.stringify(peer).includes('Bản sao vẫn phải kín'));
       assert.ok(!JSON.stringify(peer).includes('Lời nhắn trong backup'));
       assert.equal(peer.jar[0].id, n.id);
-      assert.equal(peer.jar[0].approvalCount, 1);
+      assert.equal(peer.jar[0].approvalCount, 0);
       assert.equal(peer.jar[0].unlockAt, n.unlockAt);
       assert.equal(
         (await rituals.state(f.a, f.a)).daily!.participants.find((p) => p.id === f.a)?.text,
