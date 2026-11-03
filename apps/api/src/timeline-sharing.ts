@@ -6,7 +6,11 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import type { TimelineGrant, TimelineSharingState } from '../../../packages/domain/journal.js';
+import type {
+  TimelineGrant,
+  TimelineSharingState,
+  TimelineSpace,
+} from '../../../packages/domain/journal.js';
 import { Repository } from './database.js';
 import { AccountDeletion } from './account-deletion.js';
 import { authHash, type Account } from './auth.js';
@@ -68,7 +72,41 @@ export class TimelineSharing {
             : {}),
         });
       }
-    return { ownId: actor, grants: visible };
+    const ids = [
+      ...new Set([
+        actor,
+        ...visible
+          .filter((g) => g.memberId === actor && g.state === 'active')
+          .map((g) => g.timelineOwner),
+      ]),
+    ];
+    ids.sort();
+    return {
+      ownId: actor,
+      grants: visible,
+      spaces: await Promise.all(ids.map((id) => this.space(actor, id))),
+    };
+  }
+  async space(actor: string, id: string): Promise<TimelineSpace> {
+    await this.access(actor, id);
+    const active = (await this.db.list<TimelineGrant>('timeline-grant', id)).filter(
+      (g) => g.state === 'active',
+    );
+    const ids = [id];
+    for (const grant of active) if (await this.account(grant.memberId)) ids.push(grant.memberId);
+    const members = await Promise.all(
+      [...new Set(ids)].sort().map(async (member) => ({
+        id: member,
+        ...(await profileView(this.db, member, 'Thành viên')),
+      })),
+    );
+    const metadata = await this.db.owned<{ title: string }>('timeline-space', id, id);
+    return {
+      id,
+      title: members.length > 1 ? metadata?.title || 'Không gian chung' : 'Không gian riêng',
+      shared: members.length > 1,
+      members,
+    };
   }
   async profileAccess(actor: string, owner: string) {
     if ((await this.deletion.blocked(actor)) || (await this.deletion.blocked(owner)))
@@ -86,8 +124,28 @@ export class TimelineSharing {
           ((g.timelineOwner === actor && g.memberId === owner) ||
             (g.timelineOwner === owner && g.memberId === actor)),
       )
-    )
-      throw new NotFoundException();
+    ) {
+      const membership = async (id: string) => [
+        id,
+        ...(await this.db.list<{ id: string }>('timeline-member-index', id)).map((i) => i.id),
+      ];
+      // Two collaborators may belong to the same space without owning either account.
+      const spaces = async (id: string) => {
+        const owners = [id];
+        for (const key of await membership(id)) {
+          const grant = await this.db.get<TimelineGrant>('timeline-grant', key);
+          if (
+            grant?.memberId === id &&
+            grant.state === 'active' &&
+            (await this.account(grant.timelineOwner))
+          )
+            owners.push(grant.timelineOwner);
+        }
+        return owners;
+      };
+      const [a, b] = await Promise.all([spaces(actor), spaces(owner)]);
+      if (!a.some((id) => b.includes(id))) throw new NotFoundException();
+    }
   }
   async invite(actor: string, body: unknown) {
     const { email } = z
@@ -138,6 +196,10 @@ export class TimelineSharing {
           createdAt: new Date().toISOString(),
         };
         await this.db.insert('timeline-grant', grant.id, actor, grant);
+        await this.db.insert('timeline-space', actor, actor, {
+          id: actor,
+          title: 'Không gian chung',
+        });
         await this.db.insert('timeline-member-index', grant.id, recipient.id, { id: grant.id });
         return grant;
       });

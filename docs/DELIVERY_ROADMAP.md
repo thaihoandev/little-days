@@ -2,6 +2,7 @@
 
 Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → staging/PostgreSQL → load test và pilot, cùng cải thiện editor/video và quy trình backup.
 
+- [x] Mã không gian chung, danh tính người đăng; checklist/phân công/trạng thái và chuyển kế hoạch thành kỉ niệm; kiểm tra phiên bản trước khi refresh khi quay lại ứng dụng. Xem `SHARED_PLANS.md` về quyền, giới hạn lifecycle và kiểm chứng.
 - [x] Mã đợt 2: lời nhắc cá nhân 0/1/3/7 ngày, giờ/múi giờ, chuông thông báo và email opt-in; ngày lễ Việt Nam/dịp Tây phổ biến tại Việt Nam có icon và tạo kế hoạch. Xem `REMINDERS_HOLIDAYS.md`.
 - [ ] Cấu hình token Render/GitHub và bật workflow Anniversary reminders để gửi thư chủ động; chưa ghi nhận email lịch nhắc production hoặc cron đã bật.
 

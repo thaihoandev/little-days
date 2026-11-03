@@ -6,6 +6,24 @@ export const locationSchema = z.object({
   longitude: z.number().finite().min(-180).max(180),
 });
 export type MilestoneLocation = z.infer<typeof locationSchema>;
+export const planSchema = z
+  .object({
+    status: z.enum(['planned', 'completed']),
+    checklist: z
+      .array(
+        z.object({
+          id: z.uuid(),
+          text: z.string().trim().min(1).max(200),
+          assigneeId: z.uuid().nullable(),
+          done: z.boolean(),
+        }),
+      )
+      .max(50),
+  })
+  .superRefine((plan, context) => {
+    if (new Set(plan.checklist.map((task) => task.id)).size !== plan.checklist.length)
+      context.addIssue({ code: 'custom', message: 'Mỗi công việc cần một ID riêng.' });
+  });
 export const journalContentSchema = z.object({
   title: z.string().trim().min(1).max(160),
   date: dateString,
@@ -13,6 +31,7 @@ export const journalContentSchema = z.object({
   kind: z.enum(['memory', 'anniversary', 'plan', 'note']),
   annual: z.boolean(),
   location: locationSchema.nullable().optional(),
+  plan: planSchema.optional(),
 });
 export type JournalContent = z.infer<typeof journalContentSchema>;
 export const timelineHeadingSchema = z.object({
@@ -26,6 +45,13 @@ export const defaultTimelineHeading = {
 };
 export type TimelineHeading = z.infer<typeof timelineHeadingSchema> & { revision: number };
 export type JournalEntry = JournalContent & {
+  createdBy?: string;
+  updatedBy?: string;
+  authorName?: string;
+  authorAvatarUrl?: string;
+  spaceId?: string;
+  spaceTitle?: string;
+  completedAt?: string;
   deletedAt?: string;
   timelineId?: string;
   timelineLabel?: string;
@@ -77,7 +103,17 @@ export type TimelineGrant = {
   revision: number;
   createdAt: string;
 };
-export type TimelineSharingState = { ownId: string; grants: TimelineGrant[] };
+export type TimelineSpace = {
+  id: string;
+  title: string;
+  shared: boolean;
+  members: { id: string; displayName: string; avatarUrl?: string }[];
+};
+export type TimelineSharingState = {
+  ownId: string;
+  grants: TimelineGrant[];
+  spaces?: TimelineSpace[];
+};
 export function occursOn(entry: Pick<JournalContent, 'date' | 'annual'>, date: string) {
   return entry.annual ? nextAnnual(entry.date, date).date === date : entry.date === date;
 }

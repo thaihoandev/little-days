@@ -189,6 +189,9 @@ function validateReferences(album: Album) {
 
 @Controller('api')
 class AppController {
+  @Get('journal-state') async journalState(@Req() req: UserRequest) {
+    return journal.state(req.userId);
+  }
   @Get('holidays') async holidays(@Query('year') year: unknown) {
     return { items: holidaysForYear(year) };
   }
@@ -487,6 +490,7 @@ class AppController {
       fontCatalogVersion: 1,
       libraryVersion: 1,
       remindersVersion: 1,
+      sharedPlansVersion: 1,
       showHolidays:
         (await repository.get<{ showHolidays: boolean }>('reminder-preferences', req.userId))
           ?.showHolidays ?? true,

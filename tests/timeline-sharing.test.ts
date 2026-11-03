@@ -83,6 +83,139 @@ async function photo() {
   return { buffer, size: buffer.length, originalname: 'shared.png' } as Express.Multer.File;
 }
 
+test('shared space identity, authors and version probes agree for both members without attributing a post to its storage owner', async () => {
+  const f = await fixture(),
+    [a, b, other] = f.users;
+  try {
+    await f.db.insert('profile', a, a, { displayName: 'An', revision: 0 });
+    await f.db.insert('profile', b, b, { displayName: 'Bình', revision: 0 });
+    const grant = await f.journal.sharing.invite(a, { email: f.emails[1] });
+    await f.journal.sharing.change(b, grant.id, { expectedRevision: 0, action: 'accept' });
+    const aSpace = (await f.journal.sharing.state(a)).spaces!.find((s) => s.shared)!;
+    const bSpace = (await f.journal.sharing.state(b)).spaces!.find((s) => s.shared)!;
+    assert.deepEqual(aSpace, bSpace);
+    assert.equal(aSpace.id, a);
+    const before = await f.journal.state(a);
+    assert.deepEqual(await f.journal.state(a), before);
+    const entry = await f.journal.create(b, { ...content, timelineId: a, createdBy: a });
+    assert.equal(entry.createdBy, b);
+    assert.equal(entry.authorName, 'Bình');
+    assert.equal((await f.journal.read(a, entry.id)).authorName, 'Bình');
+    const raw = (await f.db.get('journal', entry.id)) as Record<string, unknown>;
+    await f.db.put('journal', entry.id, a, { ...raw, createdBy: undefined });
+    assert.equal(
+      (await f.journal.read(a, entry.id)).authorName,
+      'Bình',
+      'Legacy create checkpoint identifies the real author',
+    );
+    await f.db.put('journal', entry.id, a, raw);
+    const edited = await f.journal.save(a, entry.id, {
+      expectedRevision: entry.revision,
+      content: { ...content, note: 'An bổ sung', createdBy: a },
+    });
+    assert.equal(edited.createdBy, b);
+    assert.equal(edited.updatedBy, a);
+    assert.equal(edited.authorName, 'Bình');
+    assert.notEqual((await f.journal.state(a)).version, before.version);
+    await assert.rejects(f.journal.sharing.space(other, a), status(404));
+    const beforeLeave = await f.journal.state(b);
+    await f.journal.sharing.change(b, grant.id, { expectedRevision: 1 }, true);
+    assert.notEqual((await f.journal.state(b)).scope, beforeLeave.scope);
+    await assert.rejects(f.journal.read(b, entry.id), status(404));
+    assert.equal((await f.journal.read(a, entry.id)).authorName, 'Thành viên trước đây');
+  } finally {
+    await f.close();
+  }
+});
+
+test('assigned checklists survive completion, photos, conversion, revision conflicts and history; outsiders cannot be assigned', async () => {
+  const f = await fixture(),
+    [a, b, other] = f.users;
+  try {
+    const grant = await f.journal.sharing.invite(a, { email: f.emails[1] });
+    await f.journal.sharing.change(b, grant.id, { expectedRevision: 0, action: 'accept' });
+    const task = { id: randomUUID(), text: 'Mang máy ảnh', done: false, assigneeId: b };
+    const plan = { status: 'planned' as const, checklist: [task] };
+    await assert.rejects(
+      f.journal.create(a, {
+        ...content,
+        kind: 'plan',
+        plan: { ...plan, checklist: [{ ...task, assigneeId: other }] },
+      }),
+      status(400),
+    );
+    let entry = await f.journal.create(b, { ...content, timelineId: a, kind: 'plan', plan });
+    const originalId = entry.id;
+    await assert.rejects(
+      f.journal.save(a, entry.id, {
+        expectedRevision: 0,
+        content: { ...content, kind: 'plan', plan: { ...plan, checklist: [task, task] } },
+      }),
+    );
+    entry = await f.journal.save(a, entry.id, {
+      expectedRevision: 0,
+      content: {
+        ...content,
+        kind: 'plan',
+        plan: { ...plan, status: 'completed', checklist: [{ ...task, done: true }] },
+      },
+    });
+    assert.ok(entry.completedAt);
+    await assert.rejects(
+      f.journal.save(b, entry.id, {
+        expectedRevision: 0,
+        content: { ...content, kind: 'plan', plan },
+      }),
+      status(409),
+    );
+    entry = await f.journal.upload(b, entry.id, await photo());
+    const asset = entry.assets[0];
+    entry = await f.journal.save(b, entry.id, {
+      expectedRevision: entry.revision,
+      content: { ...content, kind: 'memory', plan: entry.plan },
+    });
+    assert.equal(entry.id, originalId);
+    assert.equal(entry.createdBy, b);
+    assert.equal(entry.assets[0].id, asset.id);
+    assert.equal(entry.plan?.status, 'completed');
+    assert.equal(entry.plan?.checklist[0].done, true);
+    assert.ok((await f.journal.history(a, entry.id)).some((v) => v.snapshot.kind === 'plan'));
+    await f.journal.sharing.change(a, grant.id, { expectedRevision: 1 }, true);
+    await assert.rejects(
+      f.journal.save(b, entry.id, { expectedRevision: entry.revision, content }),
+      status(404),
+    );
+    const stale = await f.journal.save(a, entry.id, {
+      expectedRevision: entry.revision,
+      content: { ...content, plan: entry.plan },
+    });
+    assert.equal(
+      stale.plan?.checklist[0].assigneeId,
+      b,
+      'Historical assignment is retained without granting access',
+    );
+  } finally {
+    await f.close();
+  }
+});
+
+test('co-members can view profile avatars only while both belong to a current shared space', async () => {
+  const f = await fixture(),
+    [owner, a, b] = f.users;
+  try {
+    const ga = await f.journal.sharing.invite(owner, { email: f.emails[1] }),
+      gb = await f.journal.sharing.invite(owner, { email: f.emails[2] });
+    await f.journal.sharing.change(a, ga.id, { expectedRevision: 0, action: 'accept' });
+    await assert.rejects(f.journal.sharing.profileAccess(a, b), status(404));
+    await f.journal.sharing.change(b, gb.id, { expectedRevision: 0, action: 'accept' });
+    await f.journal.sharing.profileAccess(a, b);
+    await f.journal.sharing.change(owner, gb.id, { expectedRevision: 1 }, true);
+    await assert.rejects(f.journal.sharing.profileAccess(a, b), status(404));
+  } finally {
+    await f.close();
+  }
+});
+
 test('named invitations require consent; collaborators edit shared milestones with CAS and photos stay private and charged to their timeline', async () => {
   const f = await fixture(),
     [alice, bob, other] = f.users;
@@ -209,7 +342,14 @@ test('sharing survives backup; deleting a member revokes their memberships witho
   const f = await fixture(),
     [alice, bob] = f.users;
   try {
-    const entry = await f.journal.create(alice, content),
+    const entry = await f.journal.create(alice, {
+        ...content,
+        kind: 'plan',
+        plan: {
+          status: 'planned',
+          checklist: [{ id: randomUUID(), text: 'Chuẩn bị hoa', done: false, assigneeId: alice }],
+        },
+      }),
       grant = await f.journal.sharing.invite(alice, { email: f.emails[1] });
     await f.journal.sharing.change(bob, grant.id, { expectedRevision: 0, action: 'accept' });
     if (!process.env.TEST_DATABASE_URL) {
@@ -226,6 +366,12 @@ test('sharing survives backup; deleting a member revokes their memberships witho
           (await db.get<{ state: string }>('timeline-grant', grant.id))?.state,
           'active',
         );
+        assert.equal(
+          (await db.get<{ plan: { checklist: { text: string }[] } }>('journal', entry.id))?.plan
+            .checklist[0].text,
+          'Chuẩn bị hoa',
+        );
+        assert.ok(await db.get('timeline-space', alice));
       } finally {
         await db.close();
       }

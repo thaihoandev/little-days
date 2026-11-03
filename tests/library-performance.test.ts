@@ -81,6 +81,71 @@ const content = {
   annual: false,
   kind: 'memory' as const,
 };
+
+test('both members see the same shared feed with author metadata while personal albums stay outside the space', async () => {
+  const f = await fixture(),
+    [a, b, c] = f.users;
+  try {
+    await f.db.insert('profile', a, a, { displayName: 'An', revision: 0 });
+    await f.db.insert('profile', b, b, { displayName: 'Bình', revision: 0 });
+    const grant = await f.journal.sharing.invite(a, { email: b + '@fixture.test' });
+    await f.journal.sharing.change(b, grant.id, { expectedRevision: 0, action: 'accept' });
+    const created = await f.journal.create(b, {
+      ...content,
+      timelineId: a,
+      kind: 'plan',
+      plan: { status: 'planned', checklist: [] },
+    });
+    const album = {
+      ...createAlbumContent(),
+      id: randomUUID(),
+      revision: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      assets: [],
+      schemaVersion: 1,
+    };
+    await f.db.insert('album', album.id, a, album);
+    const [owner, member] = await Promise.all([
+      f.library.page(a, { timeline: a }),
+      f.library.page(b, { timeline: a }),
+    ]);
+    assert.equal(owner.total, 1);
+    assert.equal(member.total, 1);
+    assert.equal((owner.items[0] as any).authorName, 'Bình');
+    assert.equal((member.items[0] as any).createdBy, b);
+    assert.equal(owner.items[0].id, created.id);
+    assert.equal(member.items[0].id, created.id);
+    assert.equal(
+      (await f.library.page(a, {})).total,
+      2,
+      'Own albums are still available outside the shared view',
+    );
+    await assert.rejects(f.library.page(c, { timeline: a }), status(404));
+    const start = await f.journal.state(b);
+    assert.ok(
+      JSON.stringify(start).length < 300,
+      'Unchanged focus sends only bounded fingerprints',
+    );
+    const ownBefore = await f.journal.state(a);
+    assert.ok(
+      await f.db.compareAndSwap('album', album.id, a, 0, {
+        ...album,
+        revision: 1,
+        title: 'Đổi tên sổ riêng',
+      }),
+    );
+    assert.notEqual((await f.journal.state(a)).albumVersion, ownBefore.albumVersion);
+    assert.notEqual((await f.journal.state(a)).version, ownBefore.version);
+    assert.deepEqual(
+      await f.journal.state(b),
+      start,
+      'Other members do not observe revisions of a private album',
+    );
+  } finally {
+    await f.close();
+  }
+});
 test('SQL library pages combine books/memories/journal, exact totals, private cursor scope, Unicode/literal search and lightweight summaries', async () => {
   const f = await fixture(),
     [owner, member, stranger] = f.users;

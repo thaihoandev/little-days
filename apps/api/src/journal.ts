@@ -4,7 +4,7 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import { normalizePhoto } from './images.js';
 import { z } from 'zod';
 import {
@@ -41,16 +41,98 @@ export class JournalService {
     return owner;
   }
   private async present(actor: string, owner: string, entry: JournalEntry): Promise<JournalEntry> {
+    entry = (await this.decorate(actor, owner, [entry]))[0];
     if (actor === owner) return entry;
     const grant = (await this.sharing.access(actor, owner))!;
     const profile = await profileView(this.db, owner, grant.ownerLabel);
     return {
       ...entry,
       timelineId: owner,
-      timelineLabel: profile.displayName,
+      timelineLabel: entry.spaceTitle || 'Không gian chung',
       timelineAvatarUrl: profile.avatarUrl,
       calendarVisible: grant.showOnCalendar,
     };
+  }
+  async decorate(actor: string, owner: string, entries: JournalEntry[]) {
+    const space = await this.sharing.space(actor, owner),
+      members = new Map(space.members.map((m) => [m.id, m]));
+    const legacy = entries.filter((e) => !e.createdBy),
+      creators = new Map<string, string>();
+    if (legacy.length) {
+      const field = (name: string) =>
+        this.db.driver === 'postgresql'
+          ? `payload::jsonb->>'${name}'`
+          : `json_extract(payload,'$.${name}')`;
+      const rows = await this.db.query(
+        `SELECT ${field('entryId')} AS entry_id,${field('actorId')} AS actor_id FROM records WHERE kind='journal-version' AND owner=? AND ${field('action')}='create' AND ${field('entryId')} IN (${legacy.map(() => '?').join(',')})`,
+        [owner, ...legacy.map((e) => e.id)],
+      );
+      for (const row of rows) creators.set(String(row.entry_id), String(row.actor_id));
+    }
+    return entries.map((entry) => {
+      const createdBy = entry.createdBy || creators.get(entry.id),
+        author = createdBy ? members.get(createdBy) : undefined;
+      return {
+        ...entry,
+        createdBy,
+        authorName: author?.displayName || (createdBy ? 'Thành viên trước đây' : 'Thành viên'),
+        authorAvatarUrl: author?.avatarUrl,
+        spaceId: space.id,
+        spaceTitle: space.title,
+      };
+    });
+  }
+  async state(actor: string) {
+    const sharing = await this.sharing.state(actor),
+      owners = [
+        ...new Set([
+          actor,
+          ...sharing.grants
+            .filter((g) => g.memberId === actor && g.state === 'active')
+            .map((g) => g.timelineOwner),
+        ]),
+      ].sort();
+    const rows = await this.db.query(
+      `SELECT kind,id,owner,revision FROM records WHERE kind IN ('journal','profile','timeline-heading','timeline-space') AND owner IN (${owners.map(() => '?').join(',')}) ORDER BY kind,id`,
+      owners,
+    );
+    const scope = createHash('sha256')
+      .update(
+        JSON.stringify([
+          actor,
+          sharing.spaces,
+          sharing.grants.map((g) => [g.id, g.state, g.revision, g.showOnCalendar]),
+        ]),
+      )
+      .digest('hex');
+    const albums = await this.db.query(
+      "SELECT id,revision FROM records WHERE kind='album' AND owner=? ORDER BY id",
+      [actor],
+    );
+    return {
+      scope,
+      albumVersion: createHash('sha256').update(JSON.stringify(albums)).digest('hex'),
+      version: createHash('sha256')
+        .update(JSON.stringify([scope, rows, albums]))
+        .digest('hex'),
+    };
+  }
+  private async validatePlan(
+    actor: string,
+    owner: string,
+    content: z.infer<typeof journalContentSchema>,
+    current?: JournalEntry,
+  ) {
+    if (!content.plan) return;
+    const members = new Set((await this.sharing.space(actor, owner)).members.map((m) => m.id));
+    for (const task of content.plan.checklist) {
+      if (!task.assigneeId || members.has(task.assigneeId)) continue;
+      const old = current?.plan?.checklist.find((t) => t.id === task.id);
+      if (old?.assigneeId !== task.assigneeId)
+        throw new BadRequestException('Chỉ phân công cho thành viên đang tham gia không gian.');
+    }
+    if (content.kind !== 'plan' && current?.kind !== 'plan' && !current?.plan)
+      throw new BadRequestException('Checklist chỉ dành cho kế hoạch.');
   }
   private async withTimeline<T>(actor: string, owner: string, action: () => Promise<T>) {
     const operations: string[] = [];
@@ -93,7 +175,17 @@ export class JournalService {
           })),
       );
     }
-    return entries.sort(
+    const presented: JournalEntry[] = [];
+    for (const timeline of [...new Set(entries.map((e) => e.timelineId || owner))]) {
+      presented.push(
+        ...(await this.decorate(
+          owner,
+          timeline,
+          entries.filter((e) => (e.timelineId || owner) === timeline),
+        )),
+      );
+    }
+    return presented.sort(
       (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
     );
   }
@@ -150,12 +242,15 @@ export class JournalService {
         const now = new Date().toISOString(),
           entry: JournalEntry = {
             ...content,
+            createdBy: actor,
+            updatedBy: actor,
             id: randomUUID(),
             revision: 0,
             assets: [],
             createdAt: now,
             updatedAt: now,
           };
+        await this.validatePlan(actor, owner, content);
         await this.db.insert('journal', entry.id, owner, entry);
         await this.checkpoint(owner, actor, entry, 'create');
         return this.present(actor, owner, entry);
@@ -172,9 +267,18 @@ export class JournalService {
         entry = {
           ...current,
           ...input.content,
+          ...(current.plan && !input.content.plan ? { plan: current.plan } : {}),
+          updatedBy: actor,
           revision: input.expectedRevision + 1,
           updatedAt: new Date().toISOString(),
         };
+      await this.validatePlan(actor, owner, input.content, current);
+      if (current.kind === 'plan' && entry.kind === 'memory')
+        entry.plan = { ...(entry.plan || { checklist: [] }), status: 'completed' };
+      entry.completedAt =
+        entry.plan?.status === 'completed'
+          ? current.completedAt || new Date().toISOString()
+          : undefined;
       await this.checkpoint(owner, owner, current, 'previous');
       if (!(await this.db.compareAndSwap('journal', id, owner, input.expectedRevision, entry)))
         throw new ConflictException(

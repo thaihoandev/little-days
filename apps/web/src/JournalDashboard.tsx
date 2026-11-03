@@ -63,6 +63,18 @@ import { ReminderDialog } from './ReminderControls.js';
 import { HolidayIcon, useHolidays } from './Holidays.js';
 import { holidayCategoryNames, type Holiday } from '../../../packages/domain/holidays.js';
 import type { ReminderSource, NotificationView } from '../../../packages/domain/reminders.js';
+import { PlanFields } from './PlanFields.js';
+import type { TimelineSpace } from '../../../packages/domain/journal.js';
+type JournalState = { version: string; scope: string; albumVersion?: string };
+const recentDashboards = new Map<
+  string,
+  { state: JournalState; entries: JournalEntry[]; sharing: TimelineSharingState; at: number }
+>();
+const spaceSelection = new Map<string, string>();
+export function clearDashboardMemory() {
+  recentDashboards.clear();
+  spaceSelection.clear();
+}
 const MemoryMap = lazy(() => import('./MemoryMap.js'));
 
 type Item = JournalEntry & { album?: Album };
@@ -96,6 +108,8 @@ export default function JournalDashboard({
   communityReady = false,
   libraryReady = false,
   remindersReady = false,
+  sharedPlansReady = false,
+  onRefreshAlbums,
   showHolidays = true,
   focusDate,
   notifications = [],
@@ -112,6 +126,8 @@ export default function JournalDashboard({
   communityReady?: boolean;
   libraryReady?: boolean;
   remindersReady?: boolean;
+  sharedPlansReady?: boolean;
+  onRefreshAlbums?: (force?: boolean) => Promise<void>;
   showHolidays?: boolean;
   focusDate?: string;
   notifications?: NotificationView[];
@@ -126,6 +142,7 @@ export default function JournalDashboard({
     title: string;
   } | null>(null);
   const [holidayDraft, setHolidayDraft] = useState<Partial<JournalContent>>();
+  const [convertingPlan, setConvertingPlan] = useState(false);
   const loadVersion = useRef(0);
   const [sharingReady, setSharingReady] = useState(false);
   const [details, setDetails] = useState<{ entry: JournalEntry; tab: 'social' | 'history' } | null>(
@@ -140,12 +157,45 @@ export default function JournalDashboard({
     [selectedTimeline, setSelectedTimeline] = useState('all'),
     [deleting, setDeleting] = useState<JournalEntry | null>(null),
     [deletingBusy, setDeletingBusy] = useState(false);
-  const timelineOptions = [
+  const legacyOptions = [
     { id: userId, label: 'Dòng thời gian của tôi' },
     ...sharing.grants
       .filter((g) => g.memberId === userId && g.state === 'active')
       .map((g) => ({ id: g.timelineOwner, label: 'Cùng ' + g.ownerLabel })),
   ];
+  const timelineOptions =
+    sharedPlansReady && sharing.spaces?.length
+      ? sharing.spaces.map((space) => ({
+          id: space.id,
+          label: space.shared
+            ? space.title + ' · ' + space.members.map((m) => m.displayName).join(' & ')
+            : space.title,
+        }))
+      : legacyOptions;
+  const currentSpace = sharing.spaces?.find((s) => s.id === selectedTimeline);
+  const syncState = useRef<JournalState | undefined>(undefined);
+  const refreshBusy = useRef(false);
+  const selectionReady = useRef(false);
+  const applySharing = (state: TimelineSharingState | null) => {
+    setSharingReady(!!state);
+    setSharing(state || { ownId: userId, grants: [] });
+    if (
+      sharedPlansReady &&
+      mode === 'timeline' &&
+      state &&
+      (!selectionReady.current ||
+        (!spaceSelection.has(userId) &&
+          selectedTimeline === 'all' &&
+          state.spaces?.some((s) => s.shared)))
+    ) {
+      const desired =
+        spaceSelection.get(userId) || state.spaces?.find((s) => s.shared)?.id || 'all';
+      setSelectedTimeline(
+        desired === 'all' || state.spaces?.some((s) => s.id === desired) ? desired : 'all',
+      );
+      selectionReady.current = true;
+    }
+  };
   const [chosen, setChosen] = useState<string[]>([]),
     [creatingAlbum, setCreatingAlbum] = useState(false);
   const chosenItems = useRef(new Map<string, Item>());
@@ -203,8 +253,11 @@ export default function JournalDashboard({
     timeline: selectedTimeline,
     today,
   });
-  const feed = useLibraryPage<FeedEntry>('/library/feed?' + pageQuery, paged);
-  const points = useLibraryPage<FeedEntry>('/library/map?' + pageQuery, paged && enhancedReady);
+  const feed = useLibraryPage<FeedEntry>('/library/feed?' + pageQuery, paged && !loading);
+  const points = useLibraryPage<FeedEntry>(
+    '/library/map?' + pageQuery,
+    paged && enhancedReady && !loading,
+  );
   const fromFeed = (item: FeedEntry): Item => ({
     ...item,
     album: item.albumId ? albums.find((a) => a.id === item.albumId) : undefined,
@@ -212,12 +265,37 @@ export default function JournalDashboard({
   useEffect(() => {
     let active = true;
     const version = ++loadVersion.current;
-    Promise.all([paged ? Promise.resolve([]) : api<JournalEntry[]>('/journal'), readSharing()])
-      .then(([data, state]) => {
+    const cacheKey = userId + ':' + (paged ? 'paged' : 'full');
+    const load = async () => {
+      const stamp = sharedPlansReady ? await api<JournalState>('/journal-state') : undefined;
+      const cached = recentDashboards.get(cacheKey);
+      if (stamp?.albumVersion && (!cached || cached.state.albumVersion !== stamp.albumVersion))
+        await onRefreshAlbums?.(!!cached);
+      const result =
+        stamp && cached && cached.state.version === stamp.version && Date.now() - cached.at < 120000
+          ? ([cached.entries, cached.sharing] as const)
+          : await Promise.all([
+              paged ? Promise.resolve([]) : api<JournalEntry[]>('/journal'),
+              readSharing(),
+            ]);
+      return { result, stamp };
+    };
+    void load()
+      .then(({ result: [data, state], stamp }) => {
         if (active && version === loadVersion.current) {
           setEntries(data);
-          setSharingReady(!!state);
-          setSharing(state || { ownId: userId, grants: [] });
+          applySharing(state);
+          syncState.current = stamp;
+          if (stamp && state) {
+            recentDashboards.set(cacheKey, {
+              entries: data,
+              sharing: state,
+              state: stamp,
+              at: Date.now(),
+            });
+            if (recentDashboards.size > 4)
+              recentDashboards.delete(recentDashboards.keys().next().value!);
+          }
         }
       })
       .catch((e) => {
@@ -230,47 +308,79 @@ export default function JournalDashboard({
       active = false;
       loadVersion.current++;
     };
-  }, [mode, libraryReady, userId]);
-  const refresh = async () => {
-    const version = ++loadVersion.current;
-    if (paged) {
-      feed.refresh();
-      points.refresh();
-    }
-    const [data, state] = await Promise.all([
-      paged ? Promise.resolve([]) : api<JournalEntry[]>('/journal'),
-      readSharing(),
-    ]);
-    if (version !== loadVersion.current) return;
-    setEntries(data);
-    setSharingReady(!!state);
-    setSharing(state || { ownId: userId, grants: [] });
-    setError('');
-    if (
-      selectedTimeline !== 'all' &&
-      selectedTimeline !== userId &&
-      !state?.grants.some(
-        (g) =>
-          g.memberId === userId && g.timelineOwner === selectedTimeline && g.state === 'active',
+  }, [mode, libraryReady, userId, sharedPlansReady]);
+  const refresh = async (background = false) => {
+    if (refreshBusy.current) return;
+    refreshBusy.current = true;
+    try {
+      const stamp = sharedPlansReady ? await api<JournalState>('/journal-state') : undefined;
+      if (background && sharingReady && stamp && stamp.version === syncState.current?.version)
+        return;
+      if (stamp && syncState.current && stamp.scope !== syncState.current.scope) {
+        setEntries([]);
+        feed.setItems([]);
+        points.setItems([]);
+        recentDashboards.clear();
+      }
+      if (stamp?.albumVersion && stamp.albumVersion !== syncState.current?.albumVersion)
+        await onRefreshAlbums?.(true);
+      const version = ++loadVersion.current;
+      if (paged) {
+        feed.refresh();
+        points.refresh();
+      }
+      const [data, state] = await Promise.all([
+        paged ? Promise.resolve([]) : api<JournalEntry[]>('/journal'),
+        readSharing(),
+      ]);
+      if (version !== loadVersion.current) return;
+      setEntries(data);
+      applySharing(state);
+      syncState.current = stamp;
+      if (stamp && state) {
+        recentDashboards.set(userId + ':' + (paged ? 'paged' : 'full'), {
+          entries: data,
+          sharing: state,
+          state: stamp,
+          at: Date.now(),
+        });
+        if (recentDashboards.size > 4)
+          recentDashboards.delete(recentDashboards.keys().next().value!);
+      }
+      setError('');
+      if (
+        selectedTimeline !== 'all' &&
+        selectedTimeline !== userId &&
+        !state?.grants.some(
+          (g) =>
+            g.memberId === userId && g.timelineOwner === selectedTimeline && g.state === 'active',
+        )
       )
-    )
-      setSelectedTimeline('all');
+        setSelectedTimeline('all');
+    } finally {
+      refreshBusy.current = false;
+    }
   };
   useEffect(() => {
     const update = () => {
-      if (
-        document.visibilityState === 'visible' &&
-        editing === undefined &&
-        !sharingOpen &&
-        (!paged || (feed.items.length <= 20 && !chosen.length))
-      )
-        void refresh().catch((e) => setError(e.message));
+      if (document.visibilityState === 'visible' && editing === undefined && !sharingOpen)
+        void refresh(true).catch((e) => {
+          if (e instanceof ApiError && (e.status === 401 || e.status === 404)) {
+            setEntries([]);
+            feed.setItems([]);
+            points.setItems([]);
+            recentDashboards.clear();
+          }
+          setError(e.message);
+        });
     };
     const timer = setInterval(update, 30000);
     window.addEventListener('focus', update);
+    document.addEventListener('visibilitychange', update);
     return () => {
       clearInterval(timer);
       window.removeEventListener('focus', update);
+      document.removeEventListener('visibilitychange', update);
     };
   }, [
     editing,
@@ -281,6 +391,7 @@ export default function JournalDashboard({
     kind,
     feed.items.length,
     chosen.length,
+    sharingReady,
   ]);
   useEffect(() => setLimit(20), [query, kind, mode]);
   const albumItems: Item[] = useMemo(
@@ -438,7 +549,17 @@ export default function JournalDashboard({
       <div className="journal-hero">
         <div>
           {mode === 'timeline' ? (
-            <TimelineHeading />
+            currentSpace?.shared ? (
+              <div className="timeline-heading-edit">
+                <h1>{currentSpace.title}</h1>
+                <p>
+                  {currentSpace.members.map((m) => m.displayName).join(' & ')} · Cùng viết một câu
+                  chuyện
+                </p>
+              </div>
+            ) : (
+              <TimelineHeading />
+            )
           ) : (
             <>
               <h1>
@@ -520,26 +641,30 @@ export default function JournalDashboard({
           </button>
         </div>
       )}
-      {mode === 'timeline' && timelineOptions.length > 1 && (
-        <label className="timeline-scope">
-          Dòng thời gian đang xem
-          <select
-            aria-label="Chọn dòng thời gian"
-            value={selectedTimeline}
-            onChange={(e) => {
-              setSelectedTimeline(e.target.value);
-              setChosen([]);
-            }}
-          >
-            <option value="all">Tất cả dòng thời gian</option>
-            {timelineOptions.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
+      {mode === 'timeline' &&
+        (timelineOptions.length > 1 || sharing.spaces?.some((s) => s.shared)) && (
+          <label className="timeline-scope">
+            Dòng thời gian đang xem
+            <select
+              aria-label="Chọn dòng thời gian"
+              value={selectedTimeline}
+              onChange={(e) => {
+                setSelectedTimeline(e.target.value);
+                spaceSelection.set(userId, e.target.value);
+                if (spaceSelection.size > 10)
+                  spaceSelection.delete(spaceSelection.keys().next().value!);
+                setChosen([]);
+              }}
+            >
+              <option value="all">Tất cả dòng thời gian</option>
+              {timelineOptions.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       {mode === 'timeline' && (
         <div className="journey-intro">
           <div className="journey-banner-copy">
@@ -1131,7 +1256,7 @@ export default function JournalDashboard({
                                     : 'Kỉ niệm trong ' + entry.album.title
                                   : journalKindNames[entry.kind]}
                               </span>
-                              {entry.timelineLabel && (
+                              {entry.timelineLabel && !sharedPlansReady && (
                                 <small className="shared-timeline-label">
                                   <UsersRound size={12} />
                                   {entry.timelineAvatarUrl && (
@@ -1151,6 +1276,76 @@ export default function JournalDashboard({
                               )}
                             </div>
                             <h3>{entry.title}</h3>
+                            {!entry.album && sharedPlansReady && (
+                              <div className="entry-author">
+                                <UserAvatar name={entry.authorName} url={entry.authorAvatarUrl} />
+                                <span>
+                                  Đăng bởi <strong>{entry.authorName || 'Thành viên'}</strong>
+                                </span>
+                                {entry.spaceTitle && <small>{entry.spaceTitle}</small>}
+                              </div>
+                            )}
+                            {!entry.album &&
+                              sharedPlansReady &&
+                              (entry.kind === 'plan' || entry.plan) && (
+                                <section
+                                  className="plan-summary"
+                                  aria-label={'Chuẩn bị cho ' + entry.title}
+                                >
+                                  <header>
+                                    <span
+                                      className={'plan-status ' + (entry.plan?.status || 'planned')}
+                                    >
+                                      {entry.plan?.status === 'completed'
+                                        ? 'Đã hoàn thành'
+                                        : 'Dự định'}
+                                    </span>
+                                    <small>
+                                      {entry.plan?.checklist.filter((t) => t.done).length || 0}/
+                                      {entry.plan?.checklist.length || 0} việc
+                                    </small>
+                                  </header>
+                                  {entry.plan?.checklist.slice(0, 4).map((task) => (
+                                    <div
+                                      className={'plan-task-preview ' + (task.done ? 'done' : '')}
+                                      key={task.id}
+                                    >
+                                      <CheckCheck size={14} />
+                                      <span>{task.text}</span>
+                                      <small>
+                                        {sharing.spaces
+                                          ?.find(
+                                            (s) =>
+                                              s.id ===
+                                              (entry.spaceId || entry.timelineId || userId),
+                                          )
+                                          ?.members.find((m) => m.id === task.assigneeId)
+                                          ?.displayName ||
+                                          (task.assigneeId ? 'Thành viên trước đây' : 'Cùng nhau')}
+                                      </small>
+                                    </div>
+                                  ))}
+                                  <div className="plan-actions">
+                                    <button
+                                      className="button quiet"
+                                      onClick={() => setEditing(entry)}
+                                    >
+                                      Chuẩn bị
+                                    </button>
+                                    {entry.kind === 'plan' && (
+                                      <button
+                                        className="button quiet"
+                                        onClick={() => {
+                                          setConvertingPlan(true);
+                                          setEditing(entry);
+                                        }}
+                                      >
+                                        Thêm ảnh & lưu thành kỉ niệm
+                                      </button>
+                                    )}
+                                  </div>
+                                </section>
+                              )}
                             {entry.location && (
                               <button
                                 className="story-location"
@@ -1392,9 +1587,14 @@ export default function JournalDashboard({
       {editing !== undefined && (
         <JournalDialog
           enhancedReady={enhancedReady}
+          sharedPlansReady={sharedPlansReady}
+          convertPlan={convertingPlan}
+          spaces={sharing.spaces || []}
           timelines={timelineOptions}
           defaultTimeline={
-            mode === 'timeline' && selectedTimeline !== 'all' ? selectedTimeline : userId
+            selectedTimeline !== 'all'
+              ? selectedTimeline
+              : sharing.spaces?.find((s) => s.shared)?.id || userId
           }
           initial={editing}
           draft={editing === null ? holidayDraft : undefined}
@@ -1402,12 +1602,14 @@ export default function JournalDashboard({
           date={selected}
           onClose={() => {
             setEditing(undefined);
+            setConvertingPlan(false);
             setHolidayDraft(undefined);
           }}
           onUpdated={update}
           onSaved={(entry) => {
             update(entry);
             setEditing(undefined);
+            setConvertingPlan(false);
             setHolidayDraft(undefined);
             setSelected(entry.date);
             setMonth(entry.date.slice(0, 7));
@@ -1417,6 +1619,7 @@ export default function JournalDashboard({
       {sharingOpen && (
         <TimelineSharingPanel
           state={sharing}
+          spaceId={currentSpace?.id}
           verified={verified}
           onChange={refresh}
           onClose={() => setSharingOpen(false)}
@@ -1461,6 +1664,9 @@ function FlowerMark() {
 }
 function JournalDialog({
   enhancedReady,
+  sharedPlansReady,
+  convertPlan,
+  spaces,
   timelines,
   defaultTimeline,
   initial,
@@ -1472,6 +1678,9 @@ function JournalDialog({
   onUpdated,
 }: {
   enhancedReady: boolean;
+  sharedPlansReady: boolean;
+  convertPlan: boolean;
+  spaces: TimelineSpace[];
   timelines: { id: string; label: string }[];
   defaultTimeline: string;
   initial: JournalEntry | null;
@@ -1483,7 +1692,9 @@ function JournalDialog({
   onUpdated: (entry: JournalEntry) => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null),
-    [timelineId, setTimelineId] = useState(initial?.timelineId || defaultTimeline),
+    [timelineId, setTimelineId] = useState(
+      initial?.spaceId || initial?.timelineId || defaultTimeline,
+    ),
     [entry, setEntry] = useState(initial),
     [content, setContent] = useState<JournalContent>(() =>
       initial
@@ -1491,11 +1702,24 @@ function JournalDialog({
             title: initial.title,
             date: initial.date,
             note: initial.note,
-            kind: initial.kind,
+            kind: convertPlan ? 'memory' : initial.kind,
             annual: initial.annual,
             location: initial.location,
+            plan: convertPlan
+              ? { ...(initial.plan || { checklist: [] }), status: 'completed' }
+              : initial.plan,
           }
-        : { title: '', date, note: '', kind: initialKind, annual: false, ...draft },
+        : {
+            title: '',
+            date,
+            note: '',
+            kind: initialKind,
+            annual: false,
+            ...(sharedPlansReady && initialKind === 'plan'
+              ? { plan: { status: 'planned' as const, checklist: [] } }
+              : {}),
+            ...draft,
+          },
     ),
     [files, setFiles] = useState<File[]>([]),
     [busy, setBusy] = useState(false),
@@ -1658,6 +1882,13 @@ function JournalDialog({
               />
               Đánh dấu ngày này mỗi năm
             </label>
+            {sharedPlansReady && (content.kind === 'plan' || content.plan) && (
+              <PlanFields
+                value={content.plan || { status: 'planned', checklist: [] }}
+                members={spaces.find((s) => s.id === (entry?.spaceId || timelineId))?.members || []}
+                onChange={(plan) => setContent({ ...content, plan })}
+              />
+            )}
             <label className="journal-upload">
               <ImagePlus size={19} />
               Ảnh cho ngày này

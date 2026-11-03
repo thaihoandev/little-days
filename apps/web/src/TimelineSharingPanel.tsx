@@ -10,11 +10,13 @@ export function TimelineSharingPanel({
   verified,
   onChange,
   onClose,
+  spaceId,
 }: {
   state: TimelineSharingState;
   verified: boolean;
   onChange: () => Promise<void>;
   onClose: () => void;
+  spaceId?: string;
 }) {
   useBodyScrollLock();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -91,7 +93,7 @@ export function TimelineSharingPanel({
           <div>
             <span className="eyebrow">CÙNG NHAU GIỮ LẠI</span>
             <h2>
-              <UsersRound size={22} /> Chia sẻ dòng thời gian
+              <UsersRound size={22} /> Không gian chung
             </h2>
           </div>
           <button
@@ -104,31 +106,53 @@ export function TimelineSharingPanel({
           </button>
         </header>
         <p>
-          Mời người được chỉ định cùng thêm, sửa, xóa dấu mốc và ảnh. Album riêng không tự động được
-          chia sẻ.
+          Cùng sử dụng một không gian: cả hai thêm dấu mốc, chuẩn bị kế hoạch và lưu ảnh tại đây.
+          Album cá nhân vẫn riêng tư.
         </p>
         {!verified && (
           <p className="sharing-hint">
             Đăng nhập và xác minh email trong Tài khoản để mời hoặc chấp nhận lời mời.
           </p>
         )}
-        <form onSubmit={(e) => void invite(e)} className="timeline-invite-form">
-          <label>
-            Email người cùng xây dựng
-            <input
-              type="email"
-              required
-              maxLength={254}
-              placeholder="nguoi-thuong@example.com"
-              value={email}
-              disabled={!verified || busy}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-          <button className="button primary" disabled={!verified || busy}>
-            Mời cùng chỉnh sửa
-          </button>
-        </form>
+        {(!spaceId || spaceId === state.ownId) && (
+          <form onSubmit={(e) => void invite(e)} className="timeline-invite-form">
+            <label>
+              Email người cùng xây dựng
+              <input
+                type="email"
+                required
+                maxLength={254}
+                placeholder="nguoi-thuong@example.com"
+                value={email}
+                disabled={!verified || busy}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </label>
+            <button className="button primary" disabled={!verified || busy}>
+              Mời cùng chỉnh sửa
+            </button>
+          </form>
+        )}
+        {state.spaces
+          ?.filter((space) => space.shared && (!spaceId || space.id === spaceId))
+          .map((space) => (
+            <section
+              className="shared-space-members"
+              key={space.id}
+              aria-label="Thành viên không gian chung"
+            >
+              <h3>{space.title}</h3>
+              <div>
+                {space.members.map((member) => (
+                  <span key={member.id}>
+                    <UserAvatar name={member.displayName} url={member.avatarUrl} />
+                    <strong>{member.displayName}</strong>
+                    <small>Cùng chỉnh sửa</small>
+                  </span>
+                ))}
+              </div>
+            </section>
+          ))}
         <p className="muted small">
           Người nhận cần có tài khoản đã xác minh email. Lời mời hiển thị trong ứng dụng.
         </p>
@@ -143,7 +167,7 @@ export function TimelineSharingPanel({
           </p>
         )}
         <section aria-label="Người được mời">
-          <h3>Người cùng xây dựng dòng thời gian của bạn</h3>
+          <h3>Thành viên và lời mời đã gửi</h3>
           {outgoing.length ? (
             outgoing.map((g) => (
               <article className="timeline-member" key={g.id}>
@@ -167,7 +191,7 @@ export function TimelineSharingPanel({
           )}
         </section>
         <section aria-label="Dòng thời gian được chia sẻ">
-          <h3>Dòng thời gian được chia sẻ với bạn</h3>
+          <h3>Không gian tham gia và lời mời nhận được</h3>
           {incoming.length ? (
             incoming.map((g) => (
               <article className="timeline-member incoming" key={g.id}>
@@ -244,7 +268,7 @@ export function TimelineSharingPanel({
               ? 'Thu hồi quyền truy cập?'
               : 'Rời dòng thời gian?'
           }
-          description="Quyền xem và chỉnh sửa dòng thời gian cùng ảnh sẽ kết thúc. Các dấu mốc đã lưu vẫn thuộc dòng thời gian gốc."
+          description="Quyền tham gia không gian và xem ảnh sẽ kết thúc. Những dấu mốc đã cùng tạo vẫn được giữ trong không gian."
           confirmLabel="Xác nhận"
           onClose={() => {
             if (!busy) setRemoving(null);

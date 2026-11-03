@@ -1,8 +1,10 @@
 # Trạng thái triển khai Little Days
 
-Ngày cập nhật: **02/11/2026**.
+Ngày cập nhật: **03/11/2026**.
 
 ## Kết quả hiện tại
+
+Không gian chung có cùng ID/tên/thành viên cho hai phía, thẻ dấu mốc hiển thị tên/avatar người đăng thực tế; album cá nhân vẫn tách khỏi feed không gian chung. Thêm checklist, phân công, trạng thái và chuyển kế hoạch thành kỉ niệm trên cùng ID. Focus/visibility chỉ đối chiếu fingerprint trước khi tải lại danh sách, giữ nội dung khi refresh. Xem [SHARED_PLANS.md](SHARED_PLANS.md) về quyền, cache và giới hạn lifecycle.
 
 Đợt 2 bổ sung lời nhắc/chuông thông báo, email opt-in và ngày lễ Việt Nam/các dịp Tây phổ biến có icon, tạo kế hoạch ngay từ lịch. Lịch và thông báo dùng sau deploy; email tự động cần bật workflow riêng theo [REMINDERS_HOLIDAYS.md](REMINDERS_HOLIDAYS.md).
 

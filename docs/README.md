@@ -4,6 +4,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Sử dụng
 
+- [Không gian chung và checklist kế hoạch hai người](SHARED_PLANS.md)
 - [Lời nhắc, chuông thông báo và ngày lễ Việt Nam](REMINDERS_HOLIDAYS.md)
 - [Nhập chữ, font mới, hồ sơ và giao diện](INTERFACE_REFINEMENT.md)
 - [Upload phục hồi, phân trang và hiệu năng](PERFORMANCE.md)

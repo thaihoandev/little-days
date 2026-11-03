@@ -6,6 +6,7 @@ import { ProfileSettings, type ProfileView } from './ProfileSettings.js';
 
 export type PublicUser = {
   remindersVersion?: number;
+  sharedPlansVersion?: number;
   showHolidays?: boolean;
   libraryVersion?: number;
   fontCatalogVersion?: number;

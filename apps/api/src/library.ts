@@ -130,8 +130,8 @@ export class LibraryService {
       ).length > 0
     );
   }
-  private sources(owners: string[], actor: string, photos: boolean) {
-    const albumOwner = owners.includes(actor) ? actor : '';
+  private sources(owners: string[], actor: string, photos: boolean, includeAlbums = true) {
+    const albumOwner = includeAlbums && owners.includes(actor) ? actor : '';
     const p = 'r.payload',
       t = (key: string) => this.text(p, key),
       j = (key: string) => this.json(p, key);
@@ -196,7 +196,9 @@ export class LibraryService {
   ): Promise<LibraryPage<FeedEntry | LibraryPhoto>> {
     const input = querySchema.parse(raw),
       { owners, grants } = await this.scope(actor, input.timeline);
-    const source = this.sources(owners, actor, photos),
+    const sharedSpace =
+      input.timeline !== 'all' && (await this.journal.sharing.space(actor, input.timeline)).shared;
+    const source = this.sources(owners, actor, photos, !sharedSpace),
       date = this.text('item', 'date'),
       created = photos ? date : `COALESCE(${this.text('item', 'createdAt')},${date})`,
       key = this.text('item', photos ? 'key' : 'id');
@@ -231,7 +233,18 @@ export class LibraryService {
       : `jsonb(json_remove(payload,${omitted.map((key) => `'$.${key}'`).join(',')}))`;
     const base = `WITH documents AS MATERIALIZED (SELECT kind,id,owner,${projection} AS payload FROM records WHERE (kind='journal' AND owner IN (${owners.map(() => '?').join(',')})) OR (kind='album' AND owner=?)),feed AS (${source.sql}) SELECT item,owner FROM feed${clauses.length ? ' WHERE ' + clauses.join(' AND ') : ''}`;
     const fingerprint = createHash('sha256')
-      .update(JSON.stringify([actor, owners, input.q, input.kind, input.source, photos, map]))
+      .update(
+        JSON.stringify([
+          actor,
+          owners,
+          input.q,
+          input.kind,
+          input.source,
+          photos,
+          map,
+          sharedSpace,
+        ]),
+      )
       .digest('hex')
       .slice(0, 24);
     let after = '',
@@ -286,6 +299,27 @@ export class LibraryService {
         }
         return item;
       });
+      if (!photos) {
+        for (const owner of [
+          ...new Set(
+            selected
+              .filter((row, index) => !(items[index] as FeedEntry).albumId)
+              .map((row) => row.owner),
+          ),
+        ]) {
+          const indices = selected
+            .map((row, index) => ({ row, index }))
+            .filter(
+              ({ row, index }) => row.owner === owner && !(items[index] as FeedEntry).albumId,
+            );
+          const enriched = await this.journal.decorate(
+            actor,
+            owner,
+            indices.map(({ index }) => items[index] as FeedEntry),
+          );
+          indices.forEach(({ index }, offset) => Object.assign(items[index], enriched[offset]));
+        }
+      }
       const last = items.at(-1);
       return {
         items,
@@ -315,7 +349,7 @@ export class LibraryService {
   }
   private mapProjection() {
     const fields = Object.fromEntries(
-      ['id', 'title', 'date', 'kind', 'createdAt', 'updatedAt'].map((key) => [
+      ['id', 'title', 'date', 'kind', 'createdAt', 'updatedAt', 'createdBy'].map((key) => [
         key,
         this.text('item', key),
       ]),

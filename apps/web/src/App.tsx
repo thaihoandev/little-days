@@ -71,7 +71,7 @@ import { useDocument } from './useDocument.js';
 import AccountDeletionStatus, { readDeletionReceipt } from './AccountDeletionStatus.js';
 import { readAuthLink } from './auth-link.js';
 import { TextOverflowWarning } from './TextOverflowWarning.js';
-import JournalDashboard from './JournalDashboard.js';
+import JournalDashboard, { clearDashboardMemory } from './JournalDashboard.js';
 import { useAppRoute, sectionPaths, type AppSection } from './useAppRoute.js';
 import { UserAvatar } from './UserAvatar.js';
 import { PhotosLibrary } from './PhotosLibrary.js';
@@ -220,6 +220,8 @@ export default function App() {
   const [accountMode, setAccountMode] = useState<'register' | 'login'>('register');
   const [user, setUser] = useState<User | null>(null);
   const [albums, setAlbums] = useState<Album[]>([]);
+  const libraryLoadedAt = useRef(0),
+    libraryActor = useRef<string | undefined>(undefined);
   const [active, setActive] = useState<Album | null>(null);
   const [openingAlbum, setOpeningAlbum] = useState(false);
   const [albumOpenVersion, setAlbumOpenVersion] = useState(0);
@@ -262,6 +264,8 @@ export default function App() {
       );
       setUser(session);
       setAlbums(library);
+      libraryActor.current = session.id;
+      libraryLoadedAt.current = Date.now();
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -515,6 +519,18 @@ export default function App() {
               communityReady={user.journalFeatures === 1}
               libraryReady={user.libraryVersion === 1}
               remindersReady={user.remindersVersion === 1}
+              sharedPlansReady={user.sharedPlansVersion === 1}
+              onRefreshAlbums={async (force = false) => {
+                if (!force && Date.now() - libraryLoadedAt.current < 15000) return;
+                const actor = user.id;
+                const items = await api<Album[]>(
+                  '/albums' + (user.libraryVersion === 1 ? '?summary=1' : ''),
+                );
+                if (libraryActor.current === actor) {
+                  setAlbums(items);
+                  libraryLoadedAt.current = Date.now();
+                }
+              }}
               showHolidays={user.showHolidays !== false}
               focusDate={new URLSearchParams(search).get('date') || undefined}
               notifications={notifications?.userId === user.id ? notifications.items : []}
@@ -641,6 +657,8 @@ export default function App() {
           }
           onClose={() => setModal(null)}
           onChange={(message, receipt) => {
+            clearDashboardMemory();
+            libraryActor.current = undefined;
             if (receipt) {
               setDeletionReceipt(receipt);
               try {

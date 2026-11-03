@@ -143,9 +143,8 @@ try {
       await expect(b).toHaveURL(origin + '/calendar');
       await b.getByRole('button', { name: /^Ghi chú cho ngày / }).click();
       const privateNote = b.getByRole('dialog', { name: 'Thêm dấu mốc', exact: true });
-      const bobSession = await (await bob.request.get(origin + '/api/session')).json();
       await expect(privateNote.getByLabel('Lưu vào dòng thời gian', { exact: true })).toHaveValue(
-        bobSession.id,
+        session.id,
       );
       await privateNote.getByRole('button', { name: 'Đóng dấu mốc', exact: true }).click();
       await expect(
