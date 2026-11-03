@@ -7,6 +7,7 @@ Cập nhật 03/11/2026. Không thêm biến môi trường hoặc dịch vụ t
 - **Không gian riêng** luôn thuộc từng tài khoản. Chỉ tài khoản đó xem được dấu mốc, ảnh, lịch sử, bình luận và thùng rác trong không gian này. Album cá nhân cũng không tự chia sẻ.
 - **Không gian chung** là nơi các thành viên đã chấp nhận lời mời cùng xem và chỉnh sửa. Khi có thành viên cộng tác, timeline ưu tiên mở không gian chung; bộ chọn phía trên cho chuyển sang riêng hoặc xem tất cả. Lịch vẫn tổng hợp dấu mốc có quyền truy cập theo lựa chọn hiện/ẩn của từng thành viên.
 - Chọn đích tại **Lưu vào dòng thời gian** khi tạo. Người quản lý dữ liệu có thể sửa dấu mốc để đổi giữa không gian riêng của mình và không gian chung do mình khởi tạo. Thành viên cộng tác không được tự chuyển dữ liệu sang tài khoản khác. Chuyển đích giữ ID, ảnh, checklist, lịch sử và quota; dùng revision/CAS hiện có.
+- Form chờ tải xong danh sách không gian trước khi mở; không dùng ID tài khoản làm đích tạm khi API chậm. Cache giao diện tách phiên bản không gian mới khỏi API cũ, tránh dùng lại lựa chọn cũ sau deploy lệch thời điểm.
 - Chuyển về riêng chặn request tiếp theo của thành viên, kể cả ảnh/thumbnail và lịch sử. Khôi phục nội dung từ phiên bản cũ không khôi phục quyền chia sẻ cũ. Nội dung đã được người khác tải xuống trước đó không thể thu hồi khỏi thiết bị của họ.
 - Dữ liệu cũ đã có lịch sử chia sẻ giữ nguyên ở không gian chung. Các dấu mốc chưa từng chia sẻ được ghi rõ là riêng trước lời mời đầu tiên; không tự công bố chúng khi mời. Chủ dữ liệu có thể phân loại lại bằng đích lưu trên form sửa.
 
@@ -15,6 +16,8 @@ Storage/quota và quyền quản trị không gian chung vẫn neo ở người 
 ## Avatar, bản đồ và bộ chọn
 
 Avatar giữ khung vuông, bo tròn và crop cover trong thẻ timeline, thành viên popup chia sẻ và hồ sơ. Ảnh ghim bản đồ crop đúng khung; ảnh trong popup dùng kích thước cố định 42 × 42. Bộ chọn không gian có mô tả quyền tương ứng, chuyển thành một cột trên điện thoại.
+
+Trên trình duyệt hỗ trợ select tùy biến, menu mobile mở thành bảng chọn ở đáy màn hình, giới hạn chiều cao và cuộn riêng; không đẩy lựa chọn ra ngoài viewport khi timeline dài. Giữ select gốc cho bàn phím và trình đọc màn hình.
 
 ## Thiết kế sổ
 
@@ -33,4 +36,4 @@ Unit kiểm tra quyền/private feed, dữ liệu cũ, khôi phục không công
 
 Kết quả CI và phiên bản deploy cần đối chiếu commit thực tế khi bàn giao; tài liệu này không ghi nhận pilot người dùng thật.
 
-Kết quả local 03/11/2026: 130 unit đạt; API, typecheck, PostgreSQL/API/load/backup và 10 test timeline-sharing cuối trên PostgreSQL QA đạt. Đủ 22 suite UI đạt qua lượt đầu và các lượt chạy tiếp sau khi cập nhật fixture cho 11 mẫu bộ đếm; bài video còn kiểm tra phản hồi hủy ngay và worker xác nhận dừng. MP4 thực đạt H.264, 1080 × 1920, 30 fps, 15 giây; đã xem frame mở đầu, trang sổ và kết thúc. Các ảnh/email/database đều là fixture; chưa xác nhận bằng dữ liệu người dùng thật.
+Kết quả các lượt local 03/11/2026: 130 unit đạt; API, typecheck, PostgreSQL/API/load/backup và 10 test timeline-sharing cuối trên PostgreSQL QA đạt. Đủ 22 suite UI đạt qua lượt đầu và các lượt chạy tiếp sau khi cập nhật fixture cho 11 mẫu bộ đếm; bài video còn kiểm tra phản hồi hủy ngay và worker xác nhận dừng. CI đầu phát hiện thêm race khi danh sách không gian tải chậm; đã bổ sung fixture cố tình giữ request để kiểm tra đích riêng tư, tách cache theo phiên bản và sửa menu mobile vượt viewport. MP4 thực đạt H.264, 1080 × 1920, 30 fps, 15 giây; đã xem frame mở đầu, trang sổ và kết thúc. Các ảnh/email/database đều là fixture; chưa xác nhận bằng dữ liệu người dùng thật.

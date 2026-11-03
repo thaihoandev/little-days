@@ -92,6 +92,39 @@ try {
           data: { ...base, title: 'Ngày riêng của An' },
         })
       ).json();
+      let reached!: () => void, release!: () => void;
+      const started = new Promise<void>((resolve) => (reached = resolve)),
+        resume = new Promise<void>((resolve) => (release = resolve));
+      const delaySharing = async (route: import('@playwright/test').Route) => {
+        reached();
+        await resume;
+        await route.continue();
+      };
+      await page.route('**/api/timeline-sharing', delaySharing);
+      try {
+        await page.goto(origin + '/today');
+        await started;
+        await page.getByRole('button', { name: 'Thêm dấu mốc', exact: true }).click();
+        await expect(page.getByRole('dialog', { name: 'Thêm dấu mốc', exact: true })).toHaveCount(
+          0,
+        );
+        await expect(
+          page.getByText('Đang xác định không gian lưu…', { exact: true }),
+        ).toBeVisible();
+        release();
+        const delayed = page.getByRole('dialog', { name: 'Thêm dấu mốc', exact: true });
+        await expect(delayed).toBeVisible();
+        await delayed.getByLabel('Tên dấu mốc', { exact: true }).fill('Nhật ký tải chậm');
+        await delayed.getByRole('button', { name: 'Lưu dấu mốc', exact: true }).click();
+        await expect(delayed).not.toBeVisible();
+        const slowEntry = (await (await a.request.get(origin + '/api/journal')).json()).find(
+          (e: { title: string }) => e.title === 'Nhật ký tải chậm',
+        );
+        assert.equal(slowEntry.visibility, 'private');
+      } finally {
+        release();
+        await page.unroute('**/api/timeline-sharing', delaySharing);
+      }
       const grant = await (
         await a.request.post(origin + '/api/timeline-sharing', { data: { email: bob.email } })
       ).json();

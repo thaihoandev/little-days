@@ -270,7 +270,8 @@ export default function JournalDashboard({
   useEffect(() => {
     let active = true;
     const version = ++loadVersion.current;
-    const cacheKey = userId + ':' + (paged ? 'paged' : 'full');
+    const cacheKey =
+      userId + ':' + (paged ? 'paged' : 'full') + ':' + (separateSpaces ? 'spaces-v2' : 'legacy');
     const load = async () => {
       const stamp = sharedPlansReady ? await api<JournalState>('/journal-state') : undefined;
       const cached = recentDashboards.get(cacheKey);
@@ -313,7 +314,7 @@ export default function JournalDashboard({
       active = false;
       loadVersion.current++;
     };
-  }, [mode, libraryReady, userId, sharedPlansReady]);
+  }, [mode, libraryReady, userId, sharedPlansReady, separateSpaces]);
   const refresh = async (background = false) => {
     if (refreshBusy.current) return;
     refreshBusy.current = true;
@@ -343,12 +344,19 @@ export default function JournalDashboard({
       applySharing(state);
       syncState.current = stamp;
       if (stamp && state) {
-        recentDashboards.set(userId + ':' + (paged ? 'paged' : 'full'), {
-          entries: data,
-          sharing: state,
-          state: stamp,
-          at: Date.now(),
-        });
+        recentDashboards.set(
+          userId +
+            ':' +
+            (paged ? 'paged' : 'full') +
+            ':' +
+            (separateSpaces ? 'spaces-v2' : 'legacy'),
+          {
+            entries: data,
+            sharing: state,
+            state: stamp,
+            at: Date.now(),
+          },
+        );
         if (recentDashboards.size > 4)
           recentDashboards.delete(recentDashboards.keys().next().value!);
       }
@@ -1623,7 +1631,10 @@ export default function JournalDashboard({
         />
       )}
       {trashOpen && <JournalTrash onClose={() => setTrashOpen(false)} onRestored={update} />}
-      {editing !== undefined && (
+      {editing !== undefined && separateSpaces && !sharingReady && loading && (
+        <p role="status">Đang xác định không gian lưu…</p>
+      )}
+      {editing !== undefined && (!separateSpaces || sharingReady) && (
         <JournalDialog
           enhancedReady={enhancedReady}
           sharedPlansReady={sharedPlansReady}
