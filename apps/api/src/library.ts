@@ -44,6 +44,12 @@ export class LibraryService {
       ? `((${expr})::jsonb #> '{${path.replaceAll('.', ',')}}')`
       : `json(json_extract(${expr}, '$.${path}'))`;
   }
+  private boolean(expr: string, path: string) {
+    const value = this.text(expr, path);
+    return this.pg
+      ? `CASE WHEN ${value}='true' THEN 'true'::jsonb ELSE 'false'::jsonb END`
+      : `json(CASE WHEN ${value}=1 THEN 'true' ELSE 'false' END)`;
+  }
   private object(fields: Record<string, string>) {
     return `${this.pg ? 'jsonb_build_object' : 'json_object'}(${Object.entries(fields)
       .map(([key, value]) => `'${key}',${value}`)
@@ -115,6 +121,7 @@ export class LibraryService {
       schemaVersion: '1',
       names: this.json(p, 'names'),
       weeklyRecap: this.json(p, 'weeklyRecap'),
+      startDateAnnual: this.boolean(p, 'startDateAnnual'),
       memories: this.json(p, 'memories'),
       assets: this.json(p, 'assets'),
       pages: array(this.json(p, this.pg ? 'pages.0' : 'pages[0]')),
@@ -190,7 +197,7 @@ export class LibraryService {
       date: t('startDate'),
       note: "'Câu chuyện của hai đứa bắt đầu từ đây.'",
       kind: "'anniversary'",
-      annual: this.pg ? "'true'::jsonb" : "json('true')",
+      annual: this.boolean(p, 'startDateAnnual'),
       assets: nested(startAssets),
     });
     const memory = this.object({
@@ -375,7 +382,7 @@ export class LibraryService {
     return this.object({
       ...fields,
       note: "''",
-      annual: this.json('item', 'annual'),
+      annual: this.boolean('item', 'annual'),
       revision: this.json('item', 'revision'),
       location: this.json('item', 'location'),
       assets,

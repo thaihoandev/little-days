@@ -1,0 +1,547 @@
+.dashboard {
+  max-width: none;
+}
+.annual-album-toggle {
+  display: flex !important;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.annual-album-toggle input {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+/* The header and primary actions stay outside the only scrolling content region. */
+.modal-backdrop {
+  overflow: hidden;
+  padding: 16px;
+}
+.modal {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: calc(100dvh - 32px);
+}
+.modal-header {
+  flex: none;
+  margin-bottom: 18px;
+}
+.modal > :not(.modal-header) {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.create-album-modal > form {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.create-album-modal .create-album-fields {
+  overflow-y: auto;
+  min-height: 0;
+  padding: 0 5px 6px 0;
+}
+.create-album-modal > form > button {
+  flex: none;
+  margin-top: 12px;
+}
+.recap-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.recap-dialog > header,
+.recap-dialog > footer {
+  flex: none;
+}
+.recap-dialog .recap-compose {
+  overflow-y: auto;
+  min-height: 0;
+  flex: 1;
+  overscroll-behavior: contain;
+}
+.ritual-draw-dialog[open] {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: calc(100dvh - 32px);
+}
+.ritual-draw-dialog .jar-message {
+  overflow-y: auto;
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+.ritual-draw-dialog > button:last-child {
+  flex: none;
+}
+/* Today uses a compact collection, independently of the winding timeline layout. */
+.home-mode .journal-workspace {
+  display: block;
+}
+.home-mode .journal-timeline {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.home-mode .journal-day-group {
+  display: block;
+  width: 100%;
+  margin: 0 0 24px;
+}
+.home-mode .journal-day-heading {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 14px;
+  padding: 0 0 10px;
+}
+.home-mode .journal-day-heading time {
+  font-size: 19px;
+}
+.home-mode .journal-day-stories {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.journal-home.home-mode .journal-day-stories .journal-entry {
+  display: flex;
+  margin: 0;
+  min-width: 0;
+  border: 1px solid #e2dfd3;
+  border-radius: 16px;
+  background: #fffdf7;
+  box-shadow: 0 4px 18px #63543306;
+}
+.journal-home.home-mode .journal-day-stories .journal-entry-body {
+  display: flow-root;
+  padding: 20px;
+  flex: 1;
+  min-width: 0;
+  border: 0;
+}
+.home-mode .journal-entry-meta {
+  gap: 7px;
+  margin-bottom: 8px;
+}
+.home-mode .journal-entry-meta > span {
+  font-size: 10px;
+  color: #9a785f;
+}
+.home-mode .journal-entry h3 {
+  font-size: 20px;
+  line-height: 1.5;
+  margin: 0 0 9px;
+}
+.home-mode .entry-author {
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 10px;
+}
+.home-mode .entry-author small {
+  margin-left: 0;
+}
+.journal-home.home-mode .journal-day-stories .journal-photos {
+  float: right;
+  width: 144px;
+  height: 144px;
+  margin: 0 0 12px 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  gap: 3px;
+}
+.journal-home.home-mode .journal-day-stories .journal-photo-button {
+  height: 100%;
+  min-height: 0;
+}
+.journal-home.home-mode .journal-day-stories .journal-photo-button img {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  object-fit: cover;
+}
+.home-mode .journal-photos.photos-1 {
+  display: block;
+}
+.home-mode .journal-photos.photos-1 > button {
+  width: 100%;
+}
+.home-mode .journal-entry-actions {
+  clear: both;
+  border-top: 1px solid #eee9de;
+  padding-top: 12px;
+  margin-top: 14px;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.home-mode .journal-entry-body > p {
+  font-size: 12px;
+  line-height: 1.8;
+  margin-bottom: 10px;
+}
+.home-mode .album-story .story-album-cover {
+  width: 110px;
+  min-height: 180px;
+  flex: 0 0 110px;
+}
+.home-mode .album-story .story-album-cover > span {
+  display: none;
+}
+.today-note {
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 10px 0;
+}
+.today-note summary {
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.today-note summary small {
+  color: #5d7351;
+  text-decoration: underline;
+}
+.today-note[open] summary {
+  font-size: 0;
+}
+.today-note[open] summary small {
+  font-size: 11px;
+}
+.today-note p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* A glass jar with bounded paper geometry, reflections, depth and an exact count. */
+.love-jar-scene {
+  margin: 12px auto 18px;
+  max-width: 320px;
+  position: relative;
+  padding-top: 20px;
+}
+.love-jar {
+  position: relative;
+  width: 205px;
+  height: 235px;
+  margin: 0 auto 16px;
+  perspective: 650px;
+  animation: jar-arrive 0.7s ease-out;
+}
+.love-jar-shadow {
+  position: absolute;
+  width: 180px;
+  height: 22px;
+  border-radius: 50%;
+  background: #7c765838;
+  filter: blur(9px);
+  bottom: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.love-jar-lid {
+  position: absolute;
+  z-index: 4;
+  left: 11px;
+  right: 11px;
+  top: 0;
+  height: 29px;
+  border-radius: 40% 40% 8px 8px / 15px 15px 7px 7px;
+  background: repeating-linear-gradient(90deg, #b69a6f 0 4px, #c6ab82 4px 7px, #9e8157 7px 8px);
+  box-shadow:
+    inset 0 6px 7px #f5e6c274,
+    inset 0 -5px 5px #6d522b52,
+    0 4px 7px #59442422;
+}
+.love-jar-lid:before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 9px;
+  border-radius: 50%;
+  background: linear-gradient(#dec69b, #b49b72);
+  border: 1px solid #a58b60;
+}
+.love-jar-neck {
+  position: absolute;
+  z-index: 2;
+  top: 24px;
+  left: 19px;
+  right: 19px;
+  height: 22px;
+  background: linear-gradient(90deg, #fffdf8bd, #f9f6e73d 25%, #fffdf8bb 80%, #a6bab3aa);
+  border-inline: 2px solid #b0c5b4;
+}
+.love-jar-glass {
+  position: absolute;
+  inset: 40px 0 0;
+  border-radius: 25px 25px 42px 42px / 32px 32px 28px 28px;
+  border: 2px solid #a7beb1b0;
+  border-bottom-width: 7px;
+  background: linear-gradient(
+    100deg,
+    #f9fff67a,
+    #cdded044 17%,
+    #fffcf035 45%,
+    #b3cbbb5e 88%,
+    #f7fff5b5
+  );
+  box-shadow:
+    inset 8px 0 8px #ffffffb0,
+    inset -10px 0 13px #658b7342,
+    inset 0 -9px 4px #fbfff6b5,
+    4px 7px 12px #51634315;
+  overflow: hidden;
+}
+.love-jar-glass:before {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  left: 10px;
+  right: 10px;
+  top: 1px;
+  height: 17px;
+  border: 2px solid #c4d5c6;
+  border-radius: 50%;
+  background: #fcfff54a;
+}
+.love-jar-glass:after {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  left: 8px;
+  right: 8px;
+  bottom: 0;
+  height: 18px;
+  border: 2px solid #b3cbb9aa;
+  border-radius: 50%;
+  box-shadow: inset 0 -3px 3px #fffdf9c2;
+}
+.love-jar-papers {
+  position: absolute;
+  inset: 10px 0 0;
+}
+.folded-love-paper {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 49px;
+  height: 31px;
+  border-radius: 3px;
+  color: #b07969;
+  background: linear-gradient(150deg, #fff4e3 48%, #c7b49c 49%, #eee0c7 52%);
+  border: 1px solid #cbbda3;
+  box-shadow: 1px 3px 4px #66513c35;
+  animation: paper-settle 0.6s ease-out backwards;
+}
+.folded-love-paper.tone-1 {
+  background: linear-gradient(150deg, #f4d7cf 48%, #c3988a 49%, #e8bcb0 52%);
+}
+.folded-love-paper.tone-2 {
+  background: linear-gradient(150deg, #dfebd1 48%, #9fb28a 49%, #c5d6b0 52%);
+}
+.folded-love-paper.tone-3 {
+  background: linear-gradient(150deg, #dbe8eb 48%, #9fb5bc 49%, #bfd4d8 52%);
+}
+.folded-love-paper.tone-4 {
+  background: linear-gradient(150deg, #f0e1b5 48%, #c2ad7a 49%, #e4d29c 52%);
+}
+.love-jar-reflection {
+  position: absolute;
+  z-index: 4;
+  inset: 24px auto 22px 11px;
+  width: 13px;
+  border-radius: 50%;
+  background: linear-gradient(#fffefad9, #fff8 80%, transparent);
+  transform: rotate(2deg);
+}
+.love-jar-label {
+  position: absolute;
+  z-index: 5;
+  top: 49px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-3deg);
+  width: 100px;
+  padding: 9px 12px;
+  display: grid;
+  justify-items: center;
+  background: #fbf5e5ed;
+  color: #a47764;
+  border: 1px solid #dbcfb5;
+  border-radius: 5px;
+  box-shadow: 0 3px 7px #67503713;
+}
+.love-jar-label b {
+  font:
+    30px/1.2 Lora,
+    serif;
+  color: #75674c;
+}
+.love-jar-label small {
+  font:
+    11px/1.5 'Patrick Hand',
+    cursive;
+}
+.jar-rule-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  font-size: 11px;
+  color: #7f8268;
+}
+.jar-rule-icons span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.jar-rule-icons i {
+  font-size: 10px;
+  font-style: normal;
+  color: #aaa48e;
+}
+.jar-vote-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.jar-vote-count i {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px dashed #c9c4ae;
+  color: #b5ad99;
+  border-radius: 50%;
+  font-style: normal;
+}
+.jar-vote-count i.voted {
+  background: #e1eacb;
+  color: #5e7649;
+  border-style: solid;
+  border-color: #a2b986;
+}
+.jar-vote-count small {
+  margin-left: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.jar-collection .section-heading p {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.jar-paper h2 {
+  margin-bottom: 5px;
+}
+.jar-layout > section,
+.jar-composer fieldset {
+  min-width: 0;
+}
+.jar-paper .button,
+.jar-composer .button {
+  white-space: normal;
+}
+.jar-own-preview {
+  width: 100%;
+  text-align: left;
+  margin-top: 10px;
+}
+.jar-own-preview summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-size: 11px;
+  color: #8d826b;
+  cursor: pointer;
+}
+.jar-own-preview[open] summary {
+  margin-bottom: 8px;
+}
+.jar-composer textarea {
+  min-height: 105px;
+  max-height: 210px;
+}
+@keyframes jar-arrive {
+  0% {
+    transform: rotate(-3deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+@keyframes paper-settle {
+  from {
+    opacity: 0;
+    translate: 0 -25px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@media (max-width: 1200px) {
+  .home-mode .journal-day-stories {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .jar-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .modal-backdrop {
+    padding: 8px;
+  }
+  .modal {
+    max-height: calc(100dvh - 16px);
+    padding: 18px;
+  }
+  .recap-dialog .recap-preview {
+    max-height: 240px;
+    flex: none;
+  }
+  .recap-dialog .recap-preview > div {
+    transform: scale(0.5);
+    margin-bottom: -185px;
+  }
+  .journal-home.home-mode .journal-day-stories .journal-entry-body {
+    padding: 15px;
+  }
+  .journal-home.home-mode .journal-day-stories .journal-photos {
+    width: 88px;
+    height: 105px;
+    margin-left: 10px;
+  }
+  .journal-home.home-mode .journal-day-stories .journal-entry h3 {
+    font-size: 18px;
+  }
+  .home-mode .album-story .story-album-cover {
+    flex-basis: 76px;
+    width: 76px;
+  }
+  .jar-paper {
+    padding: 20px 16px;
+  }
+  .jar-composer {
+    padding: 20px 16px;
+  }
+  .love-jar {
+    width: 190px;
+    height: 225px;
+  }
+  .jar-rule-icons {
+    font-size: 10px;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .love-jar,
+  .folded-love-paper {
+    animation: none;
+  }
+}

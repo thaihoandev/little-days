@@ -428,7 +428,7 @@ export default function JournalDashboard({
           date: album.startDate,
           note: 'Câu chuyện của hai đứa bắt đầu từ đây.',
           kind: 'anniversary' as const,
-          annual: true,
+          annual: album.startDateAnnual === true,
           assets: album.assets.slice(0, 1),
           revision: album.revision,
           createdAt: album.createdAt,
@@ -477,8 +477,9 @@ export default function JournalDashboard({
       sharing.spaces,
     ],
   );
+  const upcomingFrom = mode === 'calendar' ? selected : today;
   const upcoming = all
-    .map((entry) => ({ entry, next: nextOccurrence(entry, today) }))
+    .map((entry) => ({ entry, next: nextOccurrence(entry, upcomingFrom) }))
     .filter((i): i is { entry: Item; next: string } => !!i.next)
     .sort((a, b) => a.next.localeCompare(b.next))
     .slice(0, 4);
@@ -1039,9 +1040,17 @@ export default function JournalDashboard({
                   <span className={'event-dot ' + entry.kind} />
                   <span>
                     <strong>{entry.title}</strong>
-                    <small>{dateLabel(next, { day: 'numeric', month: 'long' })}</small>
+                    <small>
+                      {dateLabel(next, { day: 'numeric', month: 'long', year: 'numeric' })}
+                    </small>
                   </span>
-                  <b>{next === today ? 'Hôm nay' : `${daysTogether(today, next)} ngày`}</b>
+                  <b>
+                    {next === today
+                      ? 'Hôm nay'
+                      : next === upcomingFrom
+                        ? 'Ngày chọn'
+                        : `${daysTogether(upcomingFrom, next)} ngày`}
+                  </b>
                 </button>
               ))
             ) : (
@@ -1270,10 +1279,11 @@ export default function JournalDashboard({
                   <div className="journal-day-stories">
                     {group.items.map((entry, itemIndex) => (
                       <Fragment key={entry.id}>
-                        {(itemIndex === 0 ||
-                          storyCategory(group.items[itemIndex - 1]) !== storyCategory(entry)) && (
-                          <h4 className="story-category">{storyCategory(entry)}</h4>
-                        )}
+                        {mode !== 'home' &&
+                          (itemIndex === 0 ||
+                            storyCategory(group.items[itemIndex - 1]) !== storyCategory(entry)) && (
+                            <h4 className="story-category">{storyCategory(entry)}</h4>
+                          )}
                         <article
                           className={
                             'journal-entry ' +
@@ -1300,6 +1310,12 @@ export default function JournalDashboard({
                             </button>
                           )}
                           <div className="journal-entry-body">
+                            {mode === 'home' && !isBook(entry) && (
+                              <JournalPhotoTiles
+                                entry={entry}
+                                onOpen={(index) => setPhotoPreview({ photos: entry.assets, index })}
+                              />
+                            )}
                             {mode === 'timeline' && !entry.timelineId && (
                               <label className="import-pick" title="Chọn dấu mốc làm scrapbook">
                                 <input
@@ -1345,7 +1361,9 @@ export default function JournalDashboard({
                                 </small>
                               )}
                             </div>
-                            <h3>{entry.title}</h3>
+                            <h3>
+                              {mode === 'home' && isBook(entry) ? entry.album!.title : entry.title}
+                            </h3>
                             {!entry.album && sharedPlansReady && (
                               <div className="entry-author">
                                 <UserAvatar name={entry.authorName} url={entry.authorAvatarUrl} />
@@ -1428,32 +1446,22 @@ export default function JournalDashboard({
                                 {entry.location.label || 'Địa điểm đã ghim'}
                               </button>
                             )}
-                            {entry.note && <p>{entry.note}</p>}
-                            {!isBook(entry) && entry.assets.length > 0 && (
-                              <div className={'journal-photos photos-' + entry.assets.length}>
-                                {entry.assets.slice(0, 3).map((asset, index) => (
-                                  <button
-                                    className="journal-photo-button"
-                                    aria-label={'Xem ảnh ' + asset.name}
-                                    key={asset.id}
-                                    onClick={() => setPhotoPreview({ photos: entry.assets, index })}
-                                  >
-                                    <img
-                                      src={thumbnailUrl(asset.url)}
-                                      alt={asset.name}
-                                      loading="lazy"
-                                      decoding="async"
-                                      width={asset.width}
-                                      height={asset.height}
-                                    />
-                                    {index === 2 && entry.assets.length > 3 && (
-                                      <span className="photo-overflow">
-                                        +{entry.assets.length - 3} ảnh
-                                      </span>
-                                    )}
-                                  </button>
-                                ))}
-                              </div>
+                            {entry.note &&
+                              (mode === 'home' && entry.note.length > 180 ? (
+                                <details className="today-note">
+                                  <summary>
+                                    {entry.note.slice(0, 160)}… <small>Xem thêm</small>
+                                  </summary>
+                                  <p>{entry.note}</p>
+                                </details>
+                              ) : (
+                                <p>{entry.note}</p>
+                              ))}
+                            {mode !== 'home' && !isBook(entry) && (
+                              <JournalPhotoTiles
+                                entry={entry}
+                                onOpen={(index) => setPhotoPreview({ photos: entry.assets, index })}
+                              />
                             )}
                             <div className="journal-entry-actions">
                               {remindersReady && (
@@ -2066,5 +2074,39 @@ function JournalDialog({
         </footer>
       </form>
     </dialog>
+  );
+}
+
+function JournalPhotoTiles({
+  entry,
+  onOpen,
+}: {
+  entry: JournalEntry;
+  onOpen: (index: number) => void;
+}) {
+  if (!entry.assets.length) return null;
+  return (
+    <div className={'journal-photos photos-' + entry.assets.length}>
+      {entry.assets.slice(0, 3).map((asset, index) => (
+        <button
+          className="journal-photo-button"
+          aria-label={'Xem ảnh ' + asset.name}
+          key={asset.id}
+          onClick={() => onOpen(index)}
+        >
+          <img
+            src={thumbnailUrl(asset.url)}
+            alt={asset.name}
+            loading="lazy"
+            decoding="async"
+            width={asset.width}
+            height={asset.height}
+          />
+          {index === 2 && entry.assets.length > 3 && (
+            <span className="photo-overflow">+{entry.assets.length - 3} ảnh</span>
+          )}
+        </button>
+      ))}
+    </div>
   );
 }

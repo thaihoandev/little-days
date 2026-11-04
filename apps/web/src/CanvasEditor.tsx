@@ -437,7 +437,15 @@ export function CanvasEditor({
               const deadline = Date.now() + 12000;
               const ready = () =>
                 page.elements
-                  .filter((e) => e.type === 'image' && e.visible !== false && e.assetId)
+                  .filter((e) => {
+                    if (e.visible === false) return false;
+                    if (e.type === 'image') return !!e.assetId;
+                    if (e.type === 'sticker') return !!decoration(e.decorationId);
+                    const style = e.type === 'anniversary' && counterAppearance(e.counterStyle, e);
+                    return (
+                      !!style && !!counterMotif(e.counterStyle, e.width, e.height, style.accent)
+                    );
+                  })
                   .every((e) => {
                     const image = (nodeFor(e.id) as Konva.Group | undefined)?.findOne('Image') as
                       Konva.Image | undefined;

@@ -5,6 +5,8 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { element } from '../packages/domain/index.js';
 import { photoStyleIds } from '../packages/domain/photo-frames.js';
+import { decoration } from '../packages/domain/decorations.js';
+import { counterAppearance, counterMotif } from '../packages/domain/counter.js';
 const origin = process.env.SMOKE_UI_ORIGIN!,
   dataDir = process.env.AUTH_UI_DATA_DIR!;
 if (
@@ -283,15 +285,66 @@ try {
           ...long.pages.slice(1),
         ];
         content.presentation = { ...long.presentation, ambience: 'none' };
+        content.pages[0].elements.push(
+          element('sticker', {
+            decorationId: 'heart-pink',
+            x: 620,
+            y: 810,
+            width: 60,
+            height: 60,
+            animation: 'none',
+          }),
+          element('anniversary', {
+            counterStyle: 'postcard',
+            x: 40,
+            y: 810,
+            width: 160,
+            height: 60,
+            fontSize: 16,
+            animation: 'none',
+          }),
+        );
         const saved = await owner.request.patch(origin + '/api/albums/' + id, {
           data: { expectedRevision: album.revision, content },
         });
         assert.equal(saved.status(), 200, await saved.text());
         const designed = await saved.json();
+        await p.evaluate(
+          ({ actor, id }) => localStorage.removeItem(`scrapbook-draft:${actor}:${id}`),
+          { actor: alice.id, id },
+        );
+        // Hold native canvas SVG decoding; downloading must wait for real artwork, not an empty node.
+        const motifElement = content.pages[0].elements.find(
+          (e: any) => e.counterStyle === 'postcard',
+        );
+        const heldSvg = [
+          decoration('heart-pink')!.src,
+          counterMotif('postcard', 160, 60, counterAppearance('postcard', motifElement)!.accent),
+        ];
+        await p.addInitScript(`(() => {
+          const descriptor=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,'src'),pending=[],targets=new Set(${JSON.stringify(heldSvg)}),seen=new Set();
+          let hold=true;
+          Object.defineProperty(HTMLImageElement.prototype,'src',{...descriptor,set(value){const image=this;if(hold&&targets.has(value)){seen.add(value);pending.push(()=>descriptor.set.call(image,value));}else descriptor.set.call(image,value);}});
+          window.__posterSvgPending=()=>seen.size;
+          window.__releasePosterSvg=()=>{hold=false;pending.splice(0).forEach(release=>release());};
+        })()`);
         await p.goto(origin + '/albums/' + id);
+        await expect(p.locator('.konvajs-content')).toHaveCount(1);
+        await p.screenshot({ path: 'test-results/poster-svg-loading.png' });
+        await expect.poll(() => p.evaluate(() => (window as any).__posterSvgPending())).toBe(2);
         const poster = p.waitForEvent('download');
         await p.getByRole('button', { name: 'Tải trang PNG', exact: true }).click();
+        await expect(p.getByRole('button', { name: 'Đang tạo ảnh…', exact: true })).toBeDisabled();
+        await p.evaluate(() => (window as any).__releasePosterSvg());
         await (await poster).saveAs('test-results/weekly-all-frames.png');
+        const png = await sharp('test-results/weekly-all-frames.png')
+          .ensureAlpha()
+          .raw()
+          .toBuffer();
+        assert.ok(
+          png[(840 * 720 + 650) * 4] > 180,
+          'Downloaded PNG includes the deferred heart artwork.',
+        );
         const exported = await owner.request.post(origin + '/api/albums/' + id + '/exports', {
           data: {
             expectedRevision: designed.revision,

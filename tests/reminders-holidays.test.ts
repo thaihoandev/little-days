@@ -374,6 +374,7 @@ test('album anniversary and memory sources require ownership and leap-day recurr
       updatedAt: new Date().toISOString(),
       assets: [],
       startDate: '2024-02-29',
+      startDateAnnual: true,
     };
     await f.db.insert('album', a.id, owner, a);
     await assert.rejects(

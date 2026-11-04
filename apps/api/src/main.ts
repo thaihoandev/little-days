@@ -584,6 +584,7 @@ class AppController {
       coupleRitualsVersion: 1,
       albumPresentationVersion: 1,
       weeklyRecapVersion: 1,
+      calendarRecurrenceVersion: 1,
       designExperienceVersion: 1,
       sharedPlansVersion: 1,
       spacesVersion: 2,

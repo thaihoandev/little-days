@@ -13,6 +13,7 @@ export function contentOf(album: Album): AlbumContent {
     title: album.title,
     names: album.names,
     startDate: album.startDate,
+    ...(album.startDateAnnual !== undefined ? { startDateAnnual: album.startDateAnnual } : {}),
     timezone: album.timezone,
     theme: album.theme,
     pages: album.pages,

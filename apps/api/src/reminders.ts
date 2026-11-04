@@ -133,7 +133,7 @@ export class ReminderService {
       return {
         title: 'Ngày bắt đầu · ' + album.names.join(' & '),
         date: album.startDate,
-        annual: true,
+        annual: album.startDateAnnual === true,
         owner: actor,
       };
     const memory = album.memories.find((m) => m.id === source.memoryId);

@@ -54,3 +54,4 @@ createRoot(document.getElementById('root')!).render(
 );
 
 import './experience.css';
+import './daily-polish.css';

@@ -382,6 +382,7 @@ export default function App() {
           advancedDesign={user.designCatalogVersion === 2}
           presentationEnabled={user.albumPresentationVersion === 1}
           designExperienceEnabled={user.designExperienceVersion === 1}
+          recurrenceEnabled={user.calendarRecurrenceVersion === 1}
           notify={notify}
           onBack={() => {
             setActive(null);
@@ -986,6 +987,7 @@ function AccountModal({
 }
 
 function Editor({
+  recurrenceEnabled,
   initial,
   userId,
   onBack,
@@ -996,6 +998,7 @@ function Editor({
   designExperienceEnabled,
 }: {
   initial: Album;
+  recurrenceEnabled: boolean;
   userId: string;
   onBack: () => void;
   notify: (s: string) => void;
@@ -1896,6 +1899,22 @@ function Editor({
                     }
                   />
                 </label>
+                {recurrenceEnabled && (
+                  <label className="annual-album-toggle">
+                    <input
+                      type="checkbox"
+                      aria-label="Lặp ngày bắt đầu album hằng năm"
+                      checked={album.startDateAnnual === true}
+                      onChange={(e) =>
+                        doc.edit(
+                          (a) => ({ ...a, startDateAnnual: e.target.checked }),
+                          'start-annual',
+                        )
+                      }
+                    />
+                    <span>Lặp ngày bắt đầu trên lịch hằng năm</span>
+                  </label>
+                )}
                 <label>
                   Múi giờ
                   <select

@@ -137,6 +137,7 @@ export const albumContentSchema = z
     title: z.string().trim().min(1).max(120),
     names: z.tuple([z.string().trim().min(1).max(60), z.string().trim().min(1).max(60)]),
     startDate: dateString,
+    startDateAnnual: z.boolean().optional(),
     timezone: z.string().refine((v) => {
       try {
         new Intl.DateTimeFormat('en', { timeZone: v });

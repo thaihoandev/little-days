@@ -4,6 +4,8 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Sử dụng
 
+- [Sửa lặp ngày, Lọ điều thương và thẻ Hôm nay](CALENDAR_AND_DAILY_POLISH.md)
+
 - [Recap tuần, khung ảnh mới và thiệp cuộn dọc](WEEKLY_DESIGN_REFRESH.md)
 
 - [Thiệp mời, nhạc và hiệu ứng khi chia sẻ](INVITATIONS_AND_SHARED_PREVIEW.md)

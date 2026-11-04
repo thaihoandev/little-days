@@ -1,3 +1,4 @@
+import { LoveJar } from './LoveJar.js';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   ArrowRight,
@@ -495,17 +496,8 @@ export default function TogetherPage({
                     <div className="jar-layout">
                       <section className="jar-paper">
                         <span className="eyebrow">ĐỂ DÀNH MỘT CHÚT THƯƠNG</span>
-                        <h2>Những điều nhỏ, mình vẫn nhớ.</h2>
-                        <div className="jar-illustration" aria-hidden="true">
-                          <span className="jar-lid" />
-                          <span className="jar-note one">cảm ơn bạn</span>
-                          <span className="jar-note two">một cái ôm ♡</span>
-                          <Heart size={30} />
-                        </div>
-                        <p>
-                          Mỗi lời nhắn chỉ mở khi đến ngày hẹn <strong>hoặc</strong> tất cả thành
-                          viên lúc gửi cùng đồng ý.
-                        </p>
+                        <h2>Lọ điều thương</h2>
+                        <LoveJar total={state.jarTotal} />
                         <button
                           className="button quiet full"
                           disabled={pending || !state.jarTotal}
@@ -518,9 +510,6 @@ export default function TogetherPage({
                           <Shuffle size={17} />
                           Rút một điều thương đã mở
                         </button>
-                        <small>
-                          Chỉ rút nội dung đã đủ điều kiện mở. Không mở sớm lời nhắn kín.
-                        </small>
                       </section>
                       <JarComposer
                         key={space}
@@ -544,10 +533,9 @@ export default function TogetherPage({
                     <section className="jar-collection" aria-label="Những lời thương trong lọ">
                       <div className="section-heading">
                         <div>
-                          <h2>Trong lọ có {state.jarTotal} điều thương</h2>
+                          <h2>Lời trong lọ</h2>
                           <p>
-                            Bạn luôn đọc được lời mình viết. Lời của người khác được giữ kín đến lúc
-                            mở.
+                            <LockKeyhole size={13} /> Lời chưa mở được giữ riêng.
                           </p>
                         </div>
                         <button
@@ -889,15 +877,15 @@ function JarComposer({
   return (
     <section className="jar-composer">
       <span className="eyebrow">MỘT LỜI CHƯA VỘI MỞ</span>
-      <h2>Bỏ vào lọ một điều thương</h2>
-      <p>Gửi bất cứ lúc nào, bao nhiêu lời cũng được trong hạn mức lưu giữ.</p>
+      <h2>Viết một lời thương</h2>
+      <p>Một lời nhắn nhỏ, dành cho đúng lúc.</p>
       <form onSubmit={(e) => void submit(e)}>
         <fieldset disabled={pending || !allowed}>
           <label>
             Lời nhắn của bạn
             <textarea
               aria-label="Lời nhắn bỏ vào lọ"
-              rows={6}
+              rows={4}
               maxLength={1200}
               value={text}
               onChange={(e) => {
@@ -941,8 +929,7 @@ function JarComposer({
           )}
           <p className="jar-consent-hint">
             <LockKeyhole size={17} />
-            Đến ngày hẹn sẽ mở. Mở sớm cần mọi người bấm đồng ý, kể cả người viết. Gửi lời nhắn
-            không tự tính là đồng ý.
+            Đến hẹn hoặc tất cả cùng đồng ý. Gửi lời không tự tính là đồng ý.
           </p>
           <small>Ngày mở: {prettyDate(chosenDate || today)} · 00:00, giờ Việt Nam.</small>
           <button className="button primary full" disabled={!text.trim()}>
@@ -999,15 +986,16 @@ function JarNote({
           <LockKeyhole size={22} />
           <strong>Để dành đến {prettyDate(n.unlockAt)}</strong>
           {n.mine ? (
-            <p className="jar-message own-preview">{n.text}</p>
+            <details className="jar-own-preview">
+              <summary title="Chỉ bạn đọc được trước khi mở">
+                <MessageCircleHeart size={14} />
+                Lời mình viết
+              </summary>
+              <p className="jar-message own-preview">{n.text}</p>
+            </details>
           ) : (
-            <p>Một lời thương đang chờ đúng lúc để mở.</p>
+            <small>Chưa đến ngày mở.</small>
           )}
-          <small>
-            {n.mine
-              ? 'Chỉ bạn đang đọc được lời mình viết.'
-              : 'Lời thương đang chờ đúng lúc để mở.'}
-          </small>
         </div>
       )}
       <footer>
@@ -1018,8 +1006,20 @@ function JarNote({
           </span>
         ) : (
           <>
-            <span>
-              {n.approvalCount}/{n.participantCount} người đồng ý mở sớm
+            <span
+              className="jar-vote-count"
+              role="img"
+              aria-label={n.approvalCount + '/' + n.participantCount + ' người đồng ý mở sớm'}
+              title={n.approvalCount + '/' + n.participantCount + ' người đồng ý mở sớm'}
+            >
+              {Array.from({ length: Math.min(n.participantCount, 10) }, (_, i) => (
+                <i className={i < n.approvalCount ? 'voted' : ''} key={i}>
+                  {i < n.approvalCount ? <Check size={12} /> : <Heart size={11} />}
+                </i>
+              ))}
+              <small>
+                {n.approvalCount}/{n.participantCount}
+              </small>
             </span>
             {n.canApprove ? (
               <button className="button quiet" disabled={disabled} onClick={onVote}>

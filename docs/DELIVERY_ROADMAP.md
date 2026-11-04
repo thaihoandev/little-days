@@ -2,6 +2,8 @@
 
 Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → staging/PostgreSQL → load test và pilot, cùng cải thiện editor/video và quy trình backup.
 
+- [x] Mã sửa recurrence/ngày sắp tới theo lịch đang xem, popup gọn, thẻ Hôm nay và lọ giấy/kính; xem [CALENDAR_AND_DAILY_POLISH.md](CALENDAR_AND_DAILY_POLISH.md).
+
 - [x] Recap ảnh theo tuần đã có mã: chọn 1–9 ảnh chung, lưu collage sửa được, xuất PNG, bộ lọc recap; khung ảnh mới và thiệp cuộn. Xem [WEEKLY_DESIGN_REFRESH.md](WEEKLY_DESIGN_REFRESH.md).
 - [ ] Các hướng giữ chân còn lại: thẻ một việc nhỏ trên Hôm nay và nhịp chung opt-in. Đây vẫn là kế hoạch; xem [RETENTION_STRATEGY.md](RETENTION_STRATEGY.md).
 - [x] Người dùng xác nhận tạo/lưu và bật cron-job.org GET mỗi 5 phút ngày 04/11; cấu hình/script và hướng dẫn ở [RENDER_KEEPALIVE.md](RENDER_KEEPALIVE.md).

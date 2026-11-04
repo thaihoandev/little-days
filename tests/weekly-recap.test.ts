@@ -29,8 +29,96 @@ import {
 } from '../packages/domain/photo-frames.js';
 import { longInvitation } from '../packages/domain/long-invitation.js';
 import { templatePage } from '../packages/domain/templates.js';
+import { createAlbumContent } from '../packages/domain/index.js';
+import { occursOn, nextOccurrence } from '../packages/domain/journal.js';
+import { LibraryService } from '../apps/api/src/library.js';
 
 const status = (code: number) => (e: any) => e.getStatus?.() === code;
+
+test('calendar does not repeat one-off journals or album dates without an explicit annual option', async () => {
+  const f = await fixture(),
+    owner = f.users[0];
+  try {
+    const date = '2026-11-02',
+      next = '2027-11-02';
+    const once = await f.journal.create(owner, {
+      title: 'Chỉ một lần',
+      date,
+      kind: 'memory',
+      note: '',
+      annual: false,
+      timelineId: owner,
+    });
+    const yearly = await f.journal.create(owner, {
+      title: 'Mỗi năm',
+      date,
+      kind: 'anniversary',
+      note: '',
+      annual: true,
+      timelineId: owner,
+    });
+    const album = {
+      ...createAlbumContent(),
+      id: randomUUID(),
+      schemaVersion: 1 as const,
+      revision: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      assets: [],
+      startDate: date,
+      memories: [],
+    };
+    await f.db.insert('album', album.id, owner, album);
+    const library = new LibraryService(f.db, f.journal),
+      read = async () => (await library.page(owner, { limit: 60, today: next })).items as any[];
+    let items = await read(),
+      book = items.find((e) => e.id === 'start-' + album.id)!;
+    assert.equal(book.annual, false);
+    assert.equal(occursOn(book, next), false);
+    assert.equal(nextOccurrence(book, next), null);
+    assert.equal(
+      occursOn(
+        items.find((e) => e.id === once.id)!,
+        next,
+      ),
+      false,
+    );
+    assert.equal(
+      occursOn(
+        items.find((e) => e.id === yearly.id)!,
+        next,
+      ),
+      true,
+    );
+    await f.db.compareAndSwap('album', album.id, owner, 0, {
+      ...album,
+      revision: 1,
+      startDateAnnual: true,
+    });
+    assert.equal(
+      (await library.summaries(owner)).find((a) => a.id === album.id)?.startDateAnnual,
+      true,
+    );
+    items = await read();
+    book = items.find((e) => e.id === 'start-' + album.id)!;
+    assert.equal(book.annual, true);
+    assert.equal(occursOn(book, next), true);
+    await f.db.compareAndSwap('album', album.id, owner, 1, {
+      ...album,
+      revision: 2,
+      startDateAnnual: false,
+    });
+    assert.equal(
+      occursOn(
+        (await read()).find((e) => e.id === book.id)!,
+        next,
+      ),
+      false,
+    );
+  } finally {
+    await f.db.close();
+  }
+});
 async function fixture() {
   const root = path.resolve('test-results/weekly-recap', randomUUID()),
     db = new Repository({ dataDir: root, databaseUrl: process.env.TEST_DATABASE_URL || '' });
