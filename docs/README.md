@@ -20,7 +20,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Triển khai và vận hành
 
-- [Ping Render mỗi 10 phút bằng GitHub Actions](RENDER_KEEPALIVE.md)
+- [Ping Render mỗi 5 phút bằng cron-job.org và lịch dự phòng](RENDER_KEEPALIVE.md)
 - [Bật email nhắc ngày bằng GitHub Actions](REMINDERS_HOLIDAYS.md#bật-email-theo-lịch-trên-render--github-actions)
 - [Hosting miễn phí, Vercel/Render](FREE_HOSTING.md)
 - [Mail và tài khoản](AUTH_EMAIL.md)
@@ -32,6 +32,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Kế hoạch và hồ sơ
 
+- [Giữ chân người dùng: hoạt động nhỏ, nhịp tuần và scrapbook](RETENTION_STRATEGY.md)
 - [Quy tắc agent và cơ sở nghiên cứu](AGENT_GUIDE.md)
 - [Trạng thái triển khai](IMPLEMENTATION_STATUS.md)
 - [Kế hoạch tổng thể](IMPLEMENTATION_PLAN.md)

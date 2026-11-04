@@ -2,6 +2,9 @@
 
 Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → staging/PostgreSQL → load test và pilot, cùng cải thiện editor/video và quy trình backup.
 
+- [ ] Hướng giữ chân đã nghiên cứu: một việc nhỏ trên Hôm nay → nhịp chung 3 ngày/tuần opt-in → trang nhìn lại tuần. Đây là kế hoạch, chưa triển khai chức năng mới; xem [RETENTION_STRATEGY.md](RETENTION_STRATEGY.md).
+- [x] Người dùng xác nhận tạo/lưu và bật cron-job.org GET mỗi 5 phút ngày 04/11; cấu hình/script và hướng dẫn ở [RENDER_KEEPALIVE.md](RENDER_KEEPALIVE.md).
+- [ ] Xác nhận ba lượt schedule HTTP 200 thực tế cách khoảng 5 phút trong cron-job.org trước khi tắt GitHub dự phòng; chưa có lịch sử tài khoản để kiểm chứng độc lập.
 - [x] Mã thiệp mời trong album, bốn mẫu sửa được; nhạc/hiệu ứng cho link chỉ xem, quyền nhạc theo token, chuẩn hóa ký hiệu và bỏ tự đồng ý trong lọ. Xem [hướng dẫn và kiểm chứng](INVITATIONS_AND_SHARED_PREVIEW.md); CI/deploy phải đối chiếu commit.
 - [x] Mã Góc chúng mình: câu hỏi hằng ngày kín đến khi đủ hai câu trả lời; Lọ điều thương nhiều lần gửi, mở theo ngày hoặc đủ đồng thuận; thumbnail trang trí đồng đều. Xem `COUPLE_RITUALS.md` về quyền, hạn mức và phạm vi kiểm chứng.
 - [x] Tách riêng/chung thực tế, chủ dữ liệu đổi đích lưu; sửa avatar/map, bộ chọn và bổ sung trang trí/ký hiệu/bộ đếm/hiệu ứng, sao chép kiểu. Xem `DESIGN_SPACES_REFRESH.md`; trạng thái CI/deploy phải đối chiếu commit khi bàn giao.

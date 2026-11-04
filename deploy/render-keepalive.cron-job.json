@@ -1,0 +1,29 @@
+{
+  "job": {
+    "title": "Little Days - Render keep-alive",
+    "url": "https://little-days-api.onrender.com/legal-info.json",
+    "enabled": true,
+    "saveResponses": false,
+    "requestMethod": 0,
+    "requestTimeout": 30,
+    "redirectSuccess": false,
+    "auth": { "enable": false },
+    "notification": {
+      "onFailure": false,
+      "onSuccess": false,
+      "onDisable": false,
+      "onSslCertExpiry": false,
+      "mode": 0
+    },
+    "extendedData": { "headers": { "Cache-Control": "no-cache" } },
+    "schedule": {
+      "timezone": "Asia/Ho_Chi_Minh",
+      "expiresAt": 0,
+      "hours": [-1],
+      "mdays": [-1],
+      "minutes": [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55],
+      "months": [-1],
+      "wdays": [-1]
+    }
+  }
+}
