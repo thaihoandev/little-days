@@ -60,6 +60,8 @@ try {
 
 ## Trạng thái và giới hạn
 
-Ngày 04/11/2026, người dùng xác nhận đã tạo/lưu job GET mỗi 5 phút và bật Enabled trong cron-job.org. Agent chưa truy cập được lịch sử tài khoản để kiểm chứng các lượt schedule, nên vẫn giữ GitHub dự phòng. Không đồng nhất xác nhận cấu hình với ba lượt HTTP 200 đều; không ghi kiểm chứng thành công chỉ từ fixture/dry-run.
+Ngày 04/11/2026, người dùng xác nhận đã tạo/lưu job GET mỗi 5 phút, bật Enabled và có ít nhất ba lượt HTTP 200 cách nhau khoảng 5 phút trong History. Đây là xác nhận của người dùng, agent chưa truy cập trực tiếp lịch sử tài khoản. Ping trực tiếp từ agent cũng nhận HTTP 200, nhưng phép đo đó chỉ xác nhận endpoint, không thay thế lịch sử schedule.
+
+Sau xác nhận trên, agent đã tắt riêng workflow GitHub **Render keep-alive** bằng API và đọc lại trạng thái `disabled_manually`. CI, backup và lời nhắc không bị tắt. File workflow được giữ làm phương án dự phòng; muốn dùng lại cần chọn **Enable workflow** trên GitHub, nhưng lịch GitHub vẫn có giới hạn đã nêu.
 
 Không đổi `.env`, Render plan hoặc database/media. Giữ API thức vẫn tiêu 750 giờ Free Instance dùng chung workspace, có thể tăng usage Neon; không tăng CPU/RAM. Dịch vụ lịch và Render có thể gián đoạn/restart, không bảo đảm uptime 24/7.
