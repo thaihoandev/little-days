@@ -1,3 +1,4 @@
+import { WeeklyRecap } from './WeeklyRecap.js';
 import {
   Fragment,
   lazy,
@@ -116,6 +117,8 @@ export default function JournalDashboard({
   notifications = [],
   onOpenDay,
   homeActions,
+  weeklyReady = false,
+  onViewRecaps = () => {},
 }: {
   albums: Album[];
   mode: 'home' | 'timeline' | 'calendar';
@@ -136,6 +139,8 @@ export default function JournalDashboard({
   notifications?: NotificationView[];
   onOpenDay?: (date: string) => void;
   homeActions?: import('react').ReactNode;
+  weeklyReady?: boolean;
+  onViewRecaps?: () => void;
 }) {
   const [today, setToday] = useState(() =>
     todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone),
@@ -663,7 +668,7 @@ export default function JournalDashboard({
           <div>
             <span>HÔM NAY</span>
             <strong>{all.filter((e) => occursOn(e, today)).length} điều muốn nhớ</strong>
-            <p>Lịch, lời hẹn và ghi chú của bạn ở ngay bên dưới.</p>
+            <p>Ảnh, lời hẹn và những điều nhỏ trong ngày.</p>
           </div>
           <button
             className="button quiet"
@@ -678,6 +683,22 @@ export default function JournalDashboard({
             Ghi nhanh hôm nay
           </button>
         </div>
+      )}
+      {mode === 'home' && weeklyReady && (
+        <WeeklyRecap
+          spaces={sharing.spaces || []}
+          ready={sharingReady}
+          refreshKey={`${syncState.current?.version || ''}:${loadVersion.current}`}
+          onCreated={onCreatedAlbum}
+          onViewRecaps={onViewRecaps}
+          onAddDay={(date, space) => {
+            setSelected(date);
+            setMonth(date.slice(0, 7));
+            setSelectedTimeline(space);
+            setNewKind('memory');
+            setEditing(null);
+          }}
+        />
       )}
       {mode === 'home' && homeActions}
       {mode === 'timeline' &&

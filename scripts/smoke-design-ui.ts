@@ -40,7 +40,7 @@ try {
         });
         return read();
       };
-      await page.goto(origin);
+      await page.goto(origin + '/albums');
       await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
       await expect(page.locator('.canvas-sheet canvas')).toBeVisible();
       const quick = page.getByRole('toolbar', { name: 'Thiết kế nhanh' });

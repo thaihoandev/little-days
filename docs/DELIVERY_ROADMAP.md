@@ -2,7 +2,8 @@
 
 Phạm vi được yêu cầu: quota → retention/cleanup → giám sát → staging/PostgreSQL → load test và pilot, cùng cải thiện editor/video và quy trình backup.
 
-- [ ] Hướng giữ chân đã nghiên cứu: một việc nhỏ trên Hôm nay → nhịp chung 3 ngày/tuần opt-in → trang nhìn lại tuần. Đây là kế hoạch, chưa triển khai chức năng mới; xem [RETENTION_STRATEGY.md](RETENTION_STRATEGY.md).
+- [x] Recap ảnh theo tuần đã có mã: chọn 1–9 ảnh chung, lưu collage sửa được, xuất PNG, bộ lọc recap; khung ảnh mới và thiệp cuộn. Xem [WEEKLY_DESIGN_REFRESH.md](WEEKLY_DESIGN_REFRESH.md).
+- [ ] Các hướng giữ chân còn lại: thẻ một việc nhỏ trên Hôm nay và nhịp chung opt-in. Đây vẫn là kế hoạch; xem [RETENTION_STRATEGY.md](RETENTION_STRATEGY.md).
 - [x] Người dùng xác nhận tạo/lưu và bật cron-job.org GET mỗi 5 phút ngày 04/11; cấu hình/script và hướng dẫn ở [RENDER_KEEPALIVE.md](RENDER_KEEPALIVE.md).
 - [x] Người dùng xác nhận ít nhất ba lượt HTTP 200 cách khoảng 5 phút ngày 04/11. Agent đã tắt riêng GitHub Render keep-alive và đọc lại `disabled_manually`; chưa truy cập trực tiếp History cron-job.org.
 - [x] Mã thiệp mời trong album, bốn mẫu sửa được; nhạc/hiệu ứng cho link chỉ xem, quyền nhạc theo token, chuẩn hóa ký hiệu và bỏ tự đồng ý trong lọ. Xem [hướng dẫn và kiểm chứng](INVITATIONS_AND_SHARED_PREVIEW.md); CI/deploy phải đối chiếu commit.

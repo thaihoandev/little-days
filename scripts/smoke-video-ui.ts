@@ -41,7 +41,7 @@ try {
     ).status(),
     200,
   );
-  await page.goto(origin);
+  await page.goto(origin + '/albums');
   await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
   await page.getByRole('button', { name: 'Tạo video', exact: true }).click();
   await expect(page.getByRole('combobox', { name: 'Nhạc nền', exact: true })).toBeEnabled();

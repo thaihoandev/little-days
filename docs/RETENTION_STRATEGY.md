@@ -1,6 +1,6 @@
 # Giữ chân người dùng Little Days
 
-Nghiên cứu 04/11/2026. Đây là đề xuất và kế hoạch, chưa phải tính năng hoặc kết quả retention đã có. Không đọc dữ liệu riêng hoặc ghi nhận pilot người thật khi chỉ chạy QA.
+Nghiên cứu 04/11/2026. Recap ảnh theo tuần đã có mã theo [phạm vi triển khai](WEEKLY_DESIGN_REFRESH.md); các đề xuất nhịp/chuỗi và đo retention dưới đây vẫn là kế hoạch. Chưa có kết quả retention hoặc pilot người thật từ QA tự động.
 
 ## Chốt hướng
 

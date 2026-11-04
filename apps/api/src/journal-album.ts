@@ -8,6 +8,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import {
   albumContentSchema,
   createAlbumContent,
+  todayIn,
   type Album,
   type Asset,
 } from '../../../packages/domain/index.js';
@@ -26,6 +27,12 @@ import { AccountDeletion } from './account-deletion.js';
 import { ResourcePolicy } from './resource-policy.js';
 import { normalizePhoto } from './images.js';
 import { logEvent } from './observability.js';
+import {
+  buildWeeklyPage,
+  shiftDate,
+  type RecapInput,
+} from '../../../packages/domain/weekly-recap.js';
+import type { JournalService } from './journal.js';
 
 type Claim = { attempt: string; fingerprint: string; expires: number; albumId?: string };
 type Snapshot = { source: JournalSource; entry: JournalAlbumEntry; keys: Map<string, string> };
@@ -35,6 +42,7 @@ export class JournalAlbumService {
     private store: MediaStore,
     private resources: ResourcePolicy,
     private deletion: AccountDeletion,
+    private journal?: JournalService,
   ) {}
   private async ownerLock(owner: string) {
     if (this.db.driver === 'postgresql')
@@ -42,7 +50,12 @@ export class JournalAlbumService {
         'owner-operation:' + owner,
       ]);
   }
-  private async snapshot(owner: string, source: JournalSource, lock = false): Promise<Snapshot> {
+  private async snapshot(
+    owner: string,
+    source: JournalSource,
+    lock = false,
+    weekly?: RecapInput,
+  ): Promise<Snapshot> {
     const kind = source.kind === 'journal' ? 'journal' : 'album';
     const row = (
       await this.db.query(
@@ -51,7 +64,21 @@ export class JournalAlbumService {
         [kind, source.id],
       )
     )[0];
-    if (!row || row.owner !== owner) throw new NotFoundException('Không tìm thấy dấu mốc đã chọn.');
+    if (!row) throw new NotFoundException('Không tìm thấy dấu mốc đã chọn.');
+    if (weekly) {
+      if (!this.journal || source.kind !== 'journal' || row.owner !== weekly.spaceId)
+        throw new NotFoundException();
+      const entry = await this.journal.read(owner, source.id);
+      if (
+        entry.visibility !== 'shared' ||
+        entry.spaceId !== weekly.spaceId ||
+        entry.date < weekly.weekStart ||
+        entry.date > shiftDate(weekly.weekStart, 6) ||
+        entry.date > todayIn('Asia/Ho_Chi_Minh') ||
+        (entry.kind === 'plan' && entry.plan?.status !== 'completed')
+      )
+        throw new NotFoundException('Ảnh không thuộc tuần và không gian đã chọn.');
+    } else if (row.owner !== owner) throw new NotFoundException('Không tìm thấy dấu mốc đã chọn.');
     if (Number(row.revision) !== source.expectedRevision)
       throw new ConflictException(
         'Một dấu mốc vừa thay đổi. Hãy tải lại timeline trước khi tạo sổ.',
@@ -84,6 +111,13 @@ export class JournalAlbumService {
         note: memory.body,
         assets: payload.assets.filter((a) => a.id === memory.assetId),
       };
+    }
+    if (weekly) {
+      const selected = weekly.photos.filter((p) => p.entryId === source.id).map((p) => p.assetId);
+      if (!selected.length || selected.some((id) => !entry.assets.some((a) => a.id === id)))
+        throw new NotFoundException('Ảnh đã chọn không còn tồn tại.');
+      entry.assets = selected.map((id) => entry.assets.find((a) => a.id === id)!);
+      entry.note = '';
     }
     return {
       source,
@@ -124,11 +158,12 @@ export class JournalAlbumService {
       signal.removeEventListener('abort', abort);
     }
   }
-  async create(owner: string, body: unknown) {
+  async create(owner: string, body: unknown, weekly?: RecapInput) {
     const input = journalAlbumSchema.parse(body);
     const canonical = {
       ...input,
       sources: [...input.sources].sort((a, b) => sourceKey(a).localeCompare(sourceKey(b))),
+      ...(weekly ? { weekly } : {}),
     };
     const fingerprint = createHash('sha256').update(JSON.stringify(canonical)).digest('hex');
     const attempt = randomUUID();
@@ -137,9 +172,19 @@ export class JournalAlbumService {
     let claimed = false,
       published = false,
       targetAlbumId: string | undefined;
+    let sourceOperation: string | undefined;
+    const lock = async () => {
+      if (weekly && this.journal) {
+        await this.journal.sharing.lock(weekly.spaceId, owner);
+        const space = await this.journal.sharing.space(owner, weekly.spaceId);
+        if (!space.shared) throw new NotFoundException();
+      } else await this.ownerLock(owner);
+    };
     try {
+      if (weekly && weekly.spaceId !== owner)
+        sourceOperation = await this.deletion.begin(weekly.spaceId);
       const previous = await this.db.transaction(async () => {
-        await this.ownerLock(owner);
+        await lock();
         const requestOwner = await this.db.owner('journal-album-request', input.requestId);
         if (requestOwner && requestOwner !== owner) throw new NotFoundException();
         const previous = await this.db.get<Claim>('journal-album-request', input.requestId);
@@ -167,7 +212,8 @@ export class JournalAlbumService {
       });
       if (previous) return previous;
       const snapshots: Snapshot[] = [];
-      for (const source of input.sources) snapshots.push(await this.snapshot(owner, source));
+      for (const source of input.sources)
+        snapshots.push(await this.snapshot(owner, source, false, weekly));
       try {
         buildJournalPages(
           snapshots.map((s) => s.entry),
@@ -247,9 +293,28 @@ export class JournalAlbumService {
         names: input.names,
         timezone: input.timezone,
         theme: builtInTemplates.find((t) => t.id === input.templateId)!.theme,
-        startDate: copiedEntries.map((e) => e.date).sort()[0],
-        pages: buildJournalPages(copiedEntries, input.templateId),
-        memories,
+        startDate: weekly?.weekStart || copiedEntries.map((e) => e.date).sort()[0],
+        pages: weekly
+          ? [
+              buildWeeklyPage(
+                weekly.photos.map((p) => ({
+                  assetId: mapping.get('journal/' + p.assetId + '.jpg')!.id,
+                  date: snapshots.find((s) => s.source.id === p.entryId)!.entry.date,
+                })),
+                weekly,
+              ),
+            ]
+          : buildJournalPages(copiedEntries, input.templateId),
+        ...(weekly
+          ? {
+              weeklyRecap: {
+                weekStart: weekly.weekStart,
+                spaceId: weekly.spaceId,
+                layout: weekly.layout,
+              },
+            }
+          : {}),
+        memories: weekly ? [] : memories,
       });
       const album: Album = {
         ...content,
@@ -261,7 +326,7 @@ export class JournalAlbumService {
         updatedAt: now,
       };
       await this.db.transaction(async () => {
-        await this.ownerLock(owner);
+        await lock();
         const claim = await this.db.get<Claim>('journal-album-request', input.requestId);
         if (!claim || claim.attempt !== attempt || claim.expires <= (await this.db.now()))
           throw new ConflictException('Yêu cầu tạo sổ đã hết hạn. Vui lòng thử lại.');
@@ -272,7 +337,7 @@ export class JournalAlbumService {
         for (const source of [...input.sources].sort((a, b) =>
           sourceKey(a).localeCompare(sourceKey(b)),
         ))
-          await this.snapshot(owner, source, true);
+          await this.snapshot(owner, source, true, weekly);
         await this.db.insert('album', album.id, owner, album);
         await this.db.put('journal-album-request', input.requestId, owner, {
           ...claim,
@@ -310,6 +375,7 @@ export class JournalAlbumService {
       }
       throw error;
     } finally {
+      if (sourceOperation) await this.deletion.end(sourceOperation);
       await this.deletion.end(operation);
     }
   }

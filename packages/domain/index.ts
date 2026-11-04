@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { decorationIds } from './decorations.js';
 import { counterStyleIds } from './counter.js';
 import { fontIds } from './font-catalog.js';
+import { photoStyleIds } from './photo-frames.js';
 export { fonts, fontIds } from './font-catalog.js';
 
 const finite = z.number().finite();
@@ -33,7 +34,11 @@ export const elementSchema = z.object({
   groupId: z.string().uuid().nullable().optional(),
   text: z.string().max(3000),
   assetId: z.string().max(100).nullable(),
-  photoStyle: z.enum(['polaroid', 'cutout']).optional(),
+  photoStyle: z.enum(photoStyleIds).optional(),
+  frameColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
   decorationId: z.enum(decorationIds).optional(),
   font: z.enum(fontIds),
   fontSize: finite.min(10).max(160),
@@ -99,6 +104,7 @@ export const memorySchema = z.object({
 export type Memory = z.infer<typeof memorySchema>;
 export const presentationSchema = z
   .object({
+    readingMode: z.enum(['book', 'scroll']).optional(),
     binding: z.enum(['stitched', 'spiral', 'linen']).default('stitched'),
     transition: z.enum(['turn', 'slide', 'soft']).default('turn'),
     ambience: z.enum(['none', 'petals', 'sparkles', 'hearts']).default('none'),
@@ -121,6 +127,13 @@ export const albumContentSchema = z
   .object({
     documentKind: z.enum(['album', 'invitation']).optional(),
     presentation: presentationSchema.optional(),
+    weeklyRecap: z
+      .object({
+        weekStart: dateString,
+        spaceId: z.uuid(),
+        layout: z.enum(['grid', 'film', 'editorial']),
+      })
+      .optional(),
     title: z.string().trim().min(1).max(120),
     names: z.tuple([z.string().trim().min(1).max(60), z.string().trim().min(1).max(60)]),
     startDate: dateString,

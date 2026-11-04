@@ -24,7 +24,7 @@ try {
           data: { title: 'Phục hồi lưu ' + crypto.randomUUID() },
         })
       ).json();
-      await page.goto(origin);
+      await page.goto(origin + '/albums');
       await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
       await page.getByRole('button', { name: 'Trang trí', exact: true }).click();
       await page.getByRole('button', { name: 'Thêm tiêu đề', exact: true }).click();

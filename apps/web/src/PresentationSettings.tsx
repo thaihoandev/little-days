@@ -13,8 +13,10 @@ import { api } from './api.js';
 export function PresentationSettings({
   album,
   onChange,
+  designExperienceEnabled = false,
 }: {
   album: Album;
+  designExperienceEnabled?: boolean;
   onChange: (patch: Partial<AlbumContent>) => void;
 }) {
   const p = album.presentation || defaultPresentation;
@@ -55,32 +57,50 @@ export function PresentationSettings({
         Đổi loại giữ nguyên mọi trang. Chọn mẫu thiệp ở Trang sổ hoặc khi tạo mới; sửa ảnh và lời
         mời ngay trên trang.
       </p>
-      <label>
-        Gáy sổ
-        <select
-          aria-label="Gáy sổ khi chia sẻ"
-          value={p.binding}
-          onChange={(e) => update({ binding: e.target.value as AlbumPresentation['binding'] })}
-        >
-          <option value="stitched">Sổ khâu chỉ</option>
-          <option value="spiral">Sổ gáy xoắn</option>
-          <option value="linen">Sổ bìa vải</option>
-        </select>
-      </label>
-      <label>
-        Chuyển trang
-        <select
-          aria-label="Chuyển trang khi chia sẻ"
-          value={p.transition}
-          onChange={(e) =>
-            update({ transition: e.target.value as AlbumPresentation['transition'] })
-          }
-        >
-          <option value="turn">Lật trang sổ</option>
-          <option value="slide">Trượt giấy</option>
-          <option value="soft">Mờ nhẹ</option>
-        </select>
-      </label>
+      {designExperienceEnabled && (
+        <label>
+          Cách đọc
+          <select
+            aria-label="Cách đọc bản chia sẻ"
+            value={p.readingMode || 'book'}
+            onChange={(e) => update({ readingMode: e.target.value as 'book' | 'scroll' })}
+          >
+            <option value="book">Lật từng trang</option>
+            <option value="scroll">Cuộn dọc liên tục</option>
+          </select>
+          <small>Đổi cách đọc giữ nguyên nội dung. Mỗi trang là một phần của thiệp dài.</small>
+        </label>
+      )}
+      {p.readingMode !== 'scroll' && (
+        <>
+          <label>
+            Gáy sổ
+            <select
+              aria-label="Gáy sổ khi chia sẻ"
+              value={p.binding}
+              onChange={(e) => update({ binding: e.target.value as AlbumPresentation['binding'] })}
+            >
+              <option value="stitched">Sổ khâu chỉ</option>
+              <option value="spiral">Sổ gáy xoắn</option>
+              <option value="linen">Sổ bìa vải</option>
+            </select>
+          </label>
+          <label>
+            Chuyển trang
+            <select
+              aria-label="Chuyển trang khi chia sẻ"
+              value={p.transition}
+              onChange={(e) =>
+                update({ transition: e.target.value as AlbumPresentation['transition'] })
+              }
+            >
+              <option value="turn">Lật trang sổ</option>
+              <option value="slide">Trượt giấy</option>
+              <option value="soft">Mờ nhẹ</option>
+            </select>
+          </label>
+        </>
+      )}
       <label>
         Không khí
         <select

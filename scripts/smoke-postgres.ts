@@ -47,6 +47,7 @@ try {
       'tests/profile-location.test.ts',
       'tests/journal-community.test.ts',
       'tests/journal-album.test.ts',
+      'tests/weekly-recap.test.ts',
       'tests/library-performance.test.ts',
       'tests/reminders-holidays.test.ts',
     ]),

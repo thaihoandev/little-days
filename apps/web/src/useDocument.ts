@@ -9,6 +9,7 @@ export function contentOf(album: Album): AlbumContent {
   return {
     ...(album.documentKind ? { documentKind: album.documentKind } : {}),
     ...(album.presentation ? { presentation: album.presentation } : {}),
+    ...(album.weeklyRecap ? { weeklyRecap: album.weeklyRecap } : {}),
     title: album.title,
     names: album.names,
     startDate: album.startDate,

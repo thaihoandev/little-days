@@ -3,6 +3,7 @@ import { decoration } from '../domain/decorations.js';
 import { counterAppearance, counterMotif } from '../domain/counter.js';
 import { visualMotion } from '../domain/visual-effects.js';
 import { photoGeometry } from '../domain/photo-edit.js';
+import { photoFrame, photoFramePath, filmHoles } from '../domain/photo-frames.js';
 import {
   type Album,
   type Page,
@@ -38,120 +39,15 @@ export function ElementContent({
         style={{ width: '100%', height: '100%', objectFit: 'fill', display: 'block' }}
       />
     );
-  if (e.type === 'image') {
-    const src = (e.assetId && assetData[e.assetId]) || assetUrl(e.assetId, album);
-    const metadata = album.assets.find((a) => a.id === e.assetId);
-    if (e.photoStyle === 'cutout') {
-      const g = photoGeometry(e, metadata),
-        size = { width: metadata?.width || 600, height: metadata?.height || 650 };
-      return (
-        <div
-          data-photo-style="cutout"
-          style={{
-            position: 'absolute',
-            left: g.x,
-            top: g.y,
-            width: g.width,
-            height: g.height,
-            overflow: 'hidden',
-          }}
-        >
-          {src && (
-            <ImageComponent
-              src={src}
-              alt={e.text || 'Ảnh đã tách nền'}
-              draggable={false}
-              style={{
-                position: 'absolute',
-                maxWidth: 'none',
-                width: `${(size.width / g.crop.width) * 100}%`,
-                height: `${(size.height / g.crop.height) * 100}%`,
-                left: `${(-g.crop.x / g.crop.width) * 100}%`,
-                top: `${(-g.crop.y / g.crop.height) * 100}%`,
-              }}
-            />
-          )}
-        </div>
-      );
-    }
-    const naturalWidth = metadata?.width || 600,
-      naturalHeight = metadata?.height || 650;
-    const crop = imageCrop(
-      naturalWidth,
-      naturalHeight,
-      e.width - 24,
-      Math.max(1, e.height - 50),
-      e.crop,
-    );
+  if (e.type === 'image')
     return (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          padding: 12,
-          paddingBottom: 38,
-          background: '#fffdf8',
-          boxShadow: '0 6px 18px #392d2526',
-          boxSizing: 'border-box',
-          position: 'relative',
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            top: -9,
-            left: '30%',
-            width: '40%',
-            height: 23,
-            background: '#c6b68a88',
-            transform: 'rotate(-3deg)',
-            zIndex: 2,
-          }}
-        />
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            overflow: 'hidden',
-            position: 'relative',
-            background: '#ded8c8',
-          }}
-        >
-          {src && (
-            <ImageComponent
-              src={src}
-              alt={e.text || 'Ảnh kỉ niệm'}
-              draggable={false}
-              style={{
-                position: 'absolute',
-                maxWidth: 'none',
-                width: `${(naturalWidth / crop.width) * 100}%`,
-                height: `${(naturalHeight / crop.height) * 100}%`,
-                left: `${(-crop.x / crop.width) * 100}%`,
-                top: `${(-crop.y / crop.height) * 100}%`,
-              }}
-            />
-          )}
-        </div>
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 8,
-            left: 6,
-            right: 6,
-            textAlign: 'center',
-            fontFamily: 'Patrick Hand',
-            fontSize: 21,
-            color: '#655c50',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-          }}
-        >
-          {e.text}
-        </div>
-      </div>
+      <PhotoArtwork
+        element={e}
+        album={album}
+        assetData={assetData}
+        imageComponent={ImageComponent}
+      />
     );
-  }
   const counter = e.type === 'anniversary' && counterAppearance(e.counterStyle, e);
   if (counter)
     return (
@@ -258,14 +154,14 @@ export function PageArtwork({
         backgroundImage: 'radial-gradient(#8e79551c .7px, transparent .7px)',
         backgroundSize: '7px 7px',
         overflow: 'hidden',
-        boxShadow: '0 8px 35px #42342418',
+        boxShadow: album.presentation?.readingMode === 'scroll' ? 'none' : '0 8px 35px #42342418',
       }}
     >
       <div
         style={{
           position: 'absolute',
           inset: 22,
-          border: '1px solid #9f895622',
+          border: album.presentation?.readingMode === 'scroll' ? 'none' : '1px solid #9f895622',
           pointerEvents: 'none',
         }}
       />
@@ -304,6 +200,128 @@ export function PageArtwork({
               />
             </div>
           </div>
+        ))}
+    </div>
+  );
+}
+
+export function PhotoArtwork({
+  element: e,
+  album,
+  assetData = {},
+  imageComponent: ImageComponent = 'img',
+}: {
+  element: ScrapElement;
+  album: Album;
+  assetData?: Record<string, string>;
+  imageComponent?: React.ElementType;
+}) {
+  const src = (e.assetId && assetData[e.assetId]) || assetUrl(e.assetId, album),
+    metadata = album.assets.find((a) => a.id === e.assetId),
+    size = { width: metadata?.width || 600, height: metadata?.height || 650 },
+    g = photoGeometry(e, metadata),
+    f = photoFrame(e);
+  const innerShape = f.shape === 'stamp' ? 'rect' : f.shape;
+  return (
+    <div
+      data-photo-style={f.style}
+      style={{
+        width: e.width,
+        height: e.height,
+        position: 'relative',
+        filter:
+          f.style === 'minimal' || f.style === 'cutout'
+            ? undefined
+            : 'drop-shadow(0 6px 8px #392d2526)',
+      }}
+    >
+      {f.style !== 'cutout' && f.style !== 'minimal' && (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: f.color,
+            clipPath: `path("${photoFramePath(e.width, e.height, f.shape)}")`,
+          }}
+        />
+      )}
+      <div
+        style={{
+          position: 'absolute',
+          left: g.x,
+          top: g.y,
+          width: g.width,
+          height: g.height,
+          overflow: 'hidden',
+          background: f.style === 'cutout' ? undefined : '#ded8c8',
+          clipPath:
+            f.style === 'cutout'
+              ? undefined
+              : `path("${photoFramePath(g.width, g.height, innerShape)}")`,
+        }}
+      >
+        {src && (
+          <ImageComponent
+            src={src}
+            alt={e.text || 'Ảnh kỉ niệm'}
+            draggable={false}
+            style={{
+              position: 'absolute',
+              maxWidth: 'none',
+              width: `${(size.width / g.crop.width) * 100}%`,
+              height: `${(size.height / g.crop.height) * 100}%`,
+              left: `${(-g.crop.x / g.crop.width) * 100}%`,
+              top: `${(-g.crop.y / g.crop.height) * 100}%`,
+            }}
+          />
+        )}
+      </div>
+      {f.tape && (
+        <div
+          style={{
+            position: 'absolute',
+            top: -9,
+            left: '30%',
+            width: '40%',
+            height: 23,
+            background: '#c6b68a88',
+            transform: 'rotate(-3deg)',
+            zIndex: 2,
+          }}
+        />
+      )}
+      {f.caption && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 8,
+            left: 6,
+            right: 6,
+            textAlign: 'center',
+            fontFamily: 'Patrick Hand',
+            fontSize: 21,
+            color: '#655c50',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+          }}
+        >
+          {e.text}
+        </div>
+      )}
+      {f.style === 'film' &&
+        filmHoles(e.width, e.height).map((h, i) => (
+          <span
+            key={i}
+            style={{
+              position: 'absolute',
+              left: h.x,
+              top: h.y,
+              width: h.width,
+              height: h.height,
+              borderRadius: 2,
+              background: '#f7f0dc',
+            }}
+          />
         ))}
     </div>
   );

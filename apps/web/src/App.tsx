@@ -1,3 +1,10 @@
+import { FramePicker } from './FramePicker.js';
+import {
+  photoStyleIds,
+  photoStyleNames,
+  photoFrame,
+} from '../../../packages/domain/photo-frames.js';
+import { LongCardEditor } from './LongCardEditor.js';
 import { lazy, Suspense, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import {
   Album as AlbumIcon,
@@ -374,6 +381,7 @@ export default function App() {
           extendedFonts={user.fontCatalogVersion === 1}
           advancedDesign={user.designCatalogVersion === 2}
           presentationEnabled={user.albumPresentationVersion === 1}
+          designExperienceEnabled={user.designExperienceVersion === 1}
           notify={notify}
           onBack={() => {
             setActive(null);
@@ -556,6 +564,8 @@ export default function App() {
               enhancedReady={typeof user.profileRevision === 'number'}
               communityReady={user.journalFeatures === 1}
               libraryReady={user.libraryVersion === 1}
+              weeklyReady={user.weeklyRecapVersion === 1}
+              onViewRecaps={() => navigate('/albums?kind=recap')}
               remindersReady={user.remindersVersion === 1}
               homeActions={
                 user.coupleRitualsVersion === 1 ? (
@@ -603,7 +613,7 @@ export default function App() {
               }}
             />
           )}
-          {section === 'albums' || section === 'home' ? (
+          {section === 'albums' ? (
             <>
               <section className="albums-section">
                 <div className="section-heading">
@@ -624,43 +634,74 @@ export default function App() {
                     <button onClick={() => void load()}>Thử lại</button>
                   </div>
                 )}
-                <div className="album-grid">
-                  {(section === 'home' ? albums.slice(0, 3) : albums).map((album) => (
-                    <article className="album-card" key={album.id}>
-                      <button
-                        className="album-cover"
-                        onClick={() => openAlbum(album)}
-                        aria-label={`Mở ${album.title}`}
-                      >
-                        <div className="cover-preview">
-                          <PagePreview album={album} width={246} thumbnails />
-                        </div>
-                        <span className="cover-tag">
-                          {album.documentKind === 'invitation'
-                            ? 'Thiệp mời'
-                            : themeNames[album.theme]}
-                        </span>
-                      </button>
-                      <div className="album-info">
-                        <button onClick={() => openAlbum(album)}>
-                          <h3>{album.title}</h3>
-                          <p>
-                            {album.names.join(' & ')} <span>·</span>{' '}
-                            {(album as Album & { pageCount?: number }).pageCount ??
-                              album.pages.length}{' '}
-                            trang
-                          </p>
-                        </button>
-                        <button
-                          className="icon-button"
-                          onClick={() => openAlbum(album)}
-                          aria-label="Mở album"
-                        >
-                          <ArrowRight size={18} />
-                        </button>
-                      </div>
-                    </article>
+                <nav className="library-tabs" aria-label="Loại cuốn sổ">
+                  {[
+                    ['all', 'Tất cả'],
+                    ['book', 'Sổ kỉ niệm'],
+                    ['invitation', 'Thiệp mời'],
+                    ['recap', 'Recap tuần'],
+                  ].map(([id, label]) => (
+                    <button
+                      key={id}
+                      className="button quiet"
+                      aria-pressed={(new URLSearchParams(search).get('kind') || 'all') === id}
+                      onClick={() => navigate('/albums' + (id === 'all' ? '' : '?kind=' + id))}
+                    >
+                      {label}
+                    </button>
                   ))}
+                </nav>
+                <div className="album-grid">
+                  {albums
+                    .filter((album) => {
+                      const filter = new URLSearchParams(search).get('kind');
+                      return filter === 'recap'
+                        ? !!album.weeklyRecap
+                        : filter === 'invitation'
+                          ? album.documentKind === 'invitation'
+                          : filter === 'book'
+                            ? !album.weeklyRecap && album.documentKind !== 'invitation'
+                            : true;
+                    })
+                    .map((album) => (
+                      <article className="album-card" key={album.id}>
+                        <button
+                          className="album-cover"
+                          onClick={() => openAlbum(album)}
+                          aria-label={`Mở ${album.title}`}
+                        >
+                          <div className="cover-preview">
+                            <PagePreview album={album} width={246} thumbnails />
+                          </div>
+                          <span className="cover-tag">
+                            {album.weeklyRecap
+                              ? 'Recap · ' +
+                                album.weeklyRecap.weekStart.split('-').reverse().join('/')
+                              : album.documentKind === 'invitation'
+                                ? 'Thiệp mời'
+                                : themeNames[album.theme]}
+                          </span>
+                        </button>
+                        <div className="album-info">
+                          <button onClick={() => openAlbum(album)}>
+                            <h3>{album.title}</h3>
+                            <p>
+                              {album.names.join(' & ')} <span>·</span>{' '}
+                              {(album as Album & { pageCount?: number }).pageCount ??
+                                album.pages.length}{' '}
+                              trang
+                            </p>
+                          </button>
+                          <button
+                            className="icon-button"
+                            onClick={() => openAlbum(album)}
+                            aria-label="Mở album"
+                          >
+                            <ArrowRight size={18} />
+                          </button>
+                        </div>
+                      </article>
+                    ))}
                   <button className="new-album-card" onClick={() => setModal('create')}>
                     <span>
                       <Plus size={25} />
@@ -704,6 +745,7 @@ export default function App() {
       {modal === 'create' && (
         <CreateModal
           presentationEnabled={user?.albumPresentationVersion === 1}
+          designExperienceEnabled={user?.designExperienceVersion === 1}
           onClose={() => setModal(null)}
           onCreated={(album) => {
             setAlbums((a) => [album, ...a]);
@@ -779,15 +821,18 @@ function CreateModal({
   onClose,
   onCreated,
   presentationEnabled,
+  designExperienceEnabled,
 }: {
   onClose: () => void;
   onCreated: (album: Album) => void;
   presentationEnabled: boolean;
+  designExperienceEnabled: boolean;
 }) {
   const [title, setTitle] = useState('Ngày mình bên nhau');
   const [theme, setTheme] = useState<Theme>('polaroid');
   const [templateId, setTemplateId] = useState('polaroid');
   const [kind, setKind] = useState<'album' | 'invitation'>('album');
+  const [readingMode, setReadingMode] = useState<'book' | 'scroll'>('book');
   const previewAlbum: Album = {
     ...createAlbumContent(),
     id: 'preview',
@@ -811,6 +856,9 @@ function CreateModal({
             theme,
             templateId,
             ...(presentationEnabled ? { documentKind: kind } : {}),
+            ...(designExperienceEnabled
+              ? { readingMode: kind === 'invitation' ? readingMode : 'book' }
+              : {}),
           }),
         }),
       );
@@ -823,6 +871,19 @@ function CreateModal({
     <Modal title="Bắt đầu một cuốn sổ" onClose={onClose} className="create-album-modal">
       <form onSubmit={(e) => void submit(e)} className="form-stack">
         <div className="create-album-fields">
+          {designExperienceEnabled && kind === 'invitation' && (
+            <label>
+              Cách đọc thiệp
+              <select
+                aria-label="Cách đọc thiệp"
+                value={readingMode}
+                onChange={(e) => setReadingMode(e.target.value as 'book' | 'scroll')}
+              >
+                <option value="book">Lật từng trang</option>
+                <option value="scroll">Thiệp dài · cuộn dọc</option>
+              </select>
+            </label>
+          )}
           {presentationEnabled && (
             <div className="document-kind-picker" role="group" aria-label="Loại thiết kế">
               {(['album', 'invitation'] as const).map((value) => (
@@ -932,6 +993,7 @@ function Editor({
   extendedFonts,
   advancedDesign,
   presentationEnabled,
+  designExperienceEnabled,
 }: {
   initial: Album;
   userId: string;
@@ -940,6 +1002,7 @@ function Editor({
   extendedFonts: boolean;
   advancedDesign: boolean;
   presentationEnabled: boolean;
+  designExperienceEnabled: boolean;
 }) {
   const doc = useDocument(initial, userId);
   const { album } = doc;
@@ -1493,6 +1556,26 @@ function Editor({
             )}
             {panel === 'photos' && (
               <>
+                {designExperienceEnabled && (
+                  <>
+                    <h4>Chọn một khung ảnh</h4>
+                    <FramePicker
+                      album={album}
+                      onChange={(style) =>
+                        add(
+                          element('image', {
+                            assetId: album.assets[0]?.id || 'demo-1',
+                            photoStyle: style,
+                            x: 180,
+                            y: 230,
+                            width: 300,
+                            height: 350,
+                          }),
+                        )
+                      }
+                    />
+                  </>
+                )}
                 <button
                   className="upload-zone"
                   disabled={uploading}
@@ -1742,6 +1825,7 @@ function Editor({
               <div className="form-stack">
                 {presentationEnabled && (
                   <PresentationSettings
+                    designExperienceEnabled={designExperienceEnabled}
                     album={album}
                     onChange={(patch) => doc.edit((a) => ({ ...a, ...patch }))}
                   />
@@ -2047,26 +2131,28 @@ function Editor({
                 </div>
               }
             >
-              <CanvasEditor
-                album={album}
-                page={page}
-                selected={selectedIdsHere}
-                onSelect={setSelectedIds}
-                onPatchMany={(patches) =>
-                  changeElements(
-                    page.elements.map((e) => ({
-                      ...e,
-                      ...patches.find((p) => p.id === e.id)?.patch,
-                    })),
-                  )
-                }
-                referenceDate={reference}
-                onEditText={() => setEditText(true)}
-                onEditPhoto={setEditingPhoto}
-                keepPhotoRatio={keepPhotoRatio}
-                zoom={zoom}
-                onZoomChange={setZoom}
-              />
+              <LongCardEditor album={album} pageId={page.id} onSelect={setPageId} zoom={zoom}>
+                <CanvasEditor
+                  album={album}
+                  page={page}
+                  selected={selectedIdsHere}
+                  onSelect={setSelectedIds}
+                  onPatchMany={(patches) =>
+                    changeElements(
+                      page.elements.map((e) => ({
+                        ...e,
+                        ...patches.find((p) => p.id === e.id)?.patch,
+                      })),
+                    )
+                  }
+                  referenceDate={reference}
+                  onEditText={() => setEditText(true)}
+                  onEditPhoto={setEditingPhoto}
+                  keepPhotoRatio={keepPhotoRatio}
+                  zoom={zoom}
+                  onZoomChange={setZoom}
+                />
+              </LongCardEditor>
             </Suspense>
             <div className="editor-bottom">
               <LegalLinks />
@@ -2106,6 +2192,7 @@ function Editor({
             {selectedElement ? (
               <>
                 <ElementProperties
+                  designExperienceEnabled={designExperienceEnabled}
                   extendedFonts={extendedFonts}
                   advancedDesign={advancedDesign}
                   e={selectedElement}
@@ -2449,6 +2536,7 @@ function Editor({
 }
 
 function ElementProperties({
+  designExperienceEnabled,
   e,
   patch,
   album,
@@ -2458,6 +2546,7 @@ function ElementProperties({
   extendedFonts,
   advancedDesign,
 }: {
+  designExperienceEnabled: boolean;
   e: ScrapElement;
   patch: (p: Partial<ScrapElement>) => void;
   album: Album;
@@ -2655,10 +2744,33 @@ function ElementProperties({
                 })
               }
             >
-              <option value="polaroid">Khung Polaroid</option>
-              <option value="cutout">Ảnh tự do / nền trong suốt</option>
+              {(designExperienceEnabled ? photoStyleIds : (['polaroid', 'cutout'] as const)).map(
+                (id) => (
+                  <option key={id} value={id}>
+                    {photoStyleNames[id]}
+                  </option>
+                ),
+              )}
             </select>
           </label>
+          {designExperienceEnabled && e.photoStyle !== 'cutout' && (
+            <label>
+              Màu viền khung
+              <input
+                type="color"
+                aria-label="Màu viền khung"
+                value={photoFrame(e).color}
+                onChange={(ev) => patch({ frameColor: ev.target.value })}
+              />
+            </label>
+          )}
+          {designExperienceEnabled && (
+            <FramePicker
+              album={album}
+              selected={e}
+              onChange={(style) => patch({ photoStyle: style, crop: { ...fullPhoto } })}
+            />
+          )}
           <label className="photo-ratio-toggle">
             <input
               type="checkbox"

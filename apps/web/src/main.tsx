@@ -52,3 +52,5 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </Boundary>,
 );
+
+import './experience.css';

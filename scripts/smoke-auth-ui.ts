@@ -139,6 +139,7 @@ try {
   await resetPage.getByLabel('Email', { exact: true }).fill(email);
   await resetPage.getByLabel('Mật khẩu', { exact: true }).fill(replacement);
   await resetPage.getByRole('button', { name: 'Đăng nhập', exact: true }).last().click();
+  await resetPage.getByRole('button', { name: /^Album của mình/ }).click();
   await expect(
     resetPage.getByRole('button', { name: 'Mở ' + album.title, exact: true }),
   ).toBeVisible();

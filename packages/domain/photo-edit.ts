@@ -1,4 +1,5 @@
 import { imageCrop, type Asset, type ScrapElement } from './index.js';
+import { photoBox } from './photo-frames.js';
 export const fullPhoto = { x: 0, y: 0, width: 1, height: 1 };
 const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
 export function photoSize(asset?: Pick<Asset, 'width' | 'height'>) {
@@ -7,13 +8,8 @@ export function photoSize(asset?: Pick<Asset, 'width' | 'height'>) {
 export function photoWindow(e: ScrapElement, asset?: Pick<Asset, 'width' | 'height'>) {
   if (e.photoStyle === 'cutout') return { ...e.crop };
   const size = photoSize(asset);
-  const crop = imageCrop(
-    size.width,
-    size.height,
-    Math.max(1, e.width - 24),
-    Math.max(1, e.height - 50),
-    e.crop,
-  );
+  const box = photoBox(e);
+  const crop = imageCrop(size.width, size.height, box.width, box.height, e.crop);
   return {
     x: crop.x / size.width,
     y: crop.y / size.height,
@@ -33,10 +29,7 @@ export function photoGeometry(e: ScrapElement, asset?: Pick<Asset, 'width' | 'he
   };
   if (e.photoStyle !== 'cutout')
     return {
-      x: 12,
-      y: 12,
-      width: Math.max(1, e.width - 24),
-      height: Math.max(1, e.height - 50),
+      ...photoBox(e),
       crop,
     };
   const factor = Math.min(e.width / crop.width, e.height / crop.height),

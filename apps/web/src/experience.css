@@ -1,0 +1,668 @@
+/* Shared visual rhythm: content first, quieter chrome, one primary action per section. */
+.frame-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+  margin-bottom: 20px;
+}
+.frame-picker > button {
+  padding: 9px 4px;
+  border: 1px solid #e3dfd1;
+  border-radius: 10px;
+  background: #f4f2e8;
+  min-width: 0;
+}
+.frame-picker > button[aria-pressed='true'] {
+  border-color: #718258;
+  background: #e9efdd;
+}
+.frame-picker small {
+  display: block;
+  font-size: 10px;
+  margin-top: 7px;
+  line-height: 1.5;
+}
+.frame-sample {
+  display: block;
+  width: 70px;
+  height: 82px;
+  margin: auto;
+  position: relative;
+}
+.frame-sample > span {
+  display: block;
+  width: 210px;
+  height: 245px;
+  transform: scale(0.3333);
+  transform-origin: top left;
+}
+.canvas-export {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+}
+.canvas-export .button {
+  min-height: 30px;
+  padding: 6px 11px;
+  font-size: 10px;
+}
+.canvas-export small {
+  max-width: 220px;
+  color: #9e543c;
+}
+.dashboard {
+  max-width: 1515px;
+  padding: 28px clamp(20px, 3vw, 48px) 35px;
+}
+.dashboard-top {
+  padding-bottom: 19px;
+  margin-bottom: 26px;
+  border-bottom: 1px solid var(--line);
+}
+.journal-home {
+  padding-top: 0;
+}
+.journal-hero h1 {
+  margin-top: 0;
+}
+.home-mode .today-focus {
+  padding: 12px 18px;
+}
+.home-mode .today-focus > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 16px;
+}
+.home-mode .today-focus span {
+  display: none;
+}
+.home-mode .today-focus strong {
+  font-size: 19px;
+}
+.home-mode .today-focus p {
+  margin: 0;
+}
+.home-mode .calendar-card {
+  align-self: start;
+}
+.home-mode .calendar-grid button {
+  min-height: 46px;
+  height: 52px;
+}
+.home-mode .calendar-card header {
+  margin-bottom: 14px;
+}
+.home-mode .upcoming-card {
+  padding: 20px;
+}
+.home-mode .journal-card {
+  max-width: 780px;
+}
+.home-mode .journal-card .journal-photos img {
+  max-height: 170px;
+}
+.dashboard-top > span {
+  font-size: 12px;
+  color: #7f8276;
+}
+.sidebar {
+  background: #f4f3e9;
+  border-right: 1px solid #e4e5d8;
+}
+.sidebar-note {
+  padding: 17px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+.nav-item {
+  border-radius: 12px;
+  margin-bottom: 5px;
+}
+.nav-item.active {
+  background: #e3e8d7;
+  color: #34492e;
+  box-shadow: inset 3px 0 #677b50;
+}
+.journal-hero {
+  padding: 0 0 23px;
+  margin-bottom: 18px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+.journal-hero h1 {
+  font-size: clamp(27px, 2.5vw, 37px);
+  line-height: 1.3;
+  letter-spacing: -1px;
+}
+.journal-hero p {
+  margin: 8px 0;
+  color: #7b7e70;
+}
+.journal-today {
+  font-size: 11px;
+}
+.today-focus {
+  background: #eaf0df;
+  border: 1px solid #dce4ce;
+  border-radius: 16px;
+  padding: 18px 22px;
+  margin-bottom: 22px;
+}
+.today-focus strong {
+  font-family: var(--serif);
+  font-size: 23px;
+}
+.today-focus p {
+  margin-bottom: 0;
+  font-size: 12px;
+}
+.ritual-home-links {
+  gap: 14px;
+  margin: 20px 0 28px;
+}
+.ritual-home-links > button {
+  padding: 16px 18px;
+  min-height: 80px;
+  background: #fffdf7;
+  border: 1px solid #e8e4d9;
+  box-shadow: none;
+  border-radius: 14px;
+}
+.ritual-home-links strong {
+  font-size: 13px;
+}
+.ritual-home-links small {
+  font-size: 11px;
+}
+.section-heading {
+  gap: 14px;
+  align-items: center;
+}
+.section-heading h2 {
+  font-size: 25px;
+  margin-bottom: 6px;
+}
+.section-heading p {
+  color: #818273;
+  font-size: 12px;
+  margin-bottom: 0;
+}
+.journey-intro {
+  padding: 23px 26px;
+  min-height: 0;
+  margin-bottom: 22px;
+}
+.journey-intro h2 {
+  font-size: 27px;
+}
+.journey-intro > p {
+  max-width: 45ch;
+}
+.journal-card,
+.album-card {
+  border: 1px solid #e7e2d6;
+  box-shadow: 0 5px 21px #54493206;
+}
+.journal-card {
+  border-radius: 15px;
+}
+.album-grid {
+  gap: 25px;
+}
+.album-card {
+  border-radius: 17px;
+  overflow: hidden;
+  background: #fffdf8;
+}
+.album-info {
+  padding: 18px 20px;
+}
+.album-info h3 {
+  line-height: 1.5;
+}
+.album-cover {
+  background: #eae9dd;
+}
+.library-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 23px 0;
+}
+.library-tabs [aria-pressed='true'] {
+  background: #e1e8d4;
+  color: #405333;
+  border-color: #c4d0b5;
+}
+.button {
+  border-radius: 10px;
+  min-height: 40px;
+}
+.icon-button {
+  border-radius: 10px;
+}
+.form-stack input:not([type='checkbox']):not([type='range']),
+.form-stack textarea,
+.form-stack select {
+  border-radius: 9px;
+}
+.together-page,
+.photo-library {
+  max-width: 1150px;
+  margin-inline: auto;
+}
+.account-modal {
+  width: min(940px, calc(100vw - 32px));
+}
+.weekly-recap {
+  background: #fffdf7;
+  border: 1px solid #e4dfd1;
+  border-radius: 20px;
+  padding: 25px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 35px #6c614708;
+}
+.weekly-recap > header,
+.weekly-recap > footer,
+.recap-dialog > header,
+.recap-dialog > footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+.weekly-recap h2 {
+  font-size: 29px;
+  margin: 7px 0 0;
+  letter-spacing: -0.8px;
+}
+.weekly-recap h2 span {
+  color: #8d8b7d;
+}
+.weekly-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.weekly-space {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  font-size: 11px;
+}
+.weekly-space select {
+  width: min(340px, 70%);
+}
+.week-tape {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 5px;
+  margin: 24px 0 18px;
+}
+.week-tape > button {
+  position: relative;
+  height: clamp(125px, 14vw, 190px);
+  padding: 0;
+  overflow: hidden;
+  background: #eceee4;
+  border-radius: 7px;
+}
+.week-tape > button:first-child {
+  border-radius: 16px 7px 7px 16px;
+}
+.week-tape > button:last-child {
+  border-radius: 7px 16px 16px 7px;
+}
+.week-tape img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.week-placeholder {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  color: #849473;
+  background: linear-gradient(145deg, #f0efe4, #e0e8d5);
+  padding-bottom: 20px;
+}
+.week-day {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 27px 7px 10px;
+  background: linear-gradient(transparent, #263523c9);
+  color: white;
+  font-size: 12px;
+  text-align: center;
+}
+.week-day small {
+  display: block;
+  margin-top: 3px;
+  font-size: 10px;
+  opacity: 0.8;
+}
+.week-count {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  background: #fffdf7e6;
+  border-radius: 20px;
+  padding: 3px 7px;
+  font-size: 10px;
+}
+.weekly-recap footer > span,
+.recap-dialog footer > span {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #868375;
+}
+.recap-dialog {
+  width: min(970px, calc(100vw - 24px));
+  max-height: calc(100dvh - 32px);
+  padding: 25px;
+  border: 1px solid #e4ddce;
+  border-radius: 22px;
+  background: #faf8f0;
+  color: var(--ink, #433f35);
+  overflow: auto;
+}
+.recap-dialog::backdrop {
+  background: #232a24a6;
+  backdrop-filter: blur(5px);
+}
+.recap-dialog h2 {
+  margin: 6px 0;
+  font-size: 29px;
+}
+.recap-compose {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 32px;
+  margin: 22px 0;
+}
+.recap-options {
+  min-width: 0;
+}
+.recap-options > p {
+  font-size: 12px;
+}
+.recap-options fieldset {
+  margin: 0 0 20px;
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.recap-options legend {
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+.recap-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+.recap-photo-grid > button {
+  position: relative;
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background: #e6e6d9;
+}
+.recap-photo-grid > button[aria-pressed='true'] {
+  border-color: #6d8656;
+}
+.recap-photo-grid > button > img {
+  width: 100%;
+  aspect-ratio: 1;
+  display: block;
+  object-fit: cover;
+}
+.recap-photo-grid b {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 7px;
+  background: #586f43;
+  color: white;
+  border-radius: 20px;
+  font-size: 10px;
+}
+.recap-photo-grid button > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 7px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.recap-photo-grid .user-avatar {
+  width: 21px;
+  height: 21px;
+  font-size: 8px;
+}
+.recap-photo-grid small {
+  margin-left: auto;
+}
+.recap-preview {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  display: grid;
+  place-items: start center;
+  padding: 10px;
+  background: #e8e6da;
+  border-radius: 15px;
+  overflow: hidden;
+}
+.recap-palettes {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+.recap-palettes button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #b0ab9a;
+}
+.recap-palettes button[aria-pressed='true'] {
+  outline: 2px solid #6e8153;
+  outline-offset: 3px;
+}
+.recap-order {
+  padding: 0;
+  list-style: none;
+}
+.recap-order li {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+}
+.recap-order li > span {
+  flex: 1;
+}
+.single-page-editor {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.long-card-editor {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+  padding: 20px 0 50px;
+}
+.long-card-editor > section {
+  margin: 0 auto 12px;
+  text-align: center;
+}
+.long-section-label {
+  display: block;
+  margin: 0 auto 12px;
+  padding: 9px 14px;
+  border-radius: 20px;
+  background: #eeeadd;
+  color: #727663;
+  font-size: 11px;
+}
+.long-section-label[aria-pressed='true'] {
+  background: #dde8cd;
+  color: #40532f;
+}
+.long-section-preview {
+  padding: 0;
+  display: block;
+  margin: auto;
+  max-width: 100%;
+  overflow: hidden;
+}
+.long-card-editor .canvas-scroll {
+  min-height: 0;
+  padding-block: 0;
+  overflow: visible;
+}
+.scroll-reader .viewer-page {
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: block;
+  min-height: 0;
+  padding: 12px 0 25px;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+.scroll-story {
+  margin: 0 auto;
+  box-shadow: 0 16px 70px #13241924;
+}
+.scroll-story > section {
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+}
+.scroll-reader .viewer-intro {
+  padding-block: 8px;
+}
+.scroll-reader .viewer-intro h1 {
+  font-size: 24px;
+  margin: 6px 0;
+}
+.scroll-reader .viewer-intro p {
+  margin: 0;
+  font-size: 11px;
+}
+@media (max-width: 900px) {
+  .dashboard {
+    padding: 20px;
+  }
+  .recap-compose {
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: 18px;
+  }
+  .recap-preview > div {
+    transform: scale(0.86);
+    transform-origin: top center;
+    margin-bottom: -50px;
+  }
+}
+@media (max-width: 640px) {
+  .dashboard {
+    padding: 16px 14px 90px;
+  }
+  .journal-hero {
+    gap: 16px;
+  }
+  .journal-hero h1 {
+    font-size: 26px;
+  }
+  .weekly-recap {
+    padding: 17px 14px;
+    border-radius: 17px;
+  }
+  .weekly-recap > header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .weekly-recap h2 {
+    font-size: 25px;
+  }
+  .weekly-actions {
+    margin-left: auto;
+  }
+  .week-tape {
+    gap: 3px;
+    margin-top: 16px;
+  }
+  .week-tape > button {
+    height: 110px;
+  }
+  .week-count {
+    right: 3px;
+    top: 4px;
+    padding: 2px 5px;
+  }
+  .week-day {
+    font-size: 10px;
+    padding-inline: 1px;
+  }
+  .week-day small {
+    font-size: 8px;
+  }
+  .weekly-recap > footer,
+  .recap-dialog > footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .weekly-recap footer > span {
+    font-size: 11px;
+  }
+  .recap-dialog {
+    padding: 16px;
+    max-height: calc(100dvh - 18px);
+  }
+  .recap-compose {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+  .recap-preview {
+    position: static;
+    width: 100%;
+    max-height: 405px;
+  }
+  .recap-preview > div {
+    transform: scale(0.85);
+    margin-bottom: -55px;
+  }
+  .recap-dialog h2 {
+    font-size: 24px;
+  }
+  .ritual-home-links {
+    gap: 9px;
+  }
+  .ritual-home-links > button {
+    padding: 14px;
+  }
+  .library-tabs {
+    gap: 5px;
+  }
+  .library-tabs button {
+    padding-inline: 10px;
+    font-size: 11px;
+  }
+  .today-focus {
+    padding: 16px;
+  }
+}

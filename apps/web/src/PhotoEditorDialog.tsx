@@ -62,10 +62,7 @@ export function PhotoEditorDialog({
     crop = photoWindow(draft, asset);
   const cutoutMode = draft.photoStyle === 'cutout',
     g = photoGeometry(draft, asset);
-  const ratio =
-    previewUrl || cutoutMode
-      ? draft.width / draft.height
-      : Math.max(1, draft.width - 24) / Math.max(1, draft.height - 50);
+  const ratio = previewUrl || cutoutMode ? draft.width / draft.height : g.width / g.height;
   useEffect(() => {
     const node = dialog.current!;
     node.showModal();

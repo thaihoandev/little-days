@@ -26,7 +26,7 @@ try {
       data: { title: 'Lịch sử kiểm thử ' + Date.now() },
     })
   ).json();
-  await page.goto(origin);
+  await page.goto(origin + '/albums');
   await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
   await page.getByRole('button', { name: 'Lịch sử phiên bản', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Lịch sử phiên bản', exact: true })).toBeVisible();

@@ -1,8 +1,10 @@
 # Trạng thái triển khai Little Days
 
-Ngày cập nhật: **03/11/2026**.
+Ngày cập nhật: **04/11/2026**.
 
 ## Kết quả hiện tại
+
+Đã viết recap ảnh theo tuần của không gian chung, ba bố cục/bốn màu và sổ cá nhân sửa được; bộ lọc thư viện, gallery khung ảnh/màu viền và tải PNG. Thiệp dài gồm các phần cuộn liên tục, editor giữ một canvas hoạt động, viewer khách chỉ xem. Thu gọn chrome/banners và bỏ thư viện album lặp trên Hôm nay. Xem [phạm vi, quyền và kiểm chứng](WEEKLY_DESIGN_REFRESH.md); CI/deploy cần đối chiếu đúng commit.
 
 Thiệp mời là loại thiết kế trong album với bốn mẫu thật, sửa chữ nhanh và giữ toàn bộ editor. Chủ album lưu gáy/hiệu ứng/nhạc gốc hoặc audio riêng cho viewer; người nhận link chỉ xem, lật trang và bật/tắt nhạc. Chuẩn hóa input/tag và các ký hiệu; Lọ điều thương bắt đầu 0 phiếu, tác giả phải đồng ý chủ động. Phạm vi, quyền nhạc, tương thích và kiểm chứng trong [INVITATIONS_AND_SHARED_PREVIEW.md](INVITATIONS_AND_SHARED_PREVIEW.md).
 

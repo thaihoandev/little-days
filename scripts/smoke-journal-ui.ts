@@ -264,6 +264,7 @@ try {
       });
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
       await page.getByRole('button', { name: 'Hôm nay', exact: true }).first().click();
+      await page.getByRole('button', { name: /^Album của mình/ }).click();
       await page.getByRole('button', { name: 'Tạo album', exact: true }).click();
       await visibleAction(page.getByRole('button', { name: 'Tạo cuốn sổ của mình', exact: true }));
       const create = page.getByRole('dialog', { name: 'Bắt đầu một cuốn sổ', exact: true });

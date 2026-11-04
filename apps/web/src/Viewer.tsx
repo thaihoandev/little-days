@@ -94,7 +94,7 @@ export function PagePreview({
               ? { ...album, assets: album.assets.map((a) => ({ ...a, url: thumbnailUrl(a.url) })) }
               : album
           }
-          imageComponent={thumbnails ? PreviewImage : undefined}
+          imageComponent={PreviewImage}
           referenceDate={todayIn(album.timezone)}
           effectTime={effectTime}
           elementStyle={
@@ -131,6 +131,7 @@ export function Viewer({
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
   const presentation = album.presentation || defaultPresentation;
+  const scrolling = presentation.readingMode === 'scroll';
   const [transition, setTransition] = useState(presentation.transition);
   const [binding, setBinding] = useState(presentation.binding);
   const audio = useRef<HTMLAudioElement>(null);
@@ -200,7 +201,7 @@ export function Viewer({
           1,
           Math.min(
             entries[0].contentRect.width - 32,
-            ((entries[0].contentRect.height - 16) * PAGE_WIDTH) / PAGE_HEIGHT,
+            scrolling ? 720 : ((entries[0].contentRect.height - 16) * PAGE_WIDTH) / PAGE_HEIGHT,
             720,
           ),
         ),
@@ -208,7 +209,7 @@ export function Viewer({
     );
     if (host.current) observer.observe(host.current);
     return () => observer.disconnect();
-  }, []);
+  }, [scrolling]);
   const days = daysTogether(album.startDate, reference);
   return createPortal(
     <div
@@ -217,7 +218,8 @@ export function Viewer({
       className={
         'viewer' +
         (!onClose ? ' shared-viewer' : '') +
-        (album.documentKind === 'invitation' ? ' invitation-viewer' : '')
+        (album.documentKind === 'invitation' ? ' invitation-viewer' : '') +
+        (scrolling ? ' scroll-reader' : '')
       }
       role="dialog"
       aria-modal={!!onClose}
@@ -233,12 +235,12 @@ export function Viewer({
           e.stopPropagation();
           onClose();
         }
-        if (e.key === 'ArrowLeft' && !field) {
+        if (e.key === 'ArrowLeft' && !field && !scrolling) {
           e.preventDefault();
           e.stopPropagation();
           turn(-1);
         }
-        if (e.key === 'ArrowRight' && !field) {
+        if (e.key === 'ArrowRight' && !field && !scrolling) {
           e.preventDefault();
           e.stopPropagation();
           turn(1);
@@ -266,7 +268,7 @@ export function Viewer({
         <a className="wordmark" href="/">
           little days<span>♡</span>
         </a>
-        {onClose && (
+        {onClose && !scrolling && (
           <select
             className="viewer-binding"
             aria-label="Phong cách cuốn sổ"
@@ -324,92 +326,106 @@ export function Viewer({
             ))}
           </div>
         )}
-        <div
-          className={'book-shell book-' + binding}
-          style={{ width, height: (width / PAGE_WIDTH) * PAGE_HEIGHT }}
-          onPointerDown={(e) => {
-            if (e.button === 0) swipe.current = { x: e.clientX, y: e.clientY };
-          }}
-          onPointerCancel={() => {
-            swipe.current = null;
-          }}
-          onPointerUp={(e) => {
-            const start = swipe.current;
-            swipe.current = null;
-            if (!start) return;
-            const dx = e.clientX - start.x,
-              dy = e.clientY - start.y;
-            if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) turn(dx < 0 ? 1 : -1);
-          }}
-        >
-          <span className="book-spine" aria-hidden="true" />
-          <AnimatePresence initial={false} mode="wait" custom={direction}>
-            <motion.div
-              key={index}
-              className="book-paper"
-              custom={direction}
-              variants={{
-                enter: (d: number) => ({
-                  opacity: reducedMotion ? 1 : 0.2,
-                  rotateY: !reducedMotion && transition === 'turn' ? d * 65 : 0,
-                  x: !reducedMotion && transition !== 'soft' ? d * 22 : 0,
-                }),
-                shown: { opacity: 1, rotateY: 0, x: 0 },
-                exit: (d: number) => ({
-                  opacity: reducedMotion ? 1 : 0.15,
-                  rotateY: !reducedMotion && transition === 'turn' ? -d * 65 : 0,
-                  x: !reducedMotion && transition !== 'soft' ? -d * 22 : 0,
-                }),
-              }}
-              initial="enter"
-              animate="shown"
-              exit="exit"
-              transition={{
-                duration: reducedMotion ? 0 : transition === 'soft' ? 0.18 : 0.36,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              style={{ transformOrigin: 'left center' }}
-            >
-              <PagePreview album={album} index={index} width={width} animateEffects />
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </div>
-      <nav className="viewer-controls">
-        <button
-          className="icon-button"
-          aria-label="Trang trước"
-          disabled={index === 0}
-          onClick={() => turn(-1)}
-        >
-          <ArrowLeft />
-        </button>
-        <span>
-          {index + 1} / {album.pages.length}
-        </span>
-        <button
-          className="icon-button"
-          aria-label="Trang sau"
-          disabled={index === album.pages.length - 1}
-          onClick={() => turn(1)}
-        >
-          <ArrowRight />
-        </button>
-        {onClose && (
-          <select
-            aria-label="Hiệu ứng lật trang"
-            value={transition}
-            onChange={(e) => {
-              const transition = e.target.value as typeof presentation.transition;
-              setTransition(transition);
-              onPresentationChange?.({ ...presentation, transition });
+        {scrolling ? (
+          <div className="scroll-story" style={{ width }}>
+            {album.pages.map((page, i) => (
+              <ScrollSection key={page.id} album={album} index={i} width={width} />
+            ))}
+          </div>
+        ) : (
+          <div
+            className={'book-shell book-' + binding}
+            style={{ width, height: (width / PAGE_WIDTH) * PAGE_HEIGHT }}
+            onPointerDown={(e) => {
+              if (e.button === 0) swipe.current = { x: e.clientX, y: e.clientY };
+            }}
+            onPointerCancel={() => {
+              swipe.current = null;
+            }}
+            onPointerUp={(e) => {
+              const start = swipe.current;
+              swipe.current = null;
+              if (!start) return;
+              const dx = e.clientX - start.x,
+                dy = e.clientY - start.y;
+              if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.2) turn(dx < 0 ? 1 : -1);
             }}
           >
-            <option value="turn">Lật trang sổ</option>
-            <option value="slide">Trượt giấy</option>
-            <option value="soft">Mờ nhẹ</option>
-          </select>
+            <span className="book-spine" aria-hidden="true" />
+            <AnimatePresence initial={false} mode="wait" custom={direction}>
+              <motion.div
+                key={index}
+                className="book-paper"
+                custom={direction}
+                variants={{
+                  enter: (d: number) => ({
+                    opacity: reducedMotion ? 1 : 0.2,
+                    rotateY: !reducedMotion && transition === 'turn' ? d * 65 : 0,
+                    x: !reducedMotion && transition !== 'soft' ? d * 22 : 0,
+                  }),
+                  shown: { opacity: 1, rotateY: 0, x: 0 },
+                  exit: (d: number) => ({
+                    opacity: reducedMotion ? 1 : 0.15,
+                    rotateY: !reducedMotion && transition === 'turn' ? -d * 65 : 0,
+                    x: !reducedMotion && transition !== 'soft' ? -d * 22 : 0,
+                  }),
+                }}
+                initial="enter"
+                animate="shown"
+                exit="exit"
+                transition={{
+                  duration: reducedMotion ? 0 : transition === 'soft' ? 0.18 : 0.36,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                style={{ transformOrigin: 'left center' }}
+              >
+                <PagePreview album={album} index={index} width={width} animateEffects />
+              </motion.div>
+            </AnimatePresence>
+          </div>
         )}
+      </div>
+      <nav className="viewer-controls">
+        {!scrolling && (
+          <>
+            {' '}
+            <button
+              className="icon-button"
+              aria-label="Trang trước"
+              disabled={index === 0}
+              onClick={() => turn(-1)}
+            >
+              <ArrowLeft />
+            </button>
+            <span>
+              {index + 1} / {album.pages.length}
+            </span>
+            <button
+              className="icon-button"
+              aria-label="Trang sau"
+              disabled={index === album.pages.length - 1}
+              onClick={() => turn(1)}
+            >
+              <ArrowRight />
+            </button>
+            {onClose && (
+              <select
+                aria-label="Hiệu ứng lật trang"
+                value={transition}
+                onChange={(e) => {
+                  const transition = e.target.value as typeof presentation.transition;
+                  setTransition(transition);
+                  onPresentationChange?.({ ...presentation, transition });
+                }}
+              >
+                <option value="turn">Lật trang sổ</option>
+                <option value="slide">Trượt giấy</option>
+                <option value="soft">Mờ nhẹ</option>
+              </select>
+            )}
+          </>
+        )}
+        {scrolling && <span>Thiệp cuộn · {album.pages.length} phần</span>}
         {source && (
           <>
             <audio
@@ -468,5 +484,22 @@ export function Viewer({
       </footer>
     </div>,
     document.body,
+  );
+}
+
+function ScrollSection({ album, index, width }: { album: Album; index: number; width: number }) {
+  const ref = useRef<HTMLDivElement>(null),
+    [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting), {
+      rootMargin: '120px',
+    });
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <section ref={ref} aria-label={album.pages[index].title}>
+      <PagePreview album={album} index={index} width={width} animateEffects={visible} />
+    </section>
   );
 }

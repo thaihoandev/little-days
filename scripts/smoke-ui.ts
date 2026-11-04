@@ -22,6 +22,7 @@ try {
   await expect(page.locator('.calendar-card')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
   await page.screenshot({ path: 'test-results/dashboard-desktop.png', fullPage: true });
+  await page.getByRole('button', { name: /^Album của mình/ }).click();
   await page.getByRole('button', { name: 'Tạo album', exact: true }).click();
   await page.getByLabel('Tên cuốn sổ').fill('Nhật ký kiểm thử giao diện');
   await page.getByRole('button', { name: 'Tạo cuốn sổ của mình' }).click();

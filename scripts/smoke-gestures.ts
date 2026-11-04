@@ -59,7 +59,7 @@ try {
       const read = async (): Promise<Album> =>
         await (await context.request.get(origin + '/api/albums/' + id)).json();
       const before = await read();
-      await page.goto(origin);
+      await page.goto(origin + '/albums');
       await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
       const sheet = page.locator('.canvas-sheet');
       await expect(sheet.locator('canvas')).toBeVisible();

@@ -13,6 +13,8 @@ export type ElementDesign = Pick<
   | 'counterFill'
   | 'counterStroke'
   | 'counterAccent'
+  | 'photoStyle'
+  | 'frameColor'
 >;
 export function captureDesign(e: ScrapElement): ElementDesign {
   const {
@@ -28,6 +30,8 @@ export function captureDesign(e: ScrapElement): ElementDesign {
     counterFill,
     counterStroke,
     counterAccent,
+    photoStyle,
+    frameColor,
   } = e;
   return {
     type,
@@ -42,6 +46,8 @@ export function captureDesign(e: ScrapElement): ElementDesign {
     counterFill,
     counterStroke,
     counterAccent,
+    photoStyle,
+    frameColor,
   };
 }
 export function applyDesign(elements: ScrapElement[], ids: string[], style: ElementDesign) {
@@ -58,6 +64,9 @@ export function applyDesign(elements: ScrapElement[], ids: string[], style: Elem
           opacity: style.opacity,
           animation: style.animation,
           visualEffect: style.visualEffect,
+          ...(e.type === 'image' && style.type === 'image'
+            ? { photoStyle: style.photoStyle, frameColor: style.frameColor }
+            : {}),
           ...(e.type === 'anniversary' && style.type === 'anniversary'
             ? {
                 counterStyle: style.counterStyle,

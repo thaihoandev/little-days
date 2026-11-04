@@ -67,7 +67,7 @@ try {
       const targetId = album.pages[0].elements.find((e) => e.type === 'image')!.id;
       const read = async (): Promise<Album> =>
         (await context.request.get(origin + '/api/albums/' + album.id)).json();
-      await page.goto(origin);
+      await page.goto(origin + '/albums');
       await page.getByRole('button', { name: 'Mở ' + album.title, exact: true }).click();
       assert.equal(
         await page

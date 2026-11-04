@@ -114,6 +114,7 @@ export class LibraryService {
       ...fields,
       schemaVersion: '1',
       names: this.json(p, 'names'),
+      weeklyRecap: this.json(p, 'weeklyRecap'),
       memories: this.json(p, 'memories'),
       assets: this.json(p, 'assets'),
       pages: array(this.json(p, this.pg ? 'pages.0' : 'pages[0]')),

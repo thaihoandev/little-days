@@ -1,3 +1,4 @@
+import { longInvitation } from '../../../packages/domain/long-invitation.js';
 import 'reflect-metadata';
 import {
   BadRequestException,
@@ -44,6 +45,7 @@ import {
   type ExportJob,
   type JobView,
   createAlbumContent,
+  defaultPresentation,
   saveAlbumSchema,
   videoConfigSchema,
   todayIn,
@@ -71,6 +73,7 @@ import { OpsMonitor } from './ops-monitor.js';
 import { BackupLock, backupSafeStore } from './backup-lock.js';
 import { JournalService } from './journal.js';
 import { JournalAlbumService } from './journal-album.js';
+import { WeeklyRecaps } from './weekly-recap.js';
 import { normalizePhoto } from './images.js';
 import { UploadReceipts, type UploadCommit } from './upload-receipts.js';
 import { LibraryService } from './library.js';
@@ -117,7 +120,8 @@ const imagePreviews = new ImagePreviews(store);
 const profiles = new ProfileService(repository, store, resources, deletion, journal.sharing);
 const journalSocial = new JournalSocial(repository, journal);
 const coupleRituals = new CoupleRituals(repository, journal, deletion, resources);
-const journalAlbums = new JournalAlbumService(repository, store, resources, deletion);
+const journalAlbums = new JournalAlbumService(repository, store, resources, deletion, journal);
+const weeklyRecaps = new WeeklyRecaps(repository, journal, journalAlbums);
 const security = new AccountSecurity(
   repository,
   mailer,
@@ -579,6 +583,8 @@ class AppController {
       remindersVersion: 1,
       coupleRitualsVersion: 1,
       albumPresentationVersion: 1,
+      weeklyRecapVersion: 1,
+      designExperienceVersion: 1,
       sharedPlansVersion: 1,
       spacesVersion: 2,
       designCatalogVersion: 2,
@@ -765,12 +771,20 @@ class AppController {
   @Post('albums/from-journal') async fromJournal(@Req() req: UserRequest, @Body() body: unknown) {
     return journalAlbums.create(req.userId, body);
   }
+  @Get('weekly-recap') async weekly(@Req() req: UserRequest, @Query() query: unknown) {
+    return weeklyRecaps.list(req.userId, query);
+  }
+  @Post('albums/weekly-recap') async createWeekly(@Req() req: UserRequest, @Body() body: unknown) {
+    await security.rateLimit('weekly-recap:' + req.userId, 10, 60000);
+    return weeklyRecaps.create(req.userId, body);
+  }
   @Post('albums') async create(@Req() req: UserRequest, @Body() body: unknown) {
     const input = z
       .object({
         title: z.string().trim().min(1).max(120).optional(),
         theme: z.enum(['polaroid', 'letter', 'timeline']).optional(),
         documentKind: z.enum(['album', 'invitation']).optional(),
+        readingMode: z.enum(['book', 'scroll']).optional(),
         templateId: z.enum(builtInTemplates.map((t) => t.id) as [string, ...string[]]).optional(),
       })
       .parse(body ?? {});
@@ -797,6 +811,14 @@ class AppController {
           volume: 0.4,
         };
       }
+    }
+    if (input.readingMode) {
+      content.presentation = {
+        ...(content.presentation || defaultPresentation),
+        readingMode: input.readingMode,
+      };
+      if (input.readingMode === 'scroll' && content.documentKind === 'invitation')
+        content.pages = longInvitation(content.pages[0]);
     }
     const album: Album = {
       ...content,

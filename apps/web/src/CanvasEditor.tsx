@@ -1,11 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Group, Rect, Text, Image as KonvaImage, Transformer } from 'react-konva';
-import type Konva from 'konva';
+import { Path } from 'react-konva';
+import Konva from 'konva';
+import { Download } from 'lucide-react';
 import { bounds, expandSelection } from '../../../packages/domain/layout.js';
 import { elementSchema } from '../../../packages/domain/index.js';
 import { decoration } from '../../../packages/domain/decorations.js';
 import { counterAppearance, counterMotif } from '../../../packages/domain/counter.js';
 import { photoGeometry } from '../../../packages/domain/photo-edit.js';
+import {
+  photoFrame,
+  photoFramePath,
+  tracePhotoFrame,
+  filmHoles,
+} from '../../../packages/domain/photo-frames.js';
 import {
   type Album,
   type Page,
@@ -85,48 +93,60 @@ function CounterArt({
   );
 }
 function Photo({ e, album }: { e: ScrapElement; album: Album }) {
-  const image = useImage(assetUrl(e.assetId, album));
-  if (e.photoStyle === 'cutout') {
-    const g = photoGeometry(e, image);
-    return image ? <KonvaImage image={image} {...g} /> : null;
-  }
-  const w = e.width - 24,
-    h = Math.max(1, e.height - 50);
-  let crop: { x: number; y: number; width: number; height: number } | undefined;
-  if (image) crop = imageCrop(image.width, image.height, w, h, e.crop);
+  const image = useImage(assetUrl(e.assetId, album)),
+    f = photoFrame(e),
+    g = photoGeometry(e, image);
+  if (f.style === 'cutout') return image ? <KonvaImage image={image} {...g} /> : null;
   return (
     <>
-      <Rect
-        width={e.width}
-        height={e.height}
-        fill="#fffdf8"
-        shadowColor="#392d25"
-        shadowBlur={15}
-        shadowOpacity={0.16}
-        shadowOffsetY={6}
-      />
-      <Rect x={12} y={12} width={Math.max(w, 1)} height={Math.max(h, 1)} fill="#d8d7c6" />
-      {image && <KonvaImage image={image} x={12} y={12} width={w} height={h} crop={crop} />}
-      <Rect
-        x={e.width * 0.3}
-        y={-9}
-        width={e.width * 0.4}
-        height={23}
-        fill="#c6b68a"
-        opacity={0.55}
-        rotation={-3}
-      />
-      <Text
-        x={6}
-        y={e.height - 29}
-        width={e.width - 12}
-        height={24}
-        text={e.text}
-        align="center"
-        fontFamily="Patrick Hand"
-        fontSize={21}
-        fill="#655c50"
-      />
+      {f.style !== 'minimal' && (
+        <Path
+          data={photoFramePath(e.width, e.height, f.shape)}
+          fill={f.color}
+          shadowColor="#392d25"
+          shadowBlur={15}
+          shadowOpacity={0.16}
+          shadowOffsetY={6}
+        />
+      )}
+      <Group
+        x={g.x}
+        y={g.y}
+        clipFunc={(ctx) =>
+          tracePhotoFrame(ctx, g.width, g.height, f.shape === 'stamp' ? 'rect' : f.shape)
+        }
+      >
+        <Rect width={g.width} height={g.height} fill="#ded8c8" />
+        {image && <KonvaImage image={image} width={g.width} height={g.height} crop={g.crop} />}
+      </Group>
+      {f.tape && (
+        <Rect
+          x={e.width * 0.3}
+          y={-9}
+          width={e.width * 0.4}
+          height={23}
+          fill="#c6b68a"
+          opacity={0.55}
+          rotation={-3}
+        />
+      )}
+      {f.caption && (
+        <Text
+          x={6}
+          y={e.height - 29}
+          width={e.width - 12}
+          height={24}
+          text={e.text}
+          align="center"
+          fontFamily="Patrick Hand"
+          fontSize={21}
+          fill="#655c50"
+        />
+      )}
+      {f.style === 'film' &&
+        filmHoles(e.width, e.height).map((h, i) => (
+          <Rect key={i} {...h} cornerRadius={2} fill="#f7f0dc" />
+        ))}
     </>
   );
 }
@@ -156,6 +176,8 @@ export function CanvasEditor({
   zoom: number;
   onZoomChange: (zoom: number) => void;
 }) {
+  const [exporting, setExporting] = useState(false),
+    [exportError, setExportError] = useState('');
   const wrap = useRef<HTMLDivElement>(null);
   const stage = useRef<Konva.Stage>(null);
   const transformer = useRef<Konva.Transformer>(null);
@@ -402,6 +424,57 @@ export function CanvasEditor({
   };
   return (
     <div className="canvas-scroll" ref={wrap}>
+      <div className="canvas-export">
+        <button
+          className="button quiet"
+          disabled={exporting}
+          onClick={async () => {
+            setExporting(true);
+            setExportError('');
+            let output: Konva.Stage | undefined;
+            try {
+              await document.fonts.ready;
+              const deadline = Date.now() + 12000;
+              const ready = () =>
+                page.elements
+                  .filter((e) => e.type === 'image' && e.visible !== false && e.assetId)
+                  .every((e) => {
+                    const image = (nodeFor(e.id) as Konva.Group | undefined)?.findOne('Image') as
+                      Konva.Image | undefined;
+                    return !!image?.image();
+                  });
+              while (!ready() && Date.now() < deadline)
+                await new Promise((resolve) => setTimeout(resolve, 100));
+              if (!ready()) throw Error('Ảnh chưa tải xong. Đợi một chút rồi thử lại.');
+              output = new Konva.Stage({
+                container: document.createElement('div'),
+                width: 720,
+                height: 900,
+              });
+              const layer = stage.current!.getLayers()[0].clone() as Konva.Layer;
+              layer.find('Transformer,.editor-overlay').forEach((node) => node.destroy());
+              output.add(layer);
+              output.draw();
+              const url = output.toDataURL({ pixelRatio: 1 }),
+                link = document.createElement('a');
+              link.href = url;
+              link.download = 'little-days-' + album.id + '-' + page.id + '.png';
+              document.body.append(link);
+              link.click();
+              link.remove();
+            } catch (e) {
+              setExportError((e as Error).message);
+            } finally {
+              output?.destroy();
+              setExporting(false);
+            }
+          }}
+        >
+          <Download size={15} />
+          {exporting ? 'Đang tạo ảnh…' : 'Tải trang PNG'}
+        </button>
+        {exportError && <small role="alert">{exportError}</small>}
+      </div>
       <div
         className="canvas-sheet"
         style={{ width: PAGE_WIDTH * scale, height: PAGE_HEIGHT * scale }}
@@ -468,7 +541,14 @@ export function CanvasEditor({
                 if (!pinching.current) onSelect([]);
               }}
             />
-            <Rect x={22} y={22} width={676} height={856} stroke="#9f895622" listening={false} />
+            <Rect
+              x={22}
+              y={22}
+              width={676}
+              height={856}
+              stroke={album.presentation?.readingMode === 'scroll' ? 'transparent' : '#9f895622'}
+              listening={false}
+            />
             {page.elements.map((e) => (
               <Group
                 key={e.id}
@@ -560,6 +640,7 @@ export function CanvasEditor({
             ))}
             {guides.map((g) => (
               <Rect
+                name="editor-overlay"
                 key={g.axis}
                 x={g.axis === 'x' ? g.value : 0}
                 y={g.axis === 'y' ? g.value : 0}
@@ -571,6 +652,7 @@ export function CanvasEditor({
             ))}
             {marquee && (
               <Rect
+                name="editor-overlay"
                 {...marquee}
                 fill="#6d7c5422"
                 stroke="#6d7c54"
