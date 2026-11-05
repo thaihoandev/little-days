@@ -591,7 +591,7 @@ export default function JournalDashboard({
   };
   return (
     <section
-      className={'journal-home ' + mode + '-mode'}
+      className={'journal-home ' + mode + '-mode' + (mode !== 'timeline' ? ' daily-cards' : '')}
       aria-label="Lịch và dòng thời gian của bạn"
     >
       <div className="journal-hero">
@@ -1318,7 +1318,7 @@ export default function JournalDashboard({
                             </button>
                           )}
                           <div className="journal-entry-body">
-                            {mode === 'home' && !isBook(entry) && (
+                            {mode !== 'timeline' && !isBook(entry) && (
                               <JournalPhotoTiles
                                 entry={entry}
                                 onOpen={(index) => setPhotoPreview({ photos: entry.assets, index })}
@@ -1370,7 +1370,9 @@ export default function JournalDashboard({
                               )}
                             </div>
                             <h3>
-                              {mode === 'home' && isBook(entry) ? entry.album!.title : entry.title}
+                              {mode !== 'timeline' && isBook(entry)
+                                ? entry.album!.title
+                                : entry.title}
                             </h3>
                             {!entry.album && sharedPlansReady && (
                               <div className="entry-author">
@@ -1455,7 +1457,7 @@ export default function JournalDashboard({
                               </button>
                             )}
                             {entry.note &&
-                              (mode === 'home' && entry.note.length > 180 ? (
+                              (mode !== 'timeline' && entry.note.length > 180 ? (
                                 <details className="today-note">
                                   <summary>
                                     {entry.note.slice(0, 160)}… <small>Xem thêm</small>
@@ -1465,7 +1467,7 @@ export default function JournalDashboard({
                               ) : (
                                 <p>{entry.note}</p>
                               ))}
-                            {mode !== 'home' && !isBook(entry) && (
+                            {mode === 'timeline' && !isBook(entry) && (
                               <JournalPhotoTiles
                                 entry={entry}
                                 onOpen={(index) => setPhotoPreview({ photos: entry.assets, index })}

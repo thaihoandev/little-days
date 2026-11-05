@@ -141,6 +141,29 @@ try {
       await expect(p.locator('.journal-entry.album-story')).toHaveCount(1);
       await p.goto(origin + '/today');
       await expect(p.locator('.home-mode .journal-entry').first()).toBeVisible();
+      const cardStyle = () =>
+        p
+          .locator('.journal-entry')
+          .filter({ has: p.getByRole('heading', { name: 'Chỉ diễn ra một lần', exact: true }) })
+          .evaluate((card) => {
+            return ['.journal-entry-body', 'h3', '.journal-photos', '.journal-entry-actions'].map(
+              (selector) => {
+                const node = card.querySelector(selector)!;
+                const style = getComputedStyle(node);
+                return {
+                  padding: style.padding,
+                  fontSize: style.fontSize,
+                  gap: style.gap,
+                  float: style.cssFloat,
+                  borderRadius: style.borderRadius,
+                  ...(selector === '.journal-photos'
+                    ? { width: style.width, height: style.height }
+                    : {}),
+                };
+              },
+            );
+          });
+      const todayCardStyle = await cardStyle();
       let photoReads = 0;
       const countPhotoReads = (request: import('@playwright/test').Request) => {
         if (new URL(request.url()).pathname === '/api/library/photos') photoReads++;
@@ -152,6 +175,18 @@ try {
       assert.equal(initialReads, 1);
       await p.getByRole('button', { name: /^Lịch của mình/ }).click();
       await expect(p.locator('.calendar-mode .journal-feed')).toBeVisible();
+      await expect(
+        p.getByRole('heading', { name: 'Chỉ diễn ra một lần', exact: true }),
+      ).toBeVisible();
+      assert.deepEqual(
+        await cardStyle(),
+        todayCardStyle,
+        'same memory uses consistent card styles on Today and Calendar',
+      );
+      const albumCard = p.locator('.journal-entry.album-story');
+      await expect(
+        albumCard.getByRole('heading', { name: 'Sổ một lần', exact: true }),
+      ).toBeVisible();
       if (width < 500) {
         const feedBox = await p.locator('.journal-feed').boundingBox(),
           asideBox = await p.locator('.upcoming-card').boundingBox(),

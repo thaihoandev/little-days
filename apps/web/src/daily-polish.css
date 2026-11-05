@@ -76,21 +76,21 @@
 .ritual-draw-dialog > button:last-child {
   flex: none;
 }
-/* Today uses a compact collection, independently of the winding timeline layout. */
-.home-mode .journal-workspace {
+/* Today and Calendar share cards; the winding timeline keeps its own layout. */
+.daily-cards .journal-workspace {
   display: block;
 }
-.home-mode .journal-timeline {
+.daily-cards .journal-timeline {
   max-width: none;
   margin: 0;
   padding: 0;
 }
-.home-mode .journal-day-group {
+.daily-cards .journal-day-group {
   display: block;
   width: 100%;
   margin: 0 0 24px;
 }
-.home-mode .journal-day-heading {
+.daily-cards .journal-day-heading {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -99,15 +99,15 @@
   margin: 0 0 14px;
   padding: 0 0 10px;
 }
-.home-mode .journal-day-heading time {
+.daily-cards .journal-day-heading time {
   font-size: 19px;
 }
-.home-mode .journal-day-stories {
+.daily-cards .journal-day-stories {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
-.journal-home.home-mode .journal-day-stories .journal-entry {
+.journal-home.daily-cards .journal-day-stories .journal-entry {
   display: flex;
   margin: 0;
   min-width: 0;
@@ -116,35 +116,35 @@
   background: #fffdf7;
   box-shadow: 0 4px 18px #63543306;
 }
-.journal-home.home-mode .journal-day-stories .journal-entry-body {
+.journal-home.daily-cards .journal-day-stories .journal-entry-body {
   display: flow-root;
   padding: 20px;
   flex: 1;
   min-width: 0;
   border: 0;
 }
-.home-mode .journal-entry-meta {
+.daily-cards .journal-entry-meta {
   gap: 7px;
   margin-bottom: 8px;
 }
-.home-mode .journal-entry-meta > span {
+.daily-cards .journal-entry-meta > span {
   font-size: 10px;
   color: #9a785f;
 }
-.home-mode .journal-entry h3 {
+.daily-cards .journal-entry h3 {
   font-size: 20px;
   line-height: 1.5;
   margin: 0 0 9px;
 }
-.home-mode .entry-author {
+.daily-cards .entry-author {
   flex-wrap: wrap;
   gap: 6px;
   font-size: 10px;
 }
-.home-mode .entry-author small {
+.daily-cards .entry-author small {
   margin-left: 0;
 }
-.journal-home.home-mode .journal-day-stories .journal-photos {
+.journal-home.daily-cards .journal-day-stories .journal-photos {
   float: right;
   width: 144px;
   height: 144px;
@@ -153,23 +153,23 @@
   overflow: hidden;
   gap: 3px;
 }
-.journal-home.home-mode .journal-day-stories .journal-photo-button {
+.journal-home.daily-cards .journal-day-stories .journal-photo-button {
   height: 100%;
   min-height: 0;
 }
-.journal-home.home-mode .journal-day-stories .journal-photo-button img {
+.journal-home.daily-cards .journal-day-stories .journal-photo-button img {
   width: 100%;
   height: 100%;
   max-height: none;
   object-fit: cover;
 }
-.home-mode .journal-photos.photos-1 {
+.daily-cards .journal-photos.photos-1 {
   display: block;
 }
-.home-mode .journal-photos.photos-1 > button {
+.daily-cards .journal-photos.photos-1 > button {
   width: 100%;
 }
-.home-mode .journal-entry-actions {
+.daily-cards .journal-entry-actions {
   clear: both;
   border-top: 1px solid #eee9de;
   padding-top: 12px;
@@ -178,17 +178,17 @@
   gap: 6px;
   justify-content: flex-end;
 }
-.home-mode .journal-entry-body > p {
+.daily-cards .journal-entry-body > p {
   font-size: 12px;
   line-height: 1.8;
   margin-bottom: 10px;
 }
-.home-mode .album-story .story-album-cover {
+.daily-cards .album-story .story-album-cover {
   width: 110px;
   min-height: 180px;
   flex: 0 0 110px;
 }
-.home-mode .album-story .story-album-cover > span {
+.daily-cards .album-story .story-album-cover > span {
   display: none;
 }
 .today-note {
@@ -485,7 +485,7 @@
   }
 }
 @media (max-width: 1200px) {
-  .home-mode .journal-day-stories {
+  .daily-cards .journal-day-stories {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -508,18 +508,18 @@
     transform: scale(0.5);
     margin-bottom: -185px;
   }
-  .journal-home.home-mode .journal-day-stories .journal-entry-body {
+  .journal-home.daily-cards .journal-day-stories .journal-entry-body {
     padding: 15px;
   }
-  .journal-home.home-mode .journal-day-stories .journal-photos {
+  .journal-home.daily-cards .journal-day-stories .journal-photos {
     width: 88px;
     height: 105px;
     margin-left: 10px;
   }
-  .journal-home.home-mode .journal-day-stories .journal-entry h3 {
+  .journal-home.daily-cards .journal-day-stories .journal-entry h3 {
     font-size: 18px;
   }
-  .home-mode .album-story .story-album-cover {
+  .daily-cards .album-story .story-album-cover {
     flex-basis: 76px;
     width: 76px;
   }
@@ -564,66 +564,6 @@
 .calendar-mode .journal-feed > .section-heading > div:first-child {
   flex: 1 1 210px;
 }
-.calendar-mode .journal-day-stories {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding: 0;
-  border: 0;
-  gap: 16px;
-  align-items: start;
-}
-.calendar-mode .journal-entry {
-  display: block;
-  min-width: 0;
-}
-.calendar-mode .journal-entry.album-story {
-  display: flex;
-}
-.calendar-mode .journal-day-stories .journal-entry .journal-entry-body {
-  padding: 20px;
-  height: 100%;
-  box-sizing: border-box;
-}
-.calendar-mode .journal-day-stories .journal-entry h3 {
-  font-size: 20px;
-  line-height: 1.45;
-  margin: 10px 0;
-}
-.calendar-mode .journal-entry-meta {
-  flex-wrap: wrap;
-  font-size: 11px;
-  gap: 8px;
-}
-.calendar-mode .journal-day-stories .journal-entry p {
-  font-size: 13px;
-  color: #676657;
-  line-height: 1.75;
-}
-.calendar-mode .journal-day-stories .journal-photos {
-  height: 110px;
-  max-width: 360px;
-  gap: 6px;
-}
-.calendar-mode .journal-day-stories .journal-photos.photos-1 {
-  max-width: 160px;
-}
-.calendar-mode .journal-day-stories .journal-photo-button img {
-  height: 110px;
-  aspect-ratio: auto;
-  border-width: 2px;
-}
-.calendar-mode .journal-entry-actions {
-  gap: 6px;
-  border-top: 1px solid #e9e6da;
-  padding-top: 12px;
-}
-.calendar-mode .journal-entry-actions .icon-button {
-  width: 34px;
-  height: 34px;
-}
-.calendar-mode .story-album-cover {
-  flex: 0 0 95px;
-  width: 95px;
-}
 .selected-day-notes .day-note {
   display: flex;
   gap: 10px;
@@ -660,11 +600,6 @@
   line-height: 1.6;
   font-size: 12px;
 }
-@media (max-width: 1100px) {
-  .calendar-mode .journal-day-stories {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
 @media (max-width: 900px) {
   .calendar-mode {
     display: flex;
@@ -686,22 +621,9 @@
   }
 }
 @media (max-width: 640px) {
-  .calendar-mode .story-album-cover {
-    flex-basis: 60px;
-    width: 60px;
-  }
   .calendar-mode .journal-feed {
     padding: 16px 12px;
     border-radius: 16px;
-  }
-  .calendar-mode .journal-day-stories .journal-entry .journal-entry-body {
-    padding: 16px;
-  }
-  .calendar-mode .journal-day-stories .album-story .journal-entry-body {
-    padding: 0 0 0 12px;
-  }
-  .calendar-mode .journal-day-stories .journal-entry h3 {
-    font-size: 18px;
   }
   .calendar-mode .section-heading {
     flex-wrap: wrap;
