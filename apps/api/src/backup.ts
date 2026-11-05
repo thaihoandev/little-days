@@ -71,6 +71,8 @@ const terminal = new Set(['completed', 'failed', 'canceled']);
 function mediaKeys(dump: Dump) {
   const keys = new Set<string>();
   for (const row of dump.tables.records) {
+    if (row.kind === 'love-photo')
+      keys.add('uploads/' + JSON.parse(String(row.payload)).assetId + '.webp');
     if (row.kind === 'album')
       for (const asset of (JSON.parse(String(row.payload)) as Album).assets)
         keys.add('uploads/' + asset.id + '.webp');

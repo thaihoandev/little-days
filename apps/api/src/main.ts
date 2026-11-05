@@ -120,7 +120,7 @@ const library = new LibraryService(repository, journal);
 const imagePreviews = new ImagePreviews(store);
 const profiles = new ProfileService(repository, store, resources, deletion, journal.sharing);
 const journalSocial = new JournalSocial(repository, journal);
-const coupleRituals = new CoupleRituals(repository, journal, deletion, resources);
+const coupleRituals = new CoupleRituals(repository, journal, deletion, resources, store);
 const journalAlbums = new JournalAlbumService(repository, store, resources, deletion, journal);
 const weeklyRecaps = new WeeklyRecaps(repository, journal, journalAlbums);
 const security = new AccountSecurity(
@@ -302,6 +302,41 @@ class AppController {
   ) {
     await security.rateLimit('couple-write:' + req.userId, 30, 60000);
     return coupleRituals.removeNote(req.userId, spaceId, id, body);
+  }
+  @Post(['together/:spaceId/assets', 'together/:spaceId/notes/upload'])
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 20 * 1024 * 1024, files: 1 },
+    }),
+  )
+  async uploadLoveNotePhoto(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    if (!file) throw new BadRequestException('Chọn một ảnh JPEG, PNG hoặc WebP.');
+    await security.rateLimit('couple-upload:' + req.userId, 15, 60000);
+    return coupleRituals.uploadPhoto(req.userId, spaceId, file, req.headers['x-upload-id']);
+  }
+  @Get('together/:spaceId/uploads/:uploadId') async lovePhotoStatus(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+    @Param('uploadId') uploadId: string,
+    @Query('sha256') hash: string,
+  ) {
+    return coupleRituals.uploadPhotoStatus(req.userId, spaceId, uploadId, hash);
+  }
+  @Get('together/:spaceId/assets/:id')
+  async loveNoteAsset(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+    @Param('id') id: string,
+    @Res() res: Response,
+  ) {
+    const key = await coupleRituals.notePhotoKey(req.userId, spaceId, id);
+    res.setHeader('Cache-Control', 'private, no-cache');
+    await streamObject(res, key, 'webp');
   }
   @Get('journal-state') async journalState(@Req() req: UserRequest) {
     return journal.state(req.userId);
@@ -615,6 +650,7 @@ class AppController {
       libraryVersion: 1,
       remindersVersion: 1,
       coupleRitualsVersion: 1,
+      jarPhotoVersion: 1,
       albumPresentationVersion: 1,
       previewAudioClipVersion: 1,
       weeklyRecapVersion: 1,

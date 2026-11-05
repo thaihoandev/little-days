@@ -1,3 +1,4 @@
+import { Modal } from './Modal.js';
 import { useEffect, useState } from 'react';
 import { Smartphone, Download, X, Share, PlusSquare, Sparkles } from 'lucide-react';
 
@@ -21,7 +22,9 @@ export function usePwaInstall() {
     if (typeof window === 'undefined') return;
 
     const userAgent = window.navigator.userAgent.toLowerCase();
-    const isAppleDevice = /iphone|ipad|ipod/.test(userAgent);
+    const isAppleDevice =
+      /iphone|ipad|ipod/.test(userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     setIsIos(isAppleDevice);
 
     const handleBeforeInstall = (e: Event) => {
@@ -37,10 +40,13 @@ export function usePwaInstall() {
       } catch {}
     };
 
+    const consumed = () => setDeferredPrompt(null);
+    window.addEventListener('little-days:install-consumed', consumed);
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
+      window.removeEventListener('little-days:install-consumed', consumed);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
@@ -48,18 +54,20 @@ export function usePwaInstall() {
 
   const triggerInstall = async (onIosGuide?: () => void) => {
     if (deferredPrompt) {
-      await deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      if (choice.outcome === 'accepted') {
-        setIsInstalled(true);
-        setDeferredPrompt(null);
+      window.dispatchEvent(new Event('little-days:install-consumed'));
+      try {
+        await deferredPrompt.prompt();
+        return (await deferredPrompt.userChoice).outcome;
+      } catch {
+        onIosGuide?.();
+        return 'guide';
       }
-      return choice.outcome;
     }
-    if (isIos && !isInstalled && onIosGuide) {
+    if (!isInstalled && onIosGuide) {
       onIosGuide();
-      return 'ios_guide';
+      return 'guide';
     }
+
     return null;
   };
 
@@ -74,59 +82,21 @@ export function usePwaInstall() {
 
 export function IosInstallDialog({ onClose }: { onClose: () => void }) {
   return (
-    <div className="modal-backdrop" onClick={onClose} role="dialog" aria-modal="true">
-      <div className="modal-card pwa-ios-modal" onClick={(e) => e.stopPropagation()} tabIndex={-1}>
-        <header className="modal-header">
-          <h3>
-            <Sparkles size={18} style={{ color: '#ac6b55', verticalAlign: 'middle' }} /> Cài đặt
-            Little Days lên iPhone
-          </h3>
-          <button className="icon-button" onClick={onClose} aria-label="Đóng hướng dẫn">
-            <X size={18} />
-          </button>
-        </header>
-        <div className="pwa-ios-steps">
-          <p className="pwa-ios-intro">
-            Thêm Little Days vào màn hình chính để mở ứng dụng toàn màn hình và nhận thông báo kỉ
-            niệm:
-          </p>
-          <ol className="pwa-steps-list">
-            <li>
-              <div className="pwa-step-icon">
-                <Share size={20} />
-              </div>
-              <div>
-                <strong>Bước 1:</strong> Mở Safari, chạm vào biểu tượng <strong>Chia sẻ</strong> ở
-                thanh công cụ dưới đáy màn hình.
-              </div>
-            </li>
-            <li>
-              <div className="pwa-step-icon">
-                <PlusSquare size={20} />
-              </div>
-              <div>
-                <strong>Bước 2:</strong> Cuộn xuống danh sách tùy chọn và chọn{' '}
-                <strong>&ldquo;Thêm vào Màn hình chính&rdquo;</strong> (Add to Home Screen).
-              </div>
-            </li>
-            <li>
-              <div className="pwa-step-icon">
-                <Smartphone size={20} />
-              </div>
-              <div>
-                <strong>Bước 3:</strong> Nhấn <strong>&ldquo;Thêm&rdquo;</strong> ở góc trên bên
-                phải để hoàn tất.
-              </div>
-            </li>
-          </ol>
-        </div>
-        <footer className="modal-footer" style={{ justifyContent: 'flex-end', marginTop: 16 }}>
-          <button className="button primary" onClick={onClose}>
-            Đã hiểu
-          </button>
-        </footer>
+    <Modal title="Cài Little Days trên màn hình chính" onClose={onClose}>
+      <div className="pwa-ios-steps">
+        <p>Trên iPhone/iPad: mở bằng Safari → Chia sẻ → Thêm vào Màn hình chính → Thêm.</p>
+        <p>
+          Trên Android: mở bằng Chrome → menu ⋮ → Cài đặt ứng dụng hoặc Thêm vào màn hình chính.
+        </p>
+        <p>
+          Trên máy tính: mở bằng Chrome/Edge → menu → Cài đặt Little Days. Nếu trình duyệt chưa hiện
+          tùy chọn, hãy mở trang bằng trình duyệt chính và thử lại.
+        </p>
+        <small>
+          Ứng dụng vẫn cần mạng để đọc dữ liệu riêng tư. Cài đặt không tự bật thông báo đẩy.
+        </small>
       </div>
-    </div>
+    </Modal>
   );
 }
 

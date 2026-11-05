@@ -16,6 +16,8 @@ The standalone image-processing worker uses IMG.LY background-removal 1.7.0 (AGP
 
 ## Interactive maps
 
+The Vietnam travel polygons are derived from geoBoundaries gbOpen VNM ADM1, boundary ID VNM-ADM1-63759600, pinned commit 9469f09, and merged into 34 groups following Vietnam's 2025 provincial reorganization. Attribute geoBoundaries / William & Mary geoLab and contributors under CC-BY-4.0; upstream metadata identifies the underlying Wikipedia geometry as Public Domain. The offline generator uses polygon-clipping (MIT). Hoang Sa and Truong Sa clusters are original schematic illustrations. See [source and transformations](docs/VIETNAM_MAP_DATA.md). Geometry remains approximate reference data, not surveyed 2025 legal boundaries.
+
 Leaflet 1.9.4 is distributed under BSD-2-Clause; its original license is included in `licenses/THIRD-PARTY-LICENSE-TEXTS.txt`. Map data and raster tiles are supplied separately by OpenStreetMap contributors and the OpenStreetMap Foundation, with visible attribution. See the [OSM copyright and ODbL information](https://www.openstreetmap.org/copyright) and [tile usage policy](https://operations.osmfoundation.org/policies/tiles/). Tiles load when the timeline map, location picker or expanded map is displayed, with normal browser caching; bulk download and offline prefetch are not implemented. The service is best-effort and has no availability guarantee. User milestone content is not sent to a geocoding service or included in this project's code license.
 
 ## Vietnamese lunar calendar

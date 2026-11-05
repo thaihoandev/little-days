@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "lockSha256": "e0a3386a4797b57af24c5a138a7443baf6db9c3da19017324f875e9fc5cb328b",
+  "lockSha256": "5e577e03a8551df09fd1a2687c6b519e95656571de58f859ef758decfaa5ed5c",
   "platform": "win32",
   "architecture": "x64",
   "entries": [
@@ -5813,6 +5813,19 @@
       "review": "declared-license-not-legal-clearance"
     },
     {
+      "name": "polygon-clipping",
+      "version": "0.15.7",
+      "location": "node_modules/polygon-clipping",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE.md"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
       "name": "postcss",
       "version": "8.5.1",
       "location": "node_modules/postcss",
@@ -6132,6 +6145,19 @@
       "installed": true,
       "noticeFiles": [
         "license"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "robust-predicates",
+      "version": "3.0.3",
+      "location": "node_modules/robust-predicates",
+      "license": "Unlicense",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
       ],
       "review": "declared-license-not-legal-clearance"
     },
@@ -6485,6 +6511,17 @@
         "LICENSE"
       ],
       "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "splaytree",
+      "version": "3.2.3",
+      "location": "node_modules/splaytree",
+      "license": "MIT",
+      "dev": true,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [],
+      "review": "notice-file-review"
     },
     {
       "name": "split2",

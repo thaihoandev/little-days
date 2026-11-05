@@ -55,3 +55,14 @@ createRoot(document.getElementById('root')!).render(
 
 import './experience.css';
 import './daily-polish.css';
+
+if (
+  'serviceWorker' in navigator &&
+  (location.protocol === 'https:' ||
+    location.hostname === 'localhost' ||
+    location.hostname === '127.0.0.1')
+) {
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}

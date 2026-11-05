@@ -1,8 +1,10 @@
 # Trạng thái triển khai Little Days
 
-Ngày cập nhật: **04/11/2026**.
+Ngày cập nhật: **05/11/2026**.
 
 ## Kết quả hiện tại
+
+Đã bổ sung ba mẫu Photobooth/kẹp gỗ/vé, ảnh kín cho Lọ điều thương, xuất PNG Story/ảnh dài và sửa luồng cài màn hình chính. Bản đồ dấu chân dùng 34 tỉnh thành theo sắp xếp 2025, có Hoàng Sa/Trường Sa minh họa, chọn viền theo tỉnh và giữ bản đồ vừa modal; chỉ danh sách cuộn. Bỏ mục Góc chúng mình khỏi menu, giữ lối mở câu hỏi/lọ từ Hôm nay. Xem [phạm vi và kiểm chứng](PRIORITY_FLOWS_REVIEW.md) và [nguồn dữ liệu bản đồ](VIETNAM_MAP_DATA.md). Trạng thái deploy cần đối chiếu commit chạy thật.
 
 Sửa hai nguồn gây hiểu nhầm lặp sự kiện: ngày bắt đầu album có lựa chọn hằng năm rõ ràng, danh sách lịch bám ngày đang xem và ghi năm. Thu gọn popup/thẻ Hôm nay, bỏ giới hạn gây khoảng trống bên phải; Lọ điều thương có chiều sâu kính, giấy theo số lời thực tế và icon đồng ý. Xem [phạm vi và kiểm chứng](CALENDAR_AND_DAILY_POLISH.md).
 

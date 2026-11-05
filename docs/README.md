@@ -44,3 +44,6 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 - [Báo cáo pilot](PILOT_RESULTS.md)
 - [Hướng dẫn pilot](PILOT.md)
 - [Cập nhật 31/10](UPDATE_2026_10_31.md)
+
+- [Rà soát các luồng thiết kế, bản đồ và cài ứng dụng](PRIORITY_FLOWS_REVIEW.md)
+- [Nguồn bản đồ địa danh Việt Nam](VIETNAM_MAP_DATA.md)

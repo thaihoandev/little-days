@@ -75,6 +75,14 @@ await db.put('audio', audioId, owner, {
   url: '/api/albums/' + album.id + '/audio/' + audioId,
 });
 await store.put('uploads/' + assetId + '.webp', image, 'image/webp');
+const jarPhoto = crypto.randomUUID();
+await db.put('love-photo', jarPhoto, owner, {
+  assetId: jarPhoto,
+  spaceId: owner,
+  bytes: image.length,
+  uploadedAt: Date.now(),
+});
+await store.put('uploads/' + jarPhoto + '.webp', image, 'image/webp');
 const journalId = crypto.randomUUID(),
   journalPhoto = crypto.randomUUID(),
   journalBytes = await sharp(image).jpeg().toBuffer();
@@ -232,6 +240,12 @@ try {
   assert.equal((await fetch(base + '/albums/' + album.id)).status, 401);
   assert.ok(fixture.requests.every((request) => request.signed));
   const manifest = JSON.parse(await readFile(path.join(second, 'manifest.json'), 'utf8'));
+  assert.ok(
+    manifest.files.some((file: { path: string }) =>
+      file.path.endsWith('uploads/' + jarPhoto + '.webp'),
+    ),
+    'sealed jar media survives cloud restore and backup',
+  );
   await writeFile(
     path.join(root, 'result.json'),
     JSON.stringify(

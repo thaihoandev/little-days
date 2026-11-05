@@ -78,7 +78,7 @@ export async function uploadImage<T>(
     body = new FormData();
   body.append('file', file);
   for (const [key, value] of Object.entries(fields)) body.append(key, value);
-  const reliable = receiptSupport && /^\/(albums|journal)\/[0-9a-f-]+\/assets$/.test(path);
+  const reliable = receiptSupport && /^\/(albums|journal|together)\/[0-9a-f-]+\/assets$/.test(path);
   let receiptKey = '',
     uploadId = '',
     digestHex = '',

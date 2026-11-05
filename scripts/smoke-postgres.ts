@@ -39,6 +39,7 @@ try {
       'tests/history.test.ts',
       'tests/auth.test.ts',
       'tests/activity-mail.test.ts',
+      'tests/priority-3-features.test.ts',
       'tests/account-deletion.test.ts',
       'tests/resource-policy.test.ts',
       'tests/ops-monitor.test.ts',

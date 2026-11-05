@@ -52,6 +52,31 @@ const stars = art(
   200,
   '<g fill="#d1aa67"><path d="M95 8L111 65 166 80 111 96 95 153 79 96 24 80 79 65Z"/><path d="M160 126L168 151 193 159 168 167 160 193 152 167 127 159 152 151Z"/><path d="M35 135L41 153 59 159 41 165 35 183 29 165 11 159 29 153Z"/></g>',
 );
+const woodenClip = art(
+  70,
+  140,
+  '<path d="M22 6H48V50L44 80L48 134H38L35 88L32 134H22L26 80L22 50Z" fill="#c49a6c" stroke="#936d43" stroke-width="2"/><circle cx="35" cy="65" r="7" fill="#b0b5b3" stroke="#787e7c" stroke-width="2"/><path d="M25 61H45M25 69H45" stroke="#787e7c" stroke-width="2"/>',
+);
+const rope = art(
+  300,
+  40,
+  '<path d="M2 20 C 50 14, 100 26, 150 18 C 200 12, 250 24, 298 18" stroke="#a3825a" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M2 20 C 50 14, 100 26, 150 18 C 200 12, 250 24, 298 18" stroke="#d5be9b" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="6 4"/>',
+);
+const photoboothLogo = art(
+  200,
+  70,
+  '<rect x="4" y="4" width="192" height="62" rx="10" fill="#2d2d2d"/><text x="100" y="32" font-family="sans-serif" font-weight="900" font-size="16" fill="#fff" text-anchor="middle" letter-spacing="3">LIFE 4 CUTS</text><text x="100" y="52" font-family="sans-serif" font-weight="500" font-size="11" fill="#f0c2c2" text-anchor="middle" letter-spacing="1">♡ PHOTO STUDIO ♡</text>',
+);
+const boardingPass = art(
+  280,
+  120,
+  '<rect x="4" y="4" width="272" height="112" rx="8" fill="#fdfbf7" stroke="#70877f" stroke-width="2"/><path d="M200 4V116" stroke="#9cb5ab" stroke-width="2" stroke-dasharray="4 4"/><circle cx="200" cy="4" r="9" fill="#e8dfd5"/><circle cx="200" cy="116" r="9" fill="#e8dfd5"/><text x="20" y="30" font-family="sans-serif" font-weight="bold" font-size="13" fill="#2d4a3e" letter-spacing="1">BOARDING PASS</text><text x="20" y="55" font-family="sans-serif" font-size="11" fill="#667f74">FROM: US  →  TO: FOREVER</text><text x="20" y="78" font-family="sans-serif" font-size="11" fill="#667f74">FLIGHT: LD-520 · SEAT: 01A</text><path d="M20 92H180" stroke="#70877f" stroke-width="2" stroke-linecap="round"/><path d="M215 28H265M215 36H265M215 44H265M215 52H265M215 60H265M215 68H265M215 76H265M215 84H265M215 92H265" stroke="#333" stroke-width="2" stroke-dasharray="2 3"/>',
+);
+const cinemaTicket = art(
+  220,
+  100,
+  '<path d="M4 4H216V30C202 30 202 46 216 46V96H4V46C18 46 18 30 4 30Z" fill="#ffebd2" stroke="#d49a6a" stroke-width="2"/><line x1="68" y1="4" x2="68" y2="96" stroke="#d49a6a" stroke-width="2" stroke-dasharray="4 4"/><text x="36" y="55" font-family="sans-serif" font-size="10" font-weight="bold" fill="#b06d3b" transform="rotate(-90 36 55)" text-anchor="middle">CINEMA</text><text x="82" y="34" font-family="sans-serif" font-size="12" font-weight="bold" fill="#914d1b">BUỔI HẸN ĐẦU</text><text x="82" y="56" font-family="sans-serif" font-size="10" fill="#a86e44">HÀNG GHẾ: SWEETBOX</text><text x="82" y="78" font-family="sans-serif" font-size="10" fill="#a86e44">DATE: OUR SPECIAL DAY</text>',
+);
 export const decorationCatalog = [
   {
     id: 'tape-sand',
@@ -203,6 +228,58 @@ export const decorationCatalog = [
       200,
       '<g fill="none" stroke-width="7" stroke-linecap="round"><path d="M22 28L29 42M101 19L91 31M214 30L221 45M158 116L171 121" stroke="#c78d8c"/><path d="M60 93L51 107M232 135L224 146M88 174L101 181" stroke="#9aaf88"/><path d="M141 49L151 41M30 156L38 169M188 184L201 174" stroke="#d7b66f"/></g><g fill="#d5bb87"><circle cx="174" cy="25" r="5"/><circle cx="127" cy="145" r="5"/><circle cx="204" cy="87" r="4"/></g>',
     ),
+  },
+  {
+    id: 'clip-wood',
+    name: 'Kẹp gỗ mộc',
+    collection: 'Giấy & washi',
+    width: 70,
+    height: 140,
+    src: woodenClip,
+  },
+  {
+    id: 'rope-rustic',
+    name: 'Dây thừng hoài niệm',
+    collection: 'Giấy & washi',
+    width: 300,
+    height: 40,
+    src: rope,
+  },
+  {
+    id: 'photobooth-paper',
+    width: 350,
+    height: 840,
+    name: 'Giấy dải ảnh',
+    collection: 'Những ngày nhỏ',
+    src: art(
+      350,
+      840,
+      '<rect x="1" y="1" width="348" height="838" rx="10" fill="#fffdf8" stroke="#ded8c9"/>',
+    ),
+  },
+  {
+    id: 'photobooth-logo',
+    name: 'Logo Photobooth',
+    collection: 'Chuyến đi',
+    width: 200,
+    height: 70,
+    src: photoboothLogo,
+  },
+  {
+    id: 'boarding-pass',
+    name: 'Vé máy bay kỉ niệm',
+    collection: 'Chuyến đi',
+    width: 280,
+    height: 120,
+    src: boardingPass,
+  },
+  {
+    id: 'ticket-cinema',
+    name: 'Cuống vé xem phim',
+    collection: 'Chuyến đi',
+    width: 220,
+    height: 100,
+    src: cinemaTicket,
   },
   ...extraDecorations,
   ...smallSymbols,

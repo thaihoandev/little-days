@@ -128,6 +128,27 @@ export const builtInTemplates = [
     color: '#ffda53',
     description: 'Vàng nắng, hồng pop và collage ảnh vui tươi.',
   },
+  {
+    id: 'photobooth',
+    name: 'Photobooth 4 ô',
+    theme: 'polaroid',
+    color: '#f5f0ea',
+    description: 'Dải photobooth 4 khung dọc phong cách Hàn Quốc.',
+  },
+  {
+    id: 'wooden-clips',
+    name: 'Kẹp gỗ dây thừng',
+    theme: 'polaroid',
+    color: '#efe9df',
+    description: 'Dây thừng mộc và kẹp gỗ treo ảnh polaroid.',
+  },
+  {
+    id: 'ticket-stubs',
+    name: 'Cuống vé kỉ niệm',
+    theme: 'timeline',
+    color: '#eae4d9',
+    description: 'Vé xem phim và chuyến bay đầu tiên cùng nhau.',
+  },
 ] as const;
 export type BuiltInTemplateId = (typeof builtInTemplates)[number]['id'];
 export function templatePage(id: string, assets: string[] = []): Page {
@@ -242,6 +263,98 @@ export function templatePage(id: string, assets: string[] = []): Page {
       title: spec.name,
       background: spec.color,
       elements: [...elements, ...accents],
+    };
+  }
+  if (['photobooth', 'wooden-clips', 'ticket-stubs'].includes(id)) {
+    const text = (
+      value: string,
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      fontSize: number,
+      color = '#38342e',
+      font: 'sans' | 'serif' | 'hand' = 'sans',
+    ) => element('text', { text: value, x, y, width, height, fontSize, color, font });
+    const photo = (i: number, x: number, y: number, width: number, height: number, rotation = 0) =>
+      element('image', {
+        assetId: assets.length ? assets[i % assets.length] : `demo-${(i % 3) + 1}`,
+        text: 'khoảnh khắc đôi mình',
+        photoStyle: id === 'photobooth' ? 'minimal' : 'polaroid',
+        x,
+        y,
+        width,
+        height,
+        rotation,
+      });
+
+    let elements: Page['elements'] = [];
+    if (id === 'photobooth') {
+      elements = [
+        decor('photobooth-paper', 185, 30, 350, 0, true),
+        text('LIFE 4 CUTS', 200, 50, 320, 40, 22, '#2d2d2d'),
+        photo(0, 215, 100, 290, 140, 0),
+        photo(1, 215, 255, 290, 140, 0),
+        photo(2, 215, 410, 290, 140, 0),
+        photo(3, 215, 565, 290, 140, 0),
+        text('OUR SPECIAL STORY ♡', 200, 720, 320, 30, 14, '#767067'),
+        decor('photobooth-logo', 260, 760, 200, 0),
+        decor('tape-rose', 300, 4, 120, 2),
+        decor('tape-sand', 60, 250, 120, -15),
+        decor('tape-sage', 540, 480, 120, 15),
+        text('Một dải ảnh,\nngàn nụ cười.', 50, 400, 120, 80, 18, '#827768', 'hand'),
+      ];
+    } else if (id === 'wooden-clips') {
+      elements = [
+        text('Treo từng khoảnh khắc ♡', 65, 45, 590, 70, 36, '#464034', 'serif'),
+        decor('rope-rustic', 40, 185, 640, 0, true),
+        // 3 hanging polaroids
+        photo(0, 55, 215, 195, 245, -5),
+        photo(1, 262, 205, 195, 245, 3),
+        photo(2, 470, 220, 195, 245, -3),
+        // wooden clips pinning each polaroid to the rope
+        decor('clip-wood', 130, 160, 45, -5),
+        decor('clip-wood', 337, 150, 45, 3),
+        decor('clip-wood', 545, 165, 45, -3),
+        decor('leaf-olive', 30, 520, 120, 15),
+        decor('daisy', 570, 520, 95, -10),
+        text(
+          'Gom những điều bình dị,\ntreo vào góc nhỏ yêu thương.',
+          120,
+          710,
+          480,
+          95,
+          27,
+          '#62594a',
+          'hand',
+        ),
+      ];
+    } else if (id === 'ticket-stubs') {
+      elements = [
+        text('Chuyến đi đầu tiên của mình', 65, 45, 590, 70, 36, '#3a3e35', 'serif'),
+        decor('boarding-pass', 65, 130, 590, -1),
+        photo(0, 80, 280, 280, 250, -4),
+        photo(1, 365, 335, 285, 255, 4),
+        decor('ticket-cinema', 65, 560, 270, 3),
+        decor('postmark', 475, 620, 190, -6),
+        decor('tape-sand', 390, 315, 170, 4),
+        text(
+          'Từ lần hẹn đầu tiên, cho đến vạn dặm cùng nhau.',
+          80,
+          810,
+          560,
+          50,
+          24,
+          '#586150',
+          'hand',
+        ),
+      ];
+    }
+    return {
+      id: crypto.randomUUID(),
+      title: spec.name,
+      background: spec.color,
+      elements,
     };
   }
   if (['polaroid', 'letter', 'timeline'].includes(id)) {

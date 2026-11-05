@@ -6,6 +6,7 @@ import { ProfileSettings, type ProfileView } from './ProfileSettings.js';
 import { PwaAccountCard } from './PwaInstallPrompt.js';
 
 export type PublicUser = {
+  jarPhotoVersion?: number;
   previewAudioClipVersion?: number;
   calendarRecurrenceVersion?: number;
   weeklyRecapVersion?: number;

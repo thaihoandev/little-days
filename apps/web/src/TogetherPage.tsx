@@ -1,8 +1,10 @@
+import { uploadImage } from './image-upload.js';
 import { LoveJar } from './LoveJar.js';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   ArrowRight,
   CalendarDays,
+  Camera,
   Check,
   Heart,
   HeartHandshake,
@@ -77,12 +79,14 @@ function readSubmissionKey(key: string, signature: string) {
   return crypto.randomUUID();
 }
 export default function TogetherPage({
+  photoEnabled = false,
   userId,
   ready,
   search,
   onNavigate,
   onAccount,
 }: {
+  photoEnabled?: boolean;
   userId: string;
   ready: boolean;
   search: string;
@@ -105,6 +109,7 @@ export default function TogetherPage({
     [drawn, setDrawn] = useState<LoveNoteView | null>(null),
     [deleting, setDeleting] = useState<LoveNoteView | null>(null),
     [past, setPast] = useState<QuestionView | null>(null);
+  const preparedPhotos = useRef(new Map<string, { file: File; url: string }>());
   const generation = useRef(0),
     latestState = useRef<CoupleState | null>(null),
     alive = useRef(true),
@@ -256,11 +261,11 @@ export default function TogetherPage({
   };
   const root = '/together/' + space;
   return (
-    <section className="together-page" aria-label="Góc chúng mình">
+    <section className="together-page" aria-label="Câu hỏi & Lọ điều thương">
       <header className="ritual-heading">
         <div>
           <span className="eyebrow">MỖI NGÀY, MỘT CHÚT GẦN NHAU</span>
-          <h1>Góc chúng mình</h1>
+          <h1>Câu hỏi & Lọ điều thương</h1>
           <p>Một câu để hiểu nhau. Một lời thương để dành.</p>
         </div>
         <span className="ritual-heading-icon" aria-hidden="true">
@@ -280,7 +285,7 @@ export default function TogetherPage({
               <label>
                 Không gian chung
                 <select
-                  aria-label="Không gian cho Góc chúng mình"
+                  aria-label="Không gian cho Câu hỏi & Lọ điều thương"
                   value={space}
                   disabled={pending}
                   onChange={(e) => {
@@ -512,18 +517,57 @@ export default function TogetherPage({
                         </button>
                       </section>
                       <JarComposer
+                        photoEnabled={photoEnabled}
                         key={space}
                         userId={userId}
                         space={space}
                         today={state.today}
                         pending={pending}
                         allowed={state.members.length >= 2}
-                        onSubmit={(text, mode, openDate, requestId) =>
+                        onSubmit={(text, mode, openDate, requestId, photoFile) =>
                           run(async () => {
+                            const prepared = preparedPhotos.current.get(requestId);
+                            let photoUrl = prepared?.file === photoFile ? prepared?.url : undefined;
+                            const photoKey = `scrapbook-draft:${userId}:ritual:${space}:photo-${requestId}`;
+                            if (photoFile && !photoUrl) {
+                              try {
+                                const saved = JSON.parse(localStorage.getItem(photoKey) || 'null');
+                                if (
+                                  saved?.at > Date.now() - 7 * 86400000 &&
+                                  typeof saved.url === 'string'
+                                )
+                                  photoUrl = saved.url;
+                              } catch {}
+                            }
+                            if (photoFile && !photoUrl) {
+                              const uploadRes = await uploadImage<{ assetId: string; url: string }>(
+                                root + '/assets',
+                                photoFile,
+                              );
+                              photoUrl = uploadRes.url;
+                              try {
+                                localStorage.setItem(
+                                  photoKey,
+                                  JSON.stringify({ url: photoUrl, at: Date.now() }),
+                                );
+                              } catch {}
+                              preparedPhotos.current.set(requestId, {
+                                file: photoFile,
+                                url: uploadRes.url,
+                              });
+                              if (preparedPhotos.current.size > 20)
+                                preparedPhotos.current.delete(
+                                  preparedPhotos.current.keys().next().value!,
+                                );
+                            }
                             await api(root + '/notes', {
                               method: 'POST',
-                              body: JSON.stringify({ text, mode, openDate, requestId }),
+                              body: JSON.stringify({ text, mode, openDate, requestId, photoUrl }),
                             });
+                            preparedPhotos.current.delete(requestId);
+                            try {
+                              localStorage.removeItem(photoKey);
+                            } catch {}
                             await load(true);
                             setNotice('Đã bỏ một điều thương vào lọ.');
                           })
@@ -813,6 +857,7 @@ function AnswerCard({
   );
 }
 function JarComposer({
+  photoEnabled,
   userId,
   space,
   today,
@@ -820,6 +865,7 @@ function JarComposer({
   allowed,
   onSubmit,
 }: {
+  photoEnabled: boolean;
   userId: string;
   space: string;
   today: string;
@@ -830,10 +876,42 @@ function JarComposer({
     mode: 'month-end' | 'scheduled',
     date: string | undefined,
     requestId: string,
+    photoFile?: File | null,
   ) => Promise<boolean>;
 }) {
   const [text, setText] = usePrivateDraft(userId, space, 'jar'),
     [options, saveOptions] = usePrivateDraft(userId, space, 'jar-options');
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [pendingPhoto, setPendingPhoto] = useState<[string, number, number] | null>(() => {
+    if (!photoEnabled || !text) return null;
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem(`scrapbook-draft:${userId}:ritual:${space}:jar-request`) || 'null',
+      );
+      const signature = JSON.parse(saved?.signature || 'null');
+      const metadata = signature?.[3];
+      return Array.isArray(metadata) &&
+        metadata.length === 3 &&
+        typeof metadata[0] === 'string' &&
+        Number.isFinite(metadata[1]) &&
+        Number.isFinite(metadata[2])
+        ? (metadata as [string, number, number])
+        : null;
+    } catch {
+      return null;
+    }
+  });
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState('');
+  useEffect(() => {
+    if (!photoFile) {
+      setPreviewUrl(null);
+      return;
+    }
+    const url = URL.createObjectURL(photoFile);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [photoFile]);
   let saved: { mode?: string; date?: string } = {};
   try {
     const parsed = JSON.parse(options || '{}');
@@ -852,7 +930,16 @@ function JarComposer({
         : today,
     ),
     requestKey = `scrapbook-draft:${userId}:ritual:${space}:jar-request`,
-    signature = JSON.stringify([text, mode, mode === 'scheduled' ? date : null]),
+    signature = JSON.stringify(
+      photoFile || pendingPhoto
+        ? [
+            text,
+            mode,
+            mode === 'scheduled' ? date : null,
+            photoFile ? [photoFile.name, photoFile.size, photoFile.lastModified] : pendingPhoto,
+          ]
+        : [text, mode, mode === 'scheduled' ? date : null],
+    ),
     request = useRef(readSubmissionKey(requestKey, signature));
   useEffect(() => {
     try {
@@ -869,8 +956,19 @@ function JarComposer({
     mode === 'month-end' ? new Date(Date.UTC(year, month, 0)).toISOString().slice(0, 10) : date;
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (await onSubmit(text, mode, mode === 'scheduled' ? date : undefined, request.current)) {
+    if (pendingPhoto && !photoFile) return;
+    if (
+      await onSubmit(
+        text,
+        mode,
+        mode === 'scheduled' ? date : undefined,
+        request.current,
+        photoFile,
+      )
+    ) {
       setText('');
+      setPhotoFile(null);
+      setPendingPhoto(null);
       request.current = crypto.randomUUID();
     }
   };
@@ -927,12 +1025,82 @@ function JarComposer({
               />
             </label>
           )}
+          {photoEnabled && (
+            <div className="jar-photo-row">
+              <label className="button quiet tiny-action jar-photo-picker-label">
+                <Camera size={14} />
+                {photoFile ? 'Đổi ảnh kỉ niệm' : 'Gửi thêm 1 bức ảnh'}
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  style={{ display: 'none' }}
+                  aria-label="Chọn ảnh gửi kèm lời thương"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    if (file.size > 20 * 1024 * 1024) {
+                      setPhotoError('Mỗi ảnh tối đa 20 MB. Hãy chọn ảnh nhỏ hơn.');
+                      return;
+                    }
+                    setPhotoError('');
+                    setPhotoFile(file);
+                    request.current = pendingPhoto
+                      ? readSubmissionKey(
+                          requestKey,
+                          JSON.stringify([
+                            text,
+                            mode,
+                            mode === 'scheduled' ? date : null,
+                            [file.name, file.size, file.lastModified],
+                          ]),
+                        )
+                      : crypto.randomUUID();
+                    setPendingPhoto(null);
+                  }}
+                />
+              </label>
+              {(photoFile || pendingPhoto) && (
+                <button
+                  type="button"
+                  className="icon-button quiet"
+                  aria-label="Bỏ chọn ảnh"
+                  onClick={() => {
+                    setPhotoFile(null);
+                    setPendingPhoto(null);
+                    setPhotoError('');
+                    request.current = crypto.randomUUID();
+                  }}
+                >
+                  <X size={15} />
+                </button>
+              )}
+            </div>
+          )}
+          {photoError && (
+            <p role="alert" className="error">
+              {photoError}
+            </p>
+          )}
+          {pendingPhoto && !photoFile && (
+            <p className="ritual-warning">
+              Bản nháp có ảnh đính kèm. Chọn lại ảnh để tiếp tục gửi, hoặc bỏ chọn ảnh.
+            </p>
+          )}
+          {previewUrl && (
+            <div className="jar-composer-preview">
+              <img src={previewUrl} alt="Ảnh đính kèm" />
+              <small>📷 Ảnh sẽ được giữ bí mật cho đến khi mở lọ</small>
+            </div>
+          )}
           <p className="jar-consent-hint">
             <LockKeyhole size={17} />
             Đến hẹn hoặc tất cả cùng đồng ý. Gửi lời không tự tính là đồng ý.
           </p>
           <small>Ngày mở: {prettyDate(chosenDate || today)} · 00:00, giờ Việt Nam.</small>
-          <button className="button primary full" disabled={!text.trim()}>
+          <button
+            className="button primary full"
+            disabled={!text.trim() || (!!pendingPhoto && !photoFile)}
+          >
             {pending ? <LoaderCircle className="spin" size={17} /> : <Heart size={17} />}Bỏ lời
             thương vào lọ
           </button>
@@ -980,11 +1148,23 @@ function JarNote({
         )}
       </header>
       {n.opened ? (
-        <p className="jar-message">{n.text}</p>
+        <>
+          <p className="jar-message">{n.text}</p>
+          {n.photoUrl && (
+            <div className="jar-opened-photo">
+              <img src={n.photoUrl} alt="Ảnh trong lọ điều thương" loading="lazy" />
+            </div>
+          )}
+        </>
       ) : (
         <div className="jar-sealed-body">
           <LockKeyhole size={22} />
           <strong>Để dành đến {prettyDate(n.unlockAt)}</strong>
+          {n.hasPhoto && (
+            <span className="jar-has-photo-badge">
+              <Camera size={13} /> Kèm 1 bức ảnh bí mật
+            </span>
+          )}
           {n.mine ? (
             <details className="jar-own-preview">
               <summary title="Chỉ bạn đọc được trước khi mở">
@@ -992,6 +1172,11 @@ function JarNote({
                 Lời mình viết
               </summary>
               <p className="jar-message own-preview">{n.text}</p>
+              {n.photoUrl && (
+                <div className="jar-opened-photo own-preview">
+                  <img src={n.photoUrl} alt="Ảnh bạn đã gửi" loading="lazy" />
+                </div>
+              )}
             </details>
           ) : (
             <small>Chưa đến ngày mở.</small>

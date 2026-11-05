@@ -155,6 +155,7 @@ export default function JournalDashboard({
     title: string;
   } | null>(null);
   const [holidayDraft, setHolidayDraft] = useState<Partial<JournalContent>>();
+  const [locationDraft, setLocationDraft] = useState<Partial<JournalContent>>();
   const [convertingPlan, setConvertingPlan] = useState(false);
   const loadVersion = useRef(0);
   const [contentVersion, setContentVersion] = useState(0);
@@ -1657,6 +1658,17 @@ export default function JournalDashboard({
             setMapOpen(false);
             void openMapEntry(entry);
           }}
+          onAddAtProvince={(province) => {
+            setMapOpen(false);
+            setLocationDraft({
+              location: {
+                label: province.name,
+                latitude: province.lat,
+                longitude: province.lng,
+              },
+            });
+            setEditing(null);
+          }}
         />
       )}
       {photoPreview && (
@@ -1698,13 +1710,14 @@ export default function JournalDashboard({
                 userId
           }
           initial={editing}
-          draft={editing === null ? holidayDraft : undefined}
+          draft={editing === null ? { ...holidayDraft, ...locationDraft } : undefined}
           initialKind={newKind}
           date={selected}
           onClose={() => {
             setEditing(undefined);
             setConvertingPlan(false);
             setHolidayDraft(undefined);
+            setLocationDraft(undefined);
           }}
           onUpdated={update}
           onSaved={(entry) => {
@@ -1712,6 +1725,7 @@ export default function JournalDashboard({
             setEditing(undefined);
             setConvertingPlan(false);
             setHolidayDraft(undefined);
+            setLocationDraft(undefined);
             setSelected(entry.date);
             setMonth(entry.date.slice(0, 7));
           }}

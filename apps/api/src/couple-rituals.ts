@@ -1,4 +1,5 @@
-import { createHash, randomInt } from 'node:crypto';
+import { UploadReceipts, type UploadCommit } from './upload-receipts.js';
+import { createHash, randomInt, randomUUID } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
@@ -22,6 +23,8 @@ import type { Repository } from './database.js';
 import type { JournalService } from './journal.js';
 import type { AccountDeletion } from './account-deletion.js';
 import type { ResourcePolicy } from './resource-policy.js';
+import type { MediaStore } from './storage.js';
+import { normalizePhoto } from './images.js';
 const TZ = 'Asia/Ho_Chi_Minh';
 const digest = (s: string) => createHash('sha256').update(s).digest('hex');
 // Legacy sealed notes included an implicit author vote. Require fresh explicit votes.
@@ -35,13 +38,24 @@ function uuid(s: string) {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 }
 export class CoupleRituals {
+  private clock: () => Date;
+  private store?: MediaStore;
   constructor(
     private db: Repository,
     private journal: JournalService,
     private deletion: AccountDeletion,
     private resources: ResourcePolicy,
-    private clock = () => new Date(),
-  ) {}
+    storeOrClock?: MediaStore | (() => Date),
+    clock?: () => Date,
+  ) {
+    if (typeof storeOrClock === 'function') {
+      this.clock = storeOrClock;
+      this.store = undefined;
+    } else {
+      this.store = storeOrClock;
+      this.clock = clock || (() => new Date());
+    }
+  }
   private now() {
     return this.clock().toISOString();
   }
@@ -143,7 +157,7 @@ export class CoupleRituals {
     const changed = n.epoch !== c.epoch,
       opened = !!n.openedAt || this.now() >= n.unlockAt,
       author = c.members.find((m) => m.id === n.authorId);
-    const { epoch: _, participants: __, text, approvals: _approvals, ...view } = n;
+    const { epoch: _, participants: __, text, photoUrl, approvals: _approvals, ...view } = n;
     const approvals = explicitApprovals(n);
     return {
       ...view,
@@ -152,7 +166,8 @@ export class CoupleRituals {
       mine: n.authorId === actor,
       authorName: author?.displayName || 'Thành viên trước đây',
       authorAvatarUrl: author?.avatarUrl,
-      ...(opened || n.authorId === actor ? { text } : {}),
+      hasPhoto: !!photoUrl,
+      ...(opened || n.authorId === actor ? { text, photoUrl } : {}),
       approvalCount: approvals.length,
       participantCount: n.participants.length,
       approvedByMe: approvals.includes(actor),
@@ -368,11 +383,21 @@ export class CoupleRituals {
         if (
           existing.text !== input.text ||
           existing.mode !== input.mode ||
+          existing.photoUrl !== input.photoUrl ||
           (input.openDate &&
             existing.unlockAt !== new Date(input.openDate + 'T00:00:00+07:00').toISOString())
         )
           throw new ConflictException('Mã gửi đã được sử dụng.');
         return this.note(actor, existing, c);
+      }
+      let photo: { assetId: string; spaceId: string; bytes: number; noteId?: string } | undefined;
+      if (input.photoUrl) {
+        const match = input.photoUrl.match(/^\/api\/together\/([\w-]+)\/assets\/([\w-]+)$/);
+        if (!match || match[1] !== spaceId)
+          throw new BadRequestException('Ảnh không thuộc lọ này.');
+        photo = await this.db.owned('love-photo', match[2], actor);
+        if (!photo || photo.spaceId !== spaceId || photo.noteId)
+          throw new BadRequestException('Ảnh không thuộc bạn hoặc đã được sử dụng.');
       }
       await this.resources.admitTextRecord(actor, 'love-note', 500);
       if ((await this.listNotes(spaceId)).length >= 1000)
@@ -393,6 +418,7 @@ export class CoupleRituals {
         participants: c.ids,
         authorId: actor,
         text: input.text,
+        photoUrl: input.photoUrl,
         mode: input.mode,
         approvals: [],
         consentVersion: 2,
@@ -401,8 +427,129 @@ export class CoupleRituals {
         revision: 0,
       };
       await this.db.insert('love-note', id, actor, note);
+      if (
+        photo &&
+        !(await this.db.compareAndSwap('love-photo', photo.assetId, actor, 0, {
+          ...photo,
+          noteId: id,
+        }))
+      )
+        throw new ConflictException('Ảnh vừa thay đổi.');
       return this.note(actor, note, c);
     });
+  }
+  private async uploadedPhoto(actor: string, spaceId: string, assetId: string) {
+    const photo = await this.db.owned<{ spaceId: string }>('love-photo', assetId, actor);
+    return photo?.spaceId === spaceId
+      ? { assetId, url: '/api/together/' + spaceId + '/assets/' + assetId }
+      : undefined;
+  }
+  async uploadPhotoStatus(actor: string, spaceId: string, uploadId: unknown, hash: unknown) {
+    await this.context(actor, spaceId);
+    return new UploadReceipts(this.db, this.deletion).status(
+      actor,
+      'love-photo:' + spaceId,
+      uploadId,
+      hash,
+      (id) => this.uploadedPhoto(actor, spaceId, id),
+    );
+  }
+  async uploadPhoto(actor: string, spaceId: string, file: Express.Multer.File, uploadId?: unknown) {
+    await this.context(actor, spaceId);
+    if (uploadId)
+      return new UploadReceipts(this.db, this.deletion).run(
+        actor,
+        'love-photo:' + spaceId,
+        uploadId,
+        file.buffer,
+        (id) => this.uploadedPhoto(actor, spaceId, id),
+        (commit) => this.storePhoto(actor, spaceId, file, commit),
+      );
+    return this.storePhoto(actor, spaceId, file, (_id, fn) => fn());
+  }
+  private async storePhoto(
+    actor: string,
+    spaceId: string,
+    file: Express.Multer.File,
+    commit: UploadCommit,
+  ) {
+    await this.context(actor, spaceId);
+    if (!this.store) throw new BadRequestException('Hệ thống lưu trữ ảnh chưa sẵn sàng.');
+    let result: Awaited<ReturnType<typeof normalizePhoto>>;
+    try {
+      result = await normalizePhoto(file.buffer, 'webp');
+    } catch {
+      throw new BadRequestException('Ảnh không hợp lệ; hỗ trợ JPEG/PNG/WebP tối đa 40 megapixel.');
+    }
+    const assetId = randomUUID();
+    const key = `uploads/${assetId}.webp`;
+    const op = await this.deletion.begin(actor, key);
+    try {
+      const expired = await this.write(actor, spaceId, async () => {
+        const rows = await this.db.list<{ assetId: string; noteId?: string; uploadedAt?: number }>(
+          'love-photo',
+          actor,
+        );
+        const unused: typeof rows = [];
+        for (const photo of rows) {
+          if (
+            photo.noteId
+              ? !(await this.db.get('love-note', photo.noteId))
+              : photo.uploadedAt && photo.uploadedAt < Date.now() - 86400000
+          )
+            unused.push(photo);
+        }
+        for (const photo of unused) await this.db.remove('love-photo', photo.assetId);
+        return unused.map((p) => 'uploads/' + p.assetId + '.webp');
+      });
+      await this.deletion.track(op, expired);
+      for (const old of expired) {
+        try {
+          await this.resources.remove(old);
+        } catch {}
+      }
+      await this.resources.reserve(actor, key, result.data.length);
+      await this.store.put(key, result.data, 'image/webp', AbortSignal.timeout(120000));
+      await this.write(actor, spaceId, () =>
+        commit(assetId, async () => {
+          await this.resources.admitTextRecord(actor, 'love-photo', 50);
+          await this.db.insert('love-photo', assetId, actor, {
+            assetId,
+            spaceId,
+            bytes: result.data.length,
+            uploadedAt: Date.now(),
+          });
+        }),
+      );
+      return {
+        assetId,
+        url: `/api/together/${spaceId}/assets/${assetId}`,
+      };
+    } catch (error) {
+      try {
+        if (!(await this.db.get('love-photo', assetId))) await this.resources.remove(key);
+      } catch {
+        /* Uncertain commit: retain for reconciliation. */
+      }
+      throw error;
+    } finally {
+      await this.deletion.end(op);
+    }
+  }
+  async notePhotoKey(actor: string, spaceId: string, assetId: string) {
+    await this.context(actor, spaceId);
+    z.uuid().parse(assetId);
+    const key = `uploads/${assetId}.webp`;
+    const notes = await this.listNotes(spaceId);
+    const target = notes.find((n) => n.photoUrl === `/api/together/${spaceId}/assets/${assetId}`);
+    if (!target) throw new NotFoundException('Không tìm thấy ảnh trong lọ điều thương.');
+    if (target.authorId !== actor && target.epoch !== (await this.context(actor, spaceId)).epoch)
+      throw new ForbiddenException('Thành viên không còn phù hợp với lời đã gửi.');
+    const opened = !!target.openedAt || this.now() >= target.unlockAt;
+    if (!opened && target.authorId !== actor) {
+      throw new ForbiddenException('Lời thương chứa ảnh này chưa đến ngày mở.');
+    }
+    return key;
   }
   async draw(actor: string, spaceId: string) {
     return this.write(actor, spaceId, async (c) => {
@@ -443,12 +590,27 @@ export class CoupleRituals {
   }
   async removeNote(actor: string, spaceId: string, id: string, body: unknown) {
     const input = revisionInput.parse(body);
-    return this.write(actor, spaceId, async () => {
-      const n = await this.db.owned<LoveNote>('love-note', id, actor);
-      if (!n || n.spaceId !== spaceId) throw new NotFoundException();
-      if (n.revision !== input.expectedRevision) throw new ConflictException();
-      await this.db.remove('love-note', id);
+    const operation = await this.deletion.begin(actor);
+    try {
+      const removed = await this.write(actor, spaceId, async () => {
+        const n = await this.db.owned<LoveNote>('love-note', id, actor);
+        if (!n || n.spaceId !== spaceId) throw new NotFoundException();
+        if (n.revision !== input.expectedRevision) throw new ConflictException();
+        await this.db.remove('love-note', id);
+        const assetId = n.photoUrl?.split('/').at(-1);
+        if (assetId) await this.db.remove('love-photo', assetId);
+        return { assetId };
+      });
+      if (removed.assetId) {
+        try {
+          await this.resources.remove('uploads/' + removed.assetId + '.webp');
+        } catch {
+          /* Managed-media cleanup retries orphaned objects. */
+        }
+      }
       return { ok: true };
-    });
+    } finally {
+      await this.deletion.end(operation);
+    }
   }
 }

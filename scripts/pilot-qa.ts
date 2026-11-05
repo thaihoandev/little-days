@@ -6,6 +6,7 @@ import path from 'node:path';
 import { ensureBrowser } from '@remotion/renderer';
 
 const suites = [
+  ['priority-flows', 'scripts/smoke-priority-flows.ts'],
   ['mail-design', 'scripts/smoke-mail-design.ts'],
   ['daily-polish', 'scripts/smoke-daily-polish.ts'],
   ['weekly-experience', 'scripts/smoke-weekly-experience.ts'],

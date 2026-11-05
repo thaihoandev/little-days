@@ -257,7 +257,7 @@ export default function App() {
   }, [pathname, loading, user?.id, albumOpenVersion]);
   useEffect(() => {
     if (!token && !authLink)
-      document.title = `${active?.title || { home: 'Hôm nay', timeline: 'Dòng thời gian', calendar: 'Lịch của mình', albums: 'Album của mình', photos: 'Ảnh đã lưu', together: 'Góc chúng mình' }[section]} · Little Days`;
+      document.title = `${active?.title || { home: 'Hôm nay', timeline: 'Dòng thời gian', calendar: 'Lịch của mình', albums: 'Album của mình', photos: 'Ảnh đã lưu', together: 'Câu hỏi & Lọ điều thương' }[section]} · Little Days`;
   }, [section, active?.title, token, authLink]);
   useEffect(() => {
     if (!toast) return;
@@ -342,7 +342,9 @@ export default function App() {
           <div className="workspace-label">GÓC NHỎ CỦA BẠN</div>
           <nav>
             <button
-              className={section === 'home' ? 'nav-item active' : 'nav-item'}
+              className={
+                section === 'home' || section === 'together' ? 'nav-item active' : 'nav-item'
+              }
               onClick={() => setSection('home')}
             >
               <Heart size={19} />
@@ -377,15 +379,6 @@ export default function App() {
               <Images size={19} />
               <span className="nav-label">Ảnh đã lưu</span>
             </button>
-            {user?.coupleRitualsVersion === 1 && (
-              <button
-                className={section === 'together' ? 'nav-item active' : 'nav-item'}
-                onClick={() => setSection('together')}
-              >
-                <Sparkles size={19} />
-                <span className="nav-label">Góc chúng mình</span>
-              </button>
-            )}
           </nav>
           <div className="sidebar-note">
             <Flower2 size={30} />
@@ -451,7 +444,7 @@ export default function App() {
                   calendar: 'Lịch',
                   albums: 'Thư viện album',
                   photos: 'Ảnh đã lưu',
-                  together: 'Góc chúng mình',
+                  together: 'Câu hỏi & Lọ điều thương',
                 }[section]
               }
             </span>
@@ -491,11 +484,12 @@ export default function App() {
           </header>
           <PwaInstallBanner />
           {user && section === 'together' && (
-            <Suspense fallback={<p role="status">Đang mở Góc chúng mình…</p>}>
+            <Suspense fallback={<p role="status">Đang mở Câu hỏi & Lọ điều thương…</p>}>
               <TogetherPage
                 key={user.id}
                 userId={user.id}
                 ready={user.coupleRitualsVersion === 1}
+                photoEnabled={user.jarPhotoVersion === 1}
                 search={search}
                 onNavigate={navigate}
                 onAccount={() => setModal('account')}

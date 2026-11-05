@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readdir, readFile, mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import sharp from 'sharp';
+import { decorationCatalog } from '../packages/domain/decorations.js';
 const origin = process.env.SMOKE_UI_ORIGIN!,
   dataDir = process.env.AUTH_UI_DATA_DIR!;
 if (
@@ -80,7 +81,9 @@ try {
         .getByRole('button', { name: /Câu hỏi dành cho hai người/ })
         .click();
       await pb.goto(origin + '/together');
-      await expect(pa.getByRole('heading', { name: 'Góc chúng mình', exact: true })).toBeVisible();
+      await expect(
+        pa.getByRole('heading', { name: 'Câu hỏi & Lọ điều thương', exact: true }),
+      ).toBeVisible();
       const field = pa.getByLabel('Câu trả lời riêng của bạn', { exact: true });
       await field.fill('Muốn cùng bạn đi dạo.');
       await field.press('Home');
@@ -130,6 +133,36 @@ try {
       await pa.reload();
       await expect(pa.getByLabel('Ngày mở lời thương', { exact: true })).toHaveValue(future);
       await expect(pa.getByLabel('Lời nhắn bỏ vào lọ', { exact: true })).toHaveValue(secret);
+      const photoPath = path.resolve('test-results/ritual-photo-' + width + '.png');
+      await writeFile(
+        photoPath,
+        await sharp({
+          create: { width: 240, height: 180, channels: 3, background: '#b4c7a5' },
+        })
+          .png()
+          .toBuffer(),
+      );
+      await pa.getByLabel('Chọn ảnh gửi kèm lời thương', { exact: true }).setInputFiles(photoPath);
+      let photoUploads = 0;
+      const uploadPath = '**/api/together/' + alice.id + '/assets';
+      await pa.route(uploadPath, async (route) => {
+        photoUploads++;
+        // Chromium omits disk-backed file bytes from intercepted postDataBuffer().
+        // Replay the same fixture bytes with the browser's receipt token, then lose the response.
+        const response = await a.request.post(route.request().url(), {
+          headers: { 'x-upload-id': route.request().headers()['x-upload-id'], origin },
+          multipart: {
+            file: {
+              name: path.basename(photoPath),
+              mimeType: 'image/png',
+              buffer: await readFile(photoPath),
+            },
+          },
+        });
+        assert.equal(response.status(), 201, await response.text());
+        await pa.unroute(uploadPath);
+        await route.abort('failed');
+      });
       const lostResponse = async (route: import('@playwright/test').Route) => {
         const result = await route.fetch();
         assert.equal(result.status(), 201);
@@ -141,10 +174,22 @@ try {
       await expect(pa.getByLabel('Lời nhắn bỏ vào lọ', { exact: true })).toHaveValue(secret);
       assert.equal((await (await a.request.get(root)).json()).jarTotal, 1);
       await pa.unroute('**/api/together/' + alice.id + '/notes', lostResponse);
+      // Recover a confirmed photo and note after both responses were lost and the page reloaded.
       await pa.reload();
       await expect(pa.getByLabel('Lời nhắn bỏ vào lọ', { exact: true })).toHaveValue(secret);
+      await expect(
+        pa.getByRole('button', { name: 'Bỏ lời thương vào lọ', exact: true }),
+      ).toBeDisabled();
+      await pa.getByLabel('Chọn ảnh gửi kèm lời thương', { exact: true }).setInputFiles(photoPath);
       await pa.getByRole('button', { name: 'Bỏ lời thương vào lọ', exact: true }).click();
       await expect(pa.getByLabel('Lời nhắn bỏ vào lọ', { exact: true })).toHaveValue('');
+      assert.equal(photoUploads, 1);
+      assert.equal((await (await a.request.get(root)).json()).jarTotal, 1);
+      await pa.reload();
+      await expect(pa.getByLabel('Lời nhắn bỏ vào lọ', { exact: true })).toHaveValue('');
+      const ownNote = (await (await a.request.get(root)).json()).jar[0];
+      assert.equal(ownNote.hasPhoto, true);
+      assert.equal((await b.request.get(origin + ownNote.photoUrl)).status(), 403);
       await pb
         .locator('.ritual-tabs')
         .getByRole('button', { name: 'Lọ điều thương', exact: true })
@@ -162,6 +207,8 @@ try {
       await pa.getByRole('button', { name: 'Đồng ý mở sớm', exact: true }).click();
       await pb.evaluate(() => window.dispatchEvent(new Event('focus')));
       await expect(pb.locator('.jar-card.opened')).toContainText(secret);
+      await expect(pb.locator('.jar-card.opened img')).toBeVisible();
+      assert.equal((await b.request.get(origin + ownNote.photoUrl)).status(), 200);
       await pa.evaluate(() => window.dispatchEvent(new Event('focus')));
       await expect(pa.locator('.jar-card.opened')).toContainText(secret);
       await pa.screenshot({ path: 'test-results/ritual-jar-' + width + '.png', fullPage: true });
@@ -213,6 +260,7 @@ try {
       await pb.evaluate(() => window.dispatchEvent(new Event('focus')));
       await expect(pb.getByText(secret, { exact: true })).toHaveCount(0);
       assert.equal((await b.request.get(root)).status(), 404);
+      assert.equal((await b.request.get(origin + ownNote.photoUrl)).status(), 404);
       const album = await (
         await a.request.post(origin + '/api/albums', { data: { title: 'Trang trí vừa vặn' } })
       ).json();
@@ -220,7 +268,7 @@ try {
       await pa.getByRole('button', { name: 'Trang trí', exact: true }).click();
       await expect
         .poll(() => pa.locator('.decoration-gallery img[data-normalized="true"]').count())
-        .toBe(42);
+        .toBe(decorationCatalog.filter((d) => !d.collection.startsWith('Ký hiệu')).length);
       await expect
         .poll(() =>
           pa

@@ -190,6 +190,12 @@ export class ResourcePolicy {
       if (previous && previous.owner !== owner) throw new Error('Referenced media owner mismatch.');
       refs.set(key, { owner, bytes: bytes ?? previous?.bytes });
     };
+    for (const row of await this.db.query(
+      "SELECT owner,payload FROM records WHERE kind='love-photo'",
+    )) {
+      const photo = JSON.parse(String(row.payload));
+      add('uploads/' + photo.assetId + '.webp', String(row.owner), photo.bytes);
+    }
     const albums = await this.db.query(
       "SELECT owner,payload FROM records WHERE kind='album' UNION ALL SELECT owner,payload FROM album_versions",
     );

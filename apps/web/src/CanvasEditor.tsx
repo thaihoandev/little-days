@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Stage, Layer, Group, Rect, Text, Image as KonvaImage, Transformer } from 'react-konva';
 import { Path } from 'react-konva';
 import Konva from 'konva';
-import { Download } from 'lucide-react';
+import { Download, Share2 } from 'lucide-react';
+import { ShareImageModal } from './ShareImageModal.js';
 import { bounds, expandSelection } from '../../../packages/domain/layout.js';
 import { elementSchema } from '../../../packages/domain/index.js';
 import { decoration } from '../../../packages/domain/decorations.js';
@@ -163,6 +164,7 @@ export function CanvasEditor({
   keepPhotoRatio,
   zoom,
   onZoomChange,
+  onCapture,
 }: {
   album: Album;
   page: Page;
@@ -175,9 +177,22 @@ export function CanvasEditor({
   keepPhotoRatio: boolean;
   zoom: number;
   onZoomChange: (zoom: number) => void;
+  onCapture?: (capture: () => Promise<string>) => void;
 }) {
   const [exporting, setExporting] = useState(false),
-    [exportError, setExportError] = useState('');
+    [exportError, setExportError] = useState(''),
+    [shareOpen, setShareOpen] = useState(false);
+  const [exportPage, setExportPage] = useState<Page | null>(null);
+  const captureWaiter = useRef<((capture: () => Promise<string>) => void) | null>(null);
+  const capturePage = (target: Page) =>
+    new Promise<string>((resolve, reject) => {
+      captureWaiter.current = (capture) => {
+        void capture()
+          .then(resolve, reject)
+          .finally(() => setExportPage(null));
+      };
+      setExportPage(target);
+    });
   const wrap = useRef<HTMLDivElement>(null);
   const stage = useRef<Konva.Stage>(null);
   const transformer = useRef<Konva.Transformer>(null);
@@ -422,6 +437,46 @@ export function CanvasEditor({
     for (const e of es) nodeFor(e.id)?.position({ x: e.x + dx, y: e.y + dy });
     setGuides(nextGuides);
   };
+  const ensureReady = async () => {
+    await document.fonts.ready;
+    const deadline = Date.now() + 12000;
+    const ready = () =>
+      page.elements
+        .filter((e) => {
+          if (e.visible === false) return false;
+          if (e.type === 'image') return !!e.assetId;
+          if (e.type === 'sticker') return !!decoration(e.decorationId);
+          const style = e.type === 'anniversary' && counterAppearance(e.counterStyle, e);
+          return !!style && !!counterMotif(e.counterStyle, e.width, e.height, style.accent);
+        })
+        .every((e) => {
+          const image = (nodeFor(e.id) as Konva.Group | undefined)?.findOne('Image') as
+            Konva.Image | undefined;
+          return !!image?.image();
+        });
+    while (!ready() && Date.now() < deadline)
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    if (!ready()) throw Error('Ảnh chưa tải xong. Đợi một chút rồi thử lại.');
+  };
+  useEffect(() => {
+    onCapture?.(async () => {
+      await ensureReady();
+      const output = new Konva.Stage({
+        container: document.createElement('div'),
+        width: 720,
+        height: 900,
+      });
+      try {
+        const layer = stage.current!.getLayers()[0].clone() as Konva.Layer;
+        layer.find('Transformer,.editor-overlay').forEach((node) => node.destroy());
+        output.add(layer);
+        output.draw();
+        return output.toDataURL({ pixelRatio: 1 });
+      } finally {
+        output.destroy();
+      }
+    });
+  }, [onCapture, page.id]);
   return (
     <div className="canvas-scroll" ref={wrap}>
       <div className="canvas-export">
@@ -480,6 +535,11 @@ export function CanvasEditor({
         >
           <Download size={15} />
           {exporting ? 'Đang tạo ảnh…' : 'Tải trang PNG'}
+        </button>
+
+        <button type="button" className="button quiet" onClick={() => setShareOpen(true)}>
+          <Share2 size={15} />
+          Chia sẻ & Xuất ảnh Story
         </button>
         {exportError && <small role="alert">{exportError}</small>}
       </div>
@@ -751,6 +811,39 @@ export function CanvasEditor({
       <div className="canvas-caption canvas-touch-hint">
         Dùng hai ngón để phóng to/thu nhỏ · Chạm mức % để về 100%
       </div>
+      {exportPage && (
+        <div
+          inert
+          aria-hidden="true"
+          style={{ position: 'fixed', left: -10000, top: 0, width: 1000, height: 1100 }}
+        >
+          <CanvasEditor
+            key={exportPage.id}
+            album={album}
+            page={exportPage}
+            selected={[]}
+            onSelect={() => {}}
+            onPatchMany={() => {}}
+            referenceDate={referenceDate}
+            onEditText={() => {}}
+            onEditPhoto={() => {}}
+            keepPhotoRatio
+            zoom={1}
+            onZoomChange={() => {}}
+            onCapture={(capture) => captureWaiter.current?.(capture)}
+          />
+        </div>
+      )}
+      {shareOpen && (
+        <ShareImageModal
+          album={album}
+          page={page}
+          stageRef={stage}
+          ensureReady={ensureReady}
+          renderPage={capturePage}
+          onClose={() => setShareOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -14,6 +14,10 @@ export const jarInput = z.object({
   text: z.string().trim().min(1).max(1200),
   mode: z.enum(['month-end', 'scheduled']),
   openDate: dateString.optional(),
+  photoUrl: z
+    .string()
+    .regex(/^\/api\/together\/[\w-]+\/assets\/[\w-]+$/)
+    .optional(),
 });
 export type CoupleMember = { id: string; displayName: string; avatarUrl?: string };
 export type QuestionRound = {
@@ -48,6 +52,7 @@ export type LoveNote = {
   participants: string[];
   authorId: string;
   text: string;
+  photoUrl?: string;
   mode: keyof typeof jarModes;
   approvals: string[];
   consentVersion?: 2;
@@ -58,6 +63,8 @@ export type LoveNote = {
 };
 export type LoveNoteView = Omit<LoveNote, 'epoch' | 'participants' | 'text' | 'approvals'> & {
   text?: string;
+  photoUrl?: string;
+  hasPhoto?: boolean;
   authorName: string;
   authorAvatarUrl?: string;
   mine: boolean;
