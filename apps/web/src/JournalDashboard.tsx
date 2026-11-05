@@ -154,6 +154,7 @@ export default function JournalDashboard({
   const [holidayDraft, setHolidayDraft] = useState<Partial<JournalContent>>();
   const [convertingPlan, setConvertingPlan] = useState(false);
   const loadVersion = useRef(0);
+  const [contentVersion, setContentVersion] = useState(0);
   const [sharingReady, setSharingReady] = useState(false);
   const [details, setDetails] = useState<{ entry: JournalEntry; tab: 'social' | 'history' } | null>(
       null,
@@ -545,6 +546,7 @@ export default function JournalDashboard({
   };
   const update = (entry: JournalEntry) => {
     loadVersion.current++;
+    setContentVersion((value) => value + 1);
     setEntries((previous) => [entry, ...previous.filter((e) => e.id !== entry.id)]);
     if (paged) {
       feed.refresh();
@@ -574,6 +576,7 @@ export default function JournalDashboard({
         body: JSON.stringify({ expectedRevision: entry.revision }),
       });
       loadVersion.current++;
+      setContentVersion((value) => value + 1);
       setEntries((previous) => previous.filter((e) => e.id !== entry.id));
       if (paged) {
         feed.refresh();
@@ -690,7 +693,7 @@ export default function JournalDashboard({
         <WeeklyRecap
           spaces={sharing.spaces || []}
           ready={sharingReady}
-          refreshKey={syncState.current?.version || ''}
+          refreshKey={`${syncState.current?.version || ''}:${contentVersion}`}
           onCreated={onCreatedAlbum}
           onViewRecaps={onViewRecaps}
           onAddDay={(date, space) => {
