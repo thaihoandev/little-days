@@ -10,6 +10,7 @@
 - Cài màn hình chính: có hướng dẫn khi không có prompt native; prompt bị đóng không được gọi lại cùng event. iPad dạng user-agent Mac được nhận diện; chỉ ghi đã cài khi browser báo `appinstalled` hoặc đang standalone. Service worker chỉ chuyển tiếp mạng và hiện trang ngoại tuyến chung, không cache API/media hoặc thông tin cá nhân. Cài app không đồng nghĩa có push notification hay dữ liệu offline.
 
 - Bỏ mục “Góc chúng mình” khỏi thanh điều hướng. Câu hỏi và Lọ điều thương vẫn mở từ Hôm nay; giữ đường dẫn cũ để liên kết đã gửi tiếp tục hoạt động.
+- Thanh điều hướng dưới nằm dưới lớp popup để không che nút xác nhận khi tạo sổ/thiệp trên điện thoại.
 
 ## Kiểm chứng
 

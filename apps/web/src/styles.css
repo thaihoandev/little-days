@@ -1865,7 +1865,7 @@ label > span {
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
-    z-index: 100;
+    z-index: 20;
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
   }
