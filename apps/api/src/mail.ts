@@ -5,7 +5,7 @@ import nodemailer from 'nodemailer';
 import { httpMailer, type MailHttpOptions } from './http-mail.js';
 export { MailDeliveryError } from './http-mail.js';
 
-export type Mail = { to: string; subject: string; text: string };
+export type Mail = { to: string; subject: string; text: string; html?: string };
 export interface Mailer {
   readonly kind: string;
   send(mail: Mail): Promise<void>;

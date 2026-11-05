@@ -8,6 +8,7 @@ const message = {
   to: 'recipient@example.test',
   subject: 'Xác minh email Little Days',
   text: 'Mở https://app.example/#auth=verify-email&token=private-fixture-token',
+  html: '<p>Mở liên kết trong Little Days.</p>',
 };
 const config = (provider: string) => ({
   NODE_ENV: 'production',
@@ -40,6 +41,7 @@ for (const provider of ['brevo', 'resend']) {
           const body = JSON.parse(String(init?.body));
           assert.equal(body.subject, message.subject);
           assert.equal(provider === 'brevo' ? body.textContent : body.text, message.text);
+          assert.equal(provider === 'brevo' ? body.htmlContent : body.html, message.html);
           assert.deepEqual(body.to, provider === 'brevo' ? [{ email: message.to }] : [message.to]);
           if (provider === 'brevo')
             assert.deepEqual(body.sender, { name: 'Little Days', email: 'sender@example.test' });

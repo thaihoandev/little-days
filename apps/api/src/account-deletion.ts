@@ -422,7 +422,7 @@ export class AccountDeletion {
               [authHash(value)],
             );
         for (const row of await this.db.query(
-          "SELECT kind,id,payload FROM records WHERE kind IN ('journal-comment','journal-reaction','reminder-rule','reminder-notification','reminder-email-receipt')",
+          "SELECT kind,id,payload FROM records WHERE kind IN ('journal-comment','journal-reaction','reminder-rule','reminder-notification','reminder-email-receipt','activity-mail')",
         ))
           if (
             (JSON.parse(String(row.payload)) as { timelineOwner: string }).timelineOwner === owner

@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
+import { mailContent } from './mail-templates.js';
 import { z } from 'zod';
 import type { Album } from '../../../packages/domain/index.js';
 import { occursOn } from '../../../packages/domain/journal.js';
@@ -460,7 +461,16 @@ export class ReminderService {
           await this.mailer.send({
             to: claim.email,
             subject: 'Little Days · Có một ngày bạn muốn nhớ',
-            text: `Bạn đã bật lời nhắc ${notice.offset ? `trước ${notice.offset} ngày` : 'đúng ngày'} cho một kỉ niệm vào ${notice.occurrenceDate}.\n\nMở lịch riêng tư của bạn: ${new URL('/calendar?date=' + notice.occurrenceDate, this.appOrigin).href}\n\nBạn có thể đổi hoặc tắt lời nhắc tại biểu tượng chuông → Cài đặt. Thư không chứa ảnh hoặc lời nhắn riêng tư.`,
+            ...mailContent({
+              eyebrow: 'MỘT NGÀY ĐÁNG MONG CHỜ',
+              title: 'Có một ngày bạn muốn nhớ',
+              paragraphs: [
+                `Bạn đã bật lời nhắc ${notice.offset ? `trước ${notice.offset} ngày` : 'đúng ngày'} cho một kỉ niệm vào ${notice.occurrenceDate}. Hãy dành một chút thời gian để chuẩn bị điều dễ thương cho ngày đó.`,
+              ],
+              action: 'Mở lịch của mình',
+              url: new URL('/calendar?date=' + notice.occurrenceDate, this.appOrigin).href,
+              note: 'Thư không chứa ảnh hoặc lời nhắn riêng tư. Bạn có thể đổi hoặc tắt email lời nhắc tại Chuông → Cài đặt.',
+            }),
           });
       } catch (error) {
         delivery =

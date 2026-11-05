@@ -143,6 +143,11 @@ try {
   assert.equal((await alice('/albums')).status, 401);
   assert.equal((await second('/albums')).status, 401);
   assert.equal(
+    (await messages()).filter((mail) => mail.subject.includes('Mật khẩu của bạn vừa thay đổi'))
+      .length,
+    1,
+  );
+  assert.equal(
     (await bob('/auth/reset-password', { token: reset, password: 'replay-password-123' })).status,
     400,
   );
@@ -203,6 +208,12 @@ try {
     201,
   );
   assert.equal((await final('/albums/' + album.id)).status, 200);
+  assert.equal(
+    (await messages()).filter((mail) => mail.subject.includes('Mật khẩu của bạn vừa thay đổi'))
+      .length,
+    3,
+    'password reset/change alerts survive the HTTP provider and restart flow',
+  );
   console.log(
     'PASS auth API (' +
       (driver || 'local mail') +

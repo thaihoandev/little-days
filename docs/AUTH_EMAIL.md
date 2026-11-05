@@ -11,6 +11,28 @@ Xóa tài khoản vĩnh viễn đã có trong **Tài khoản → Xóa tài kho�
 
 Mật khẩu dài 10–200 ký tự. Xác minh email hiện là trạng thái tài khoản; chưa khóa chức năng album hoặc đăng nhập đối với email chưa xác minh, để các tài khoản đã có tiếp tục dùng được. Chưa có magic link hoặc đổi email; xóa tài khoản đã có trong hướng dẫn riêng.
 
+## Mẫu thư và thông báo tự động — 05/11/2026
+
+Email người dùng dùng chung mẫu Little Days: nền giấy, xanh olive, nút hành động, hạn liên kết và bản chữ thuần dự phòng. Mẫu không tải ảnh/font từ xa hoặc gắn pixel theo dõi; không chèn ảnh, tên dấu mốc hay lời nhắn riêng tư vào email. Nội dung động và URL được escape; chỉ dùng liên kết HTTPS hoặc localhost QA.
+
+| Sự kiện | Khi gửi | Lựa chọn của người dùng |
+| --- | --- | --- |
+| Đăng ký / gửi lại xác minh | Sau khi tạo tài khoản hoặc bấm gửi lại | Liên kết 24 giờ; không tự đăng nhập |
+| Quên mật khẩu | Khi người dùng yêu cầu | Liên kết một lần, 15 phút; phản hồi không tiết lộ tài khoản tồn tại |
+| Đổi / đặt lại mật khẩu thành công | Thông báo bảo mật cho tài khoản đã xác minh | Không chứa mật khẩu hoặc token đăng nhập; lỗi mail không hoàn tác việc đổi mật khẩu |
+| Mời cùng xây dựng không gian | Sau khi lời mời đã lưu, người nhận đã xác minh, lời mời còn chờ | Mở link `/timeline?sharing=1` chỉ mở bảng lời mời; người nhận phải chủ động chấp nhận |
+| Nhắc ngày quan trọng | Lịch nhắc hiện có, sau giờ và theo múi giờ đã chọn | Cần bật email tổng và bật email cho lời nhắc; lịch chạy GitHub Actions vẫn cần được cấu hình như [hướng dẫn lời nhắc](REMINDERS_HOLIDAYS.md) |
+
+Không gửi email cho từng ảnh, chỉnh sửa sổ, bình luận, câu trả lời hoặc lời còn kín trong Lọ điều thương. Không tự đăng ký người dùng nhận email tiếp thị hay bản tổng kết tuần.
+
+Lời mời và cảnh báo mật khẩu dùng record `activity-mail` thuộc tài khoản nhận. Record chỉ có mã sự kiện băm, purpose, ID tài khoản nguồn/đích, thời điểm và kết quả; không giữ địa chỉ email, nội dung thư, mật khẩu hoặc token. Việc giữ chỗ gửi chạy trong transaction với khóa theo tài khoản và insert có điều kiện, rồi mới gọi provider ngoài transaction. Tối đa một lần thử cho cùng lời mời hoặc phiên bản mật khẩu, kể cả request đồng thời và khởi động lại API. Có giới hạn **5 thư/mục đích/người nhận/ngày UTC**; receipt quá 30 ngày được dọn khi có lần gửi tiếp theo. Không gửi lại lời mời cũ hơn 30 ngày.
+
+Các thông báo này được gửi ngay trong request đã tạo ra sự kiện, với timeout của adapter hiện có; không cần worker hoặc biến môi trường mới. Đây **không phải hàng đợi retry**: provider tiếp nhận chưa chứng minh vào Inbox, kết quả không rõ hoặc API dừng giữa chừng không được tự gửi lại. Lời mời luôn nằm trong ứng dụng; nếu cần tạo lời mời mới, chủ không gian có thể thu hồi rồi mời lại. Gửi lại xác minh/reset tiếp tục dùng luồng hiện có. Log `activity_mail_delivery` chỉ ghi purpose/provider/trạng thái đã khử nhạy cảm.
+
+Receipt đi cùng backup/restore để chống gửi trùng; API không tự phát mail khi khởi động hoặc khôi phục backup. Xóa tài khoản dọn receipt thuộc tài khoản và receipt ở tài khoản khác tham chiếu tới chủ nguồn. Quota ảnh/media không thay đổi vì không tạo object mới. `MAIL_DRIVER=disabled` giữ thông báo trong app và không gọi provider.
+
+Kiểm chứng: `tests/mail-templates.test.ts`, `tests/activity-mail.test.ts`, `tests/http-mail.test.ts`; PostgreSQL QA trong `test:postgres`; `test:mail` và `test:smtp` qua fixture localhost; suite `mail-design` xem 4 mẫu ở 680/390/320px, lời mời không gửi trùng, link không tự chấp nhận và thông báo mật khẩu. Đây là dữ liệu giả và preview Chromium, chưa phải kiểm thử Inbox/Outlook/Gmail thật.
+
 ## Bật mail trên Render Free: dùng Brevo HTTPS
 
 Chỉ cập nhật **Render → service API → Environment**. Không cần tạo thêm file `.env`; không cần cấu hình mail cho worker hoặc Vercel frontend.

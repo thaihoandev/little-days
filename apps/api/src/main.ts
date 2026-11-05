@@ -81,6 +81,7 @@ import { ImagePreviews } from './image-previews.js';
 import { ReminderService } from './reminders.js';
 import { holidaysForYear } from './holidays.js';
 import { timingSafeEqual } from 'node:crypto';
+import { ActivityMail } from './activity-mail.js';
 import { ProfileService } from './profiles.js';
 import { JournalSocial } from './journal-social.js';
 import { CoupleRituals } from './couple-rituals.js';
@@ -129,6 +130,7 @@ const security = new AccountSecurity(
   deletion,
 );
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
+const activityMail = new ActivityMail(repository, deletion, mailer, security.origin);
 // Call only after current ownership/membership and asset existence have been checked.
 function privateImageFresh(req: UserRequest, res: Response, identity: string) {
   const etag = `"${hash(identity)}"`;
@@ -380,7 +382,9 @@ class AppController {
   }
   @Post('timeline-sharing') async inviteTimeline(@Req() req: UserRequest, @Body() body: unknown) {
     await security.rateLimit('timeline-invite:' + req.userId, 10, 60000);
-    return journal.sharing.invite(req.userId, body);
+    const grant = await journal.sharing.invite(req.userId, body);
+    const emailDelivery = await activityMail.invitation(grant);
+    return { ...grant, emailDelivery };
   }
   @Patch('timeline-sharing/:id') async changeTimeline(
     @Req() req: UserRequest,
@@ -712,6 +716,7 @@ class AppController {
       })
       .parse(body);
     const updated = await security.consume(input.token, 'reset-password', input.password);
+    await activityMail.passwordChanged(updated);
     if (req.userId === updated.id) res.clearCookie('scrapbook_session', { path: '/' });
     return { ok: true, message: 'Đã đặt lại mật khẩu. Hãy đăng nhập bằng mật khẩu mới.' };
   }
@@ -733,6 +738,7 @@ class AppController {
       input.newPassword,
     );
     await issueSession(res, updated.id, updated.credentialVersion);
+    await activityMail.passwordChanged(updated);
     return { ok: true, message: 'Đã đổi mật khẩu và đăng xuất các phiên khác.' };
   }
   @Delete('auth/account') @HttpCode(202) async deleteAccount(

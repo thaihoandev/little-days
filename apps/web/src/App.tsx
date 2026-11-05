@@ -604,6 +604,7 @@ export default function App() {
               }}
               showHolidays={user.showHolidays !== false}
               focusDate={new URLSearchParams(search).get('date') || undefined}
+              sharingRequested={new URLSearchParams(search).get('sharing') === '1'}
               notifications={notifications?.userId === user.id ? notifications.items : []}
               onOpenDay={(date) => navigate('/calendar?date=' + date)}
               albums={albums}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { UsersRound, X } from 'lucide-react';
+import { UsersRound, X, LoaderCircle } from 'lucide-react';
 import type { TimelineGrant, TimelineSharingState } from '../../../packages/domain/journal.js';
 import { api } from './api.js';
 import { ConfirmDialog, useBodyScrollLock } from './Overlays.js';
@@ -61,14 +61,18 @@ export function TimelineSharingPanel({
     setError('');
     setMessage('');
     try {
-      await api('/timeline-sharing', {
+      const result = await api<{ emailDelivery?: string }>('/timeline-sharing', {
         method: 'POST',
         body: JSON.stringify({ email: email.trim() }),
       });
       await onChange();
       setEmail('');
       setMessage(
-        'Đã tạo lời mời. Người nhận mở Chia sẻ dòng thời gian trong tài khoản của họ để chấp nhận.',
+        result.emailDelivery === 'accepted'
+          ? 'Lời mời đã lưu và email thông báo đã được gửi. Người nhận tự quyết định tham gia trong Little Days.'
+          : result.emailDelivery === 'unknown'
+            ? 'Lời mời đã lưu. Chưa xác nhận được email; người nhận vẫn có thể mở lời mời trong ứng dụng.'
+            : 'Lời mời đã lưu trong ứng dụng. Người nhận mở Chia sẻ dòng thời gian để chấp nhận.',
       );
     } catch (e) {
       setError((e as Error).message);
@@ -132,7 +136,8 @@ export function TimelineSharingPanel({
               />
             </label>
             <button className="button primary" disabled={!verified || busy}>
-              Mời cùng chỉnh sửa
+              {busy && <LoaderCircle size={16} className="spin" />}
+              {busy ? 'Đang gửi lời mời…' : 'Mời cùng chỉnh sửa'}
             </button>
           </form>
         )}
@@ -157,7 +162,8 @@ export function TimelineSharingPanel({
             </section>
           ))}
         <p className="muted small">
-          Người nhận cần có tài khoản đã xác minh email. Lời mời hiển thị trong ứng dụng.
+          Người nhận cần có tài khoản đã xác minh email. Lời mời luôn được lưu trong ứng dụng; email
+          thông báo được gửi thêm khi dịch vụ sẵn sàng.
         </p>
         {error && (
           <p role="alert" className="error">

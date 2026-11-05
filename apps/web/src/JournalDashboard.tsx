@@ -119,6 +119,7 @@ export default function JournalDashboard({
   onOpenDay,
   homeActions,
   weeklyReady = false,
+  sharingRequested = false,
   onViewRecaps = () => {},
 }: {
   albums: Album[];
@@ -141,6 +142,7 @@ export default function JournalDashboard({
   onOpenDay?: (date: string) => void;
   homeActions?: import('react').ReactNode;
   weeklyReady?: boolean;
+  sharingRequested?: boolean;
   onViewRecaps?: () => void;
 }) {
   const [today, setToday] = useState(() =>
@@ -211,6 +213,9 @@ export default function JournalDashboard({
   };
   const [chosen, setChosen] = useState<string[]>([]),
     [creatingAlbum, setCreatingAlbum] = useState(false);
+  useEffect(() => {
+    if (sharingRequested && mode === 'timeline') setSharingOpen(true);
+  }, [sharingRequested, mode]);
   const chosenItems = useRef(new Map<string, Item>());
   const [photoPreview, setPhotoPreview] = useState<{
     photos: JournalEntry['assets'];

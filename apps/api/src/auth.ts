@@ -2,6 +2,7 @@ import { createHash, randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
 import { Repository } from './database.js';
 import { MailDeliveryError, type Mailer } from './mail.js';
 import { logEvent } from './observability.js';
+import { authMail } from './mail-templates.js';
 
 export const authHash = (value: string) => createHash('sha256').update(value).digest('hex');
 export type Account = {
@@ -152,13 +153,7 @@ export class AccountSecurity {
             purpose === 'verify-email'
               ? 'Xác minh email Little Days'
               : 'Đặt lại mật khẩu Little Days',
-          text:
-            (purpose === 'verify-email'
-              ? 'Xác minh email của bạn bằng liên kết dưới đây. Link có hiệu lực 24 giờ.'
-              : 'Bạn đã yêu cầu đặt lại mật khẩu. Link có hiệu lực 15 phút.') +
-            '\n\n' +
-            link +
-            '\n\nNếu không yêu cầu thao tác này, bạn có thể bỏ qua email.',
+          ...authMail(purpose, link),
         });
         logEvent('mail_delivery_accepted', { provider: this.mail.kind, purpose });
       } catch (error) {

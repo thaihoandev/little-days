@@ -78,6 +78,8 @@ try {
   assert.equal(received.length, 1);
   assert.match(received[0], /To: recipient@example.test/);
   assert.match(received[0], /Subject: SMTP fixture delivery/);
+  assert.match(received[0], /multipart\/alternative/i);
+  assert.match(received[0], /text\/html/i);
   console.log('PASS SMTP: trusted TLS connection, authenticated delivery, local recipient only.');
 } finally {
   await new Promise<void>((resolve) => server.close(() => resolve()));

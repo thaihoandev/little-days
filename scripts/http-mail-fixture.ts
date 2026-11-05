@@ -22,7 +22,13 @@ export async function startHttpMailFixture(root: string, provider: 'brevo' | 're
         to = provider === 'brevo' ? mail.to[0].email : mail.to[0],
         text = provider === 'brevo' ? mail.textContent : mail.text;
       assert.match(to, /@example\.test$/);
-      assert.match(text, /http:\/\/127\.0\.0\.1:5359\/#auth=/);
+      if (mail.subject === 'Little Days · Mật khẩu của bạn vừa thay đổi')
+        assert.match(text, /http:\/\/127\.0\.0\.1:5359\/today/);
+      else assert.match(text, /http:\/\/127\.0\.0\.1:5359\/#auth=/);
+      const html = provider === 'brevo' ? mail.htmlContent : mail.html;
+      assert.equal(typeof html, 'string');
+      assert.ok(html.includes('<html lang="vi">'));
+      assert.ok(!/<(?:script|img|iframe)\b/i.test(html));
       const id = crypto.randomUUID();
       await mkdir(path.join(root, 'mail'), { recursive: true });
       await writeFile(
@@ -33,6 +39,7 @@ export async function startHttpMailFixture(root: string, provider: 'brevo' | 're
           to,
           subject: mail.subject,
           text,
+          html,
         }),
         { flag: 'wx', mode: 0o600 },
       );

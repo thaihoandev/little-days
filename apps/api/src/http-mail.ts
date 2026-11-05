@@ -87,12 +87,14 @@ export function httpMailer(
                   to: [{ email: mail.to }],
                   subject: mail.subject,
                   textContent: mail.text,
+                  ...(mail.html ? { htmlContent: mail.html } : {}),
                 }
               : {
                   from: from.name ? `${from.name} <${from.email}>` : from.email,
                   to: [mail.to],
                   subject: mail.subject,
                   text: mail.text,
+                  ...(mail.html ? { html: mail.html } : {}),
                 },
           ),
         });
