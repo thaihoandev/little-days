@@ -10,7 +10,7 @@ import {
   type WeeklyPhoto,
   type RecapInput,
 } from '../../../packages/domain/weekly-recap.js';
-import { api } from './api.js';
+import { api, validatedApi } from './api.js';
 import { thumbnailUrl } from './thumbnail.js';
 import { UserAvatar } from './UserAvatar.js';
 import { PagePreview } from './Viewer.js';
@@ -67,9 +67,7 @@ export function WeeklyRecap({
       return;
     }
     const controller = new AbortController();
-    api<WeeklyView>(`/weekly-recap?spaceId=${actual}&weekStart=${week}`, {
-      signal: controller.signal,
-    })
+    validatedApi<WeeklyView>(`/weekly-recap?spaceId=${actual}&weekStart=${week}`, controller.signal)
       .then((value) => {
         if (!controller.signal.aborted) setData(value);
       })

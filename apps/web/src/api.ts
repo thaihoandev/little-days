@@ -1,3 +1,17 @@
+import { ValidatedReads } from './validated-read.js';
+const reads = new ValidatedReads();
+export const clearReadMemory = () => reads.clear();
+export async function validatedApi<T>(path: string, signal?: AbortSignal): Promise<T> {
+  const read = <R>(requestPath: string) =>
+    api<R>(requestPath, requestPath === '/journal-state' ? {} : { signal });
+  try {
+    return await reads.read<T>(path, read, signal);
+  } catch (error) {
+    if ((error as Error).name !== 'ReadInvalidatedError' || signal?.aborted) throw error;
+    // One bounded retry when a concurrent write invalidated this read.
+    return reads.read<T>(path, read, signal);
+  }
+}
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -9,6 +23,8 @@ export class ApiError extends Error {
   }
 }
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const mutation = !['GET', 'HEAD'].includes((options.method || 'GET').toUpperCase());
+  if (mutation) reads.clear();
   const response = await fetch(`/api${path}`, {
     credentials: 'same-origin',
     ...options,
@@ -17,6 +33,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
       ...options.headers,
     },
   });
+  if (mutation || [401, 403].includes(response.status)) reads.clear();
   if (!response.ok) {
     let message = 'Không kết nối được máy chủ.';
     let code: string | undefined;

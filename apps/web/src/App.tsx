@@ -1499,7 +1499,7 @@ function Editor({
                           setSelected(null);
                         }}
                       >
-                        <PagePreview album={album} index={i} width={126} />
+                        <PagePreview album={album} index={i} width={126} thumbnails />
                       </button>
                       <div className="row between">
                         <button className="text-button" onClick={() => setPageId(p.id)}>

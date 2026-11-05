@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { LibraryPage } from '../../../packages/domain/library.js';
-import { api, ApiError } from './api.js';
+import { validatedApi, ApiError } from './api.js';
 
 export function useDebounced<T>(value: T, delay = 250) {
   const [ready, setReady] = useState(value);
@@ -36,9 +36,9 @@ export function useLibraryPage<T extends { id?: string; key?: string }>(
       setLoading(true);
       setError('');
       try {
-        const page = await api<LibraryPage<T>>(
+        const page = await validatedApi<LibraryPage<T>>(
           path + (cursor ? '&cursor=' + encodeURIComponent(cursor) : ''),
-          { signal: abort.signal },
+          abort.signal,
         );
         if (current !== version.current) return;
         setItems((previous) =>
@@ -54,7 +54,11 @@ export function useLibraryPage<T extends { id?: string; key?: string }>(
         setNextCursor(page.nextCursor);
         setStats(page.stats);
       } catch (e) {
-        if (current === version.current && !abort.signal.aborted) {
+        if (
+          current === version.current &&
+          !abort.signal.aborted &&
+          (e as Error).name !== 'AbortError'
+        ) {
           if (e instanceof ApiError && [401, 403, 404].includes(e.status)) {
             setItems([]);
             setTotal(0);

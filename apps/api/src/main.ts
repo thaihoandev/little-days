@@ -129,6 +129,22 @@ const security = new AccountSecurity(
   deletion,
 );
 const hash = (value: string) => createHash('sha256').update(value).digest('hex');
+// Call only after current ownership/membership and asset existence have been checked.
+function privateImageFresh(req: UserRequest, res: Response, identity: string) {
+  const etag = `"${hash(identity)}"`;
+  res.setHeader('Cache-Control', 'private, no-cache');
+  res.setHeader('ETag', etag);
+  res.vary('Cookie');
+  if (
+    (req.headers['if-none-match'] || '')
+      .split(',')
+      .some((value) => value.trim().replace(/^W\//, '') === etag)
+  ) {
+    res.status(304).end();
+    return true;
+  }
+  return false;
+}
 type UserRequest = Request & { userId: string };
 const credentialSchema = z.object({
   email: z
@@ -515,6 +531,14 @@ class AppController {
   ) {
     const entry = await journal.owned(req.userId, id);
     if (!entry.assets.some((a) => a.id === assetId)) throw new NotFoundException();
+    if (
+      privateImageFresh(
+        req,
+        res,
+        `journal:${id}:${assetId}:${thumbnail === '1' ? 'thumb-v1' : 'original'}`,
+      )
+    )
+      return;
     if (thumbnail === '1')
       return res
         .type('webp')
@@ -1106,12 +1130,19 @@ class AppController {
     @Query('thumbnail') thumbnail?: string,
   ) {
     if (!(await library.ownsAlbumAsset(req.userId, id, assetId))) throw new NotFoundException();
+    if (
+      privateImageFresh(
+        req,
+        res,
+        `album:${id}:${assetId}:${thumbnail === '1' ? 'thumb-v1' : 'original'}`,
+      )
+    )
+      return;
     if (thumbnail === '1')
       return res
         .type('webp')
         .setHeader('Cache-Control', 'private, no-cache')
         .send(await imagePreviews.get(`uploads/${assetId}.webp`));
-    res.setHeader('Cache-Control', 'private, max-age=3600');
     await streamObject(res, `uploads/${assetId}.webp`, 'webp');
   }
   @Get('demo/:file') async demo(@Param('file') file: string, @Res() res: Response) {

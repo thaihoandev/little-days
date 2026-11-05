@@ -1,5 +1,14 @@
 # Upload phục hồi và thư viện lớn
 
+## Giảm tải lại khi điều hướng — 05/11/2026
+
+- Danh sách timeline, ảnh, ghim bản đồ và recap tuần giữ payload trong RAM tối đa 32 truy vấn / khoảng 8 MiB, hết hạn sau 2 phút. Không lưu nội dung riêng tư vào localStorage hay service worker. Mỗi lần tái sử dụng đều gọi `/api/journal-state` để kiểm tra tài khoản, tập quyền và revision hiện tại; lỗi xác thực không dùng dữ liệu cũ. Các lượt kiểm tra đồng thời dùng chung request đang chạy. Request danh sách bị hủy khi rời trang.
+- Cache tách theo scope, version và toàn bộ đường dẫn/bộ lọc/cursor. Thao tác ghi và đổi tài khoản vô hiệu hóa bộ nhớ; phản hồi của lượt đọc trước thao tác ghi không được công bố. Có tối đa một lần đọc lại khi ghi và đọc giao nhau. Bộ nhớ này giữ payload từng trang, không giữ vị trí cuộn hoặc toàn bộ các trang đã mở rộng.
+- Ảnh gốc và thumbnail riêng tư của album/dấu mốc dùng ETag và `private, no-cache`. API kiểm tra quyền hiện tại và sự tồn tại ảnh trước khi trả `304`; khi ảnh chưa đổi, không đọc lại bytes từ Cloudinary. Không dùng `max-age` để bỏ qua kiểm tra quyền. Mở ảnh lớn lần đầu vẫn cần tải ảnh gốc; thumbnail chỉ dùng cho ô nhỏ và danh sách trang editor.
+- Recap tuần chỉ đổi khóa khi phiên bản nội dung đổi, thay vì dùng bộ đếm nội bộ của lượt tải. Popup không chủ động làm mới thư viện.
+- Fixture `daily-polish` đếm request: lần đầu vào thư viện ảnh có **1** request `/library/photos`; chuyển sang lịch rồi trở lại có **0** request danh sách bổ sung khi revision giữ nguyên; mở/đóng tài khoản cũng có **0**. Vẫn có request kiểm tra phiên bản và quyền ảnh. Đây là số request fixture cục bộ, không phải phép đo thời gian production, mạng hoặc cold start Render.
+- Kiểm chứng: `tests/validated-read.test.ts` (scope/revision, invalidation, quyền bị thu hồi, hủy, giới hạn query), `test:api` (304 không có bytes và tài khoản khác vẫn 404), suite `daily-polish` (điều hướng, popup và layout 1920/390/320px). Phần lịch dùng card hai cột desktop/một cột mobile, ảnh giới hạn kích thước và ghi chú có biểu tượng, nội dung xem trước ngắn.
+
 Cập nhật ngày 02/11/2026. Giữ Vercel/Render/Neon/Cloudinary hiện có; không thêm dịch vụ trả phí hoặc worker cloud.
 
 ## Sử dụng

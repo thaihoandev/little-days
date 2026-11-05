@@ -29,13 +29,19 @@ const base = `http://127.0.0.1:${port}/api`;
 const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 function client() {
   let cookie = '';
-  return async (route: string, method = 'GET', body?: unknown) => {
+  return async (
+    route: string,
+    method = 'GET',
+    body?: unknown,
+    extraHeaders: Record<string, string> = {},
+  ) => {
     const form = body instanceof FormData;
     const response = await fetch(base + route, {
       method,
       headers: {
         ...(cookie ? { Cookie: cookie } : {}),
         ...(!form && body ? { 'Content-Type': 'application/json' } : {}),
+        ...extraHeaders,
       },
       body: body ? (form ? (body as FormData) : JSON.stringify(body)) : undefined,
     });
@@ -183,6 +189,18 @@ try {
     'image/jpeg',
   );
   assert.equal((await bob(journal.assets[0].url.replace('/api', ''))).status, 404);
+  for (const suffix of ['', '?thumbnail=1']) {
+    const url = journal.assets[0].url.replace('/api', '') + suffix;
+    const original = await alice(url),
+      etag = original.headers.get('etag');
+    assert.ok(etag);
+    assert.equal(original.headers.get('cache-control'), 'private, no-cache');
+    const headers = { 'If-None-Match': etag };
+    const cached = await alice(url, 'GET', undefined, headers);
+    assert.equal(cached.status, 304);
+    assert.equal((await cached.arrayBuffer()).byteLength, 0);
+    assert.equal((await bob(url, 'GET', undefined, headers)).status, 404);
+  }
   const importBody = {
     requestId: crypto.randomUUID(),
     title: 'Từ lịch của Alice',

@@ -128,11 +128,58 @@ try {
       await p.getByRole('button', { name: 'Thiết lập', exact: true }).click();
       const annual = p.getByLabel('Lặp ngày bắt đầu album hằng năm', { exact: true });
       await expect(annual).not.toBeChecked();
+      const annualSaved = p.waitForResponse(
+        (response) =>
+          response.url().endsWith('/api/albums/' + album.id) &&
+          response.request().method() === 'PATCH' &&
+          response.ok(),
+      );
       await annual.check();
+      assert.equal((await (await annualSaved).json()).startDateAnnual, true);
       await expect(p.getByRole('button', { name: 'Đã lưu', exact: true })).toBeVisible();
       await p.goto(origin + '/calendar?date=' + later);
       await expect(p.locator('.journal-entry.album-story')).toHaveCount(1);
       await p.goto(origin + '/today');
+      await expect(p.locator('.home-mode .journal-entry').first()).toBeVisible();
+      let photoReads = 0;
+      const countPhotoReads = (request: import('@playwright/test').Request) => {
+        if (new URL(request.url()).pathname === '/api/library/photos') photoReads++;
+      };
+      p.on('request', countPhotoReads);
+      await p.getByRole('button', { name: /^Ảnh đã lưu/ }).click();
+      await expect(p.locator('.memory-library img').first()).toBeVisible();
+      const initialReads = photoReads;
+      assert.equal(initialReads, 1);
+      await p.getByRole('button', { name: /^Lịch của mình/ }).click();
+      await expect(p.locator('.calendar-mode .journal-feed')).toBeVisible();
+      if (width < 500) {
+        const feedBox = await p.locator('.journal-feed').boundingBox(),
+          asideBox = await p.locator('.upcoming-card').boundingBox(),
+          calendarBox = await p.locator('.calendar-card').boundingBox();
+        assert.ok(
+          calendarBox && feedBox && calendarBox.y < feedBox.y,
+          'month calendar appears before selected day',
+        );
+        assert.ok(
+          feedBox && asideBox && feedBox.y < asideBox.y,
+          'selected day appears before upcoming sidebar on mobile',
+        );
+      }
+      await p.screenshot({ path: 'test-results/calendar-cards-' + width + '.png', fullPage: true });
+      assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+      await p.getByRole('button', { name: /^Ảnh đã lưu/ }).click();
+      await expect(p.locator('.memory-library img').first()).toBeVisible();
+      assert.equal(photoReads, initialReads, 'unchanged photo page reuses validated payload');
+      await p.getByRole('button', { name: 'Tài khoản', exact: true }).click();
+      await expect(p.getByRole('dialog')).toBeVisible();
+      await p.getByRole('dialog').getByRole('button', { name: 'Đóng', exact: true }).click();
+      assert.equal(
+        photoReads,
+        initialReads,
+        'opening and closing a popup does not reload the library',
+      );
+      p.off('request', countPhotoReads);
+      await p.getByRole('button', { name: /^Hôm nay/ }).click();
       await expect(p.locator('.home-mode .journal-entry').first()).toBeVisible();
       const bounds = await p.locator('.dashboard').boundingBox();
       assert.ok(bounds && Math.abs(bounds.x + bounds.width - width) < 2, JSON.stringify(bounds));

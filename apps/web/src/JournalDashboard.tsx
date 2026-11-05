@@ -43,7 +43,7 @@ import {
   nextOccurrence,
   memoriesOnThisDay,
 } from '../../../packages/domain/journal.js';
-import { api, ApiError } from './api.js';
+import { api, ApiError, clearReadMemory } from './api.js';
 import { PhotoLightbox, ConfirmDialog } from './Overlays.js';
 import { TimelineSharingPanel } from './TimelineSharingPanel.js';
 import { LocationFields } from './LocationFields.js';
@@ -75,6 +75,7 @@ const spaceSelection = new Map<string, string>();
 export function clearDashboardMemory() {
   recentDashboards.clear();
   spaceSelection.clear();
+  clearReadMemory();
 }
 const MemoryMap = lazy(() => import('./MemoryMap.js'));
 
@@ -689,7 +690,7 @@ export default function JournalDashboard({
         <WeeklyRecap
           spaces={sharing.spaces || []}
           ready={sharingReady}
-          refreshKey={`${syncState.current?.version || ''}:${loadVersion.current}`}
+          refreshKey={syncState.current?.version || ''}
           onCreated={onCreatedAlbum}
           onViewRecaps={onViewRecaps}
           onAddDay={(date, space) => {
@@ -1017,8 +1018,12 @@ export default function JournalDashboard({
                   .slice(0, 3)
                   .map((e) => (
                     <button key={e.id} className="day-note" onClick={() => setEditing(e)}>
-                      <strong>{e.title}</strong>
-                      <span>{e.note || 'Mở ghi chú'}</span>
+                      <NotebookPen size={17} aria-hidden="true" />
+                      <span>
+                        <strong>{e.title}</strong>
+                        <span>{e.note || 'Mở ghi chú'}</span>
+                      </span>
+                      <Pencil size={14} aria-hidden="true" />
                     </button>
                   ))
               ) : (
@@ -1174,7 +1179,7 @@ export default function JournalDashboard({
               </h2>
               <p>
                 {mode === 'calendar'
-                  ? 'Dấu mốc và ghi chú cho ngày đang chọn.'
+                  ? `${dayItems.length} nội dung · Những điều đã lưu cho ngày này`
                   : `${visible.length} nội dung đang hiện · Album và dấu mốc được phân biệt riêng`}
               </p>
             </div>
@@ -1279,7 +1284,7 @@ export default function JournalDashboard({
                   <div className="journal-day-stories">
                     {group.items.map((entry, itemIndex) => (
                       <Fragment key={entry.id}>
-                        {mode !== 'home' &&
+                        {mode === 'timeline' &&
                           (itemIndex === 0 ||
                             storyCategory(group.items[itemIndex - 1]) !== storyCategory(entry)) && (
                             <h4 className="story-category">{storyCategory(entry)}</h4>
