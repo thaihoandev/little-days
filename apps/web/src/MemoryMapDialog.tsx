@@ -24,7 +24,9 @@ export function MemoryMapDialog({
 }) {
   useBodyScrollLock();
   const dialog = useRef<HTMLDialogElement>(null);
-  const [activeTab, setActiveTab] = useState<'footprint' | 'satellite'>('footprint');
+  const [activeTab, setActiveTab] = useState<'footprint' | 'satellite'>(
+    selected ? 'satellite' : 'footprint',
+  );
 
   useEffect(() => {
     const node = dialog.current!;

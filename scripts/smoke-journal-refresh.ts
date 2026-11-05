@@ -232,6 +232,7 @@ try {
       await page.getByRole('textbox', { name: 'Tìm dấu mốc', exact: true }).fill('');
       await page.getByRole('button', { name: 'Mở rộng bản đồ', exact: true }).click();
       const mapDialog = page.getByRole('dialog', { name: 'Bản đồ kỉ niệm', exact: true });
+      await mapDialog.getByRole('tab', { name: 'Bản đồ địa điểm', exact: true }).click();
       await expect(mapDialog.locator('.leaflet-control-attribution')).toContainText(
         'OpenStreetMap',
       );
@@ -252,6 +253,12 @@ try {
       await expect.poll(async () => Number(await zoom.textContent())).toBeGreaterThan(level);
       await mapDialog.getByRole('button', { name: 'Xem toàn bộ vị trí', exact: true }).click();
       await page.screenshot({ path: 'test-results/milestone-map-' + mobile + '.png' });
+      await mapDialog.getByRole('button', { name: 'Đóng bản đồ kỉ niệm', exact: true }).click();
+      await page.locator('.story-location').first().click();
+      await expect(
+        mapDialog.getByRole('tab', { name: 'Bản đồ địa điểm', exact: true }),
+      ).toHaveAttribute('aria-selected', 'true');
+      await expect(mapDialog.locator('.memory-photo-pin')).toBeVisible();
       await mapDialog.getByRole('button', { name: 'Đóng bản đồ kỉ niệm', exact: true }).click();
       await page.screenshot({
         path: 'test-results/timeline-groups-' + mobile + '.png',
@@ -335,7 +342,10 @@ try {
         path: 'test-results/home-data-first-' + mobile + '.png',
         fullPage: true,
       });
-      await expect(page.locator('.sidebar .user-avatar')).toBeVisible();
+      const profileAvatar = mobile
+        ? page.getByRole('button', { name: 'Tài khoản', exact: true }).locator('.user-avatar')
+        : page.locator('.sidebar .user-avatar');
+      await expect(profileAvatar).toBeVisible();
       const longName = 'An'.repeat(30);
       const rename = await context.request.patch(origin + '/api/profile', {
         data: { displayName: longName, expectedRevision: me.profileRevision },
@@ -345,7 +355,7 @@ try {
       await expect(
         page.getByRole('heading', { name: 'Hôm nay của ' + longName, exact: true }),
       ).toBeVisible();
-      await expect(page.locator('.sidebar .user-avatar')).toBeVisible();
+      await expect(profileAvatar).toBeVisible();
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
       assert.deepEqual(errors, []);
       reports.push({
