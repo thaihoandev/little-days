@@ -1,0 +1,39 @@
+{
+  "name": "Little Days — Những ngày bên nhau",
+  "short_name": "Little Days",
+  "description": "Một cuốn sổ nhỏ, dành cho những ngày bên nhau. Tạo scrapbook, lưu kỉ niệm và dựng video của riêng hai bạn.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#faf8f2",
+  "theme_color": "#f4f2e9",
+  "lang": "vi",
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["lifestyle", "social"]
+}
+

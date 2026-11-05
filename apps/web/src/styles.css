@@ -190,6 +190,9 @@ label > span {
   border-radius: 5px;
   flex-shrink: 0;
 }
+.help-top-button {
+  display: none;
+}
 .icon-button:hover {
   background: #eeece2;
 }
@@ -301,12 +304,16 @@ label > span {
   background: #e5e8da;
   color: #5f6b4c;
 }
-.nav-item span {
+.nav-item .nav-count,
+.nav-item > span:not(.nav-label) {
   margin-left: auto;
   background: #d5dcc7;
   padding: 2px 7px;
   border-radius: 3px;
   font-size: 9px;
+}
+.nav-item .nav-label {
+  display: inline;
 }
 .nav-item:hover {
   background: #eae9df;
@@ -1835,47 +1842,135 @@ label > span {
   }
 }
 @media (max-width: 760px) {
+  .app-shell {
+    flex-direction: column;
+    min-height: 100vh;
+  }
   .sidebar {
-    width: 67px;
-    padding: 20px 6px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+    background: rgba(250, 248, 242, 0.96);
+    border-top: 1px solid var(--line);
+    border-right: none;
+    box-shadow: 0 -3px 14px rgba(67, 63, 53, 0.08);
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
-  .sidebar .wordmark {
-    font-size: 0;
-    margin: 0 auto 45px;
-  }
-  .sidebar .wordmark > span {
-    font-size: 39px;
-    margin: 0;
-  }
+  .sidebar .wordmark,
   .workspace-label,
   .sidebar-note,
-  .sidebar .nav-item > span,
-  .sidebar .account-button > span:not(.avatar),
-  .sidebar .account-button > svg {
+  .sidebar-bottom {
     display: none;
   }
-  .sidebar .nav-item {
-    font-size: 0;
-    justify-content: center;
-    padding: 15px 0;
-    gap: 0;
+  .sidebar nav {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-around;
+    align-items: stretch;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
   }
-  .sidebar .account-button {
+  .sidebar .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    padding: 6px 2px 4px;
+    font-size: 10px;
+    line-height: 1.15;
+    text-align: center;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+    max-width: 72px;
+    border-radius: 8px;
+    color: #8d8b7c;
+    position: relative;
+    border: none;
+    background: transparent;
+    transition:
+      color 0.15s ease,
+      background-color 0.15s ease;
+  }
+  .sidebar .nav-item svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.6;
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+  }
+  .sidebar .nav-item .nav-label {
+    display: block;
+    font-size: 10px;
+    line-height: 1.15;
+    text-align: center;
+    white-space: normal;
+    word-break: break-word;
+    max-width: 100%;
+  }
+  .sidebar .nav-item.active {
+    background: #e6ebdb;
+    color: #485635;
+    font-weight: 500;
+  }
+  .sidebar .nav-item.active svg {
+    color: #485635;
+    stroke-width: 2;
+    transform: scale(1.08);
+  }
+  .sidebar .nav-item .nav-count,
+  .sidebar .nav-item > span:not(.nav-label) {
+    position: absolute;
+    top: 2px;
+    right: 12%;
+    background: #b36358;
+    color: #fffdf8;
+    font-size: 8px;
+    font-weight: 600;
+    padding: 1px 4px;
+    border-radius: 8px;
+    min-width: 13px;
+    line-height: 1.2;
+    text-align: center;
+    margin: 0;
+    display: inline-block;
   }
   .dashboard {
-    margin-left: 67px;
-    width: calc(100% - 67px);
-    padding: 0 22px;
+    margin-left: 0;
+    width: 100%;
+    padding: 0 20px calc(76px + env(safe-area-inset-bottom, 0px));
   }
   .dashboard-top {
-    height: 61px;
-    font-size: 8px;
+    height: 56px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: var(--serif);
+    color: #433f35;
+  }
+  .help-top-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   .welcome {
     grid-template-columns: 1fr;
     min-height: 0;
-    padding: 35px 0 25px;
+    padding: 25px 0 20px;
   }
   .welcome h1 {
     font-size: 32px;
@@ -2243,7 +2338,18 @@ label > span {
 }
 @media (max-width: 420px) {
   .dashboard {
-    padding: 0 17px;
+    padding: 0 14px calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+  .sidebar .nav-item {
+    padding: 5px 1px 3px;
+    gap: 2px;
+  }
+  .sidebar .nav-item .nav-label {
+    font-size: 9px;
+  }
+  .sidebar .nav-item svg {
+    width: 18px;
+    height: 18px;
   }
   .welcome h1 {
     font-size: 26px;

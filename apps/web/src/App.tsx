@@ -413,35 +413,36 @@ export default function App() {
               onClick={() => setSection('home')}
             >
               <Heart size={19} />
-              Hôm nay
+              <span className="nav-label">Hôm nay</span>
             </button>
             <button
               className={section === 'timeline' ? 'nav-item active' : 'nav-item'}
               onClick={() => setSection('timeline')}
             >
               <History size={19} />
-              Dòng thời gian
+              <span className="nav-label">Dòng thời gian</span>
             </button>
             <button
               className={section === 'calendar' ? 'nav-item active' : 'nav-item'}
               onClick={() => setSection('calendar')}
             >
               <CalendarDays size={19} />
-              Lịch của mình
+              <span className="nav-label">Lịch của mình</span>
             </button>
             <button
               className={section === 'albums' ? 'nav-item active' : 'nav-item'}
               onClick={() => setSection('albums')}
             >
               <AlbumIcon size={19} />
-              Album của mình<span>{albums.length}</span>
+              <span className="nav-label">Album của mình</span>
+              <span className="nav-count">{albums.length}</span>
             </button>
             <button
               className={section === 'photos' ? 'nav-item active' : 'nav-item'}
               onClick={() => setSection('photos')}
             >
               <Images size={19} />
-              Ảnh đã lưu
+              <span className="nav-label">Ảnh đã lưu</span>
             </button>
             {user?.coupleRitualsVersion === 1 && (
               <button
@@ -449,7 +450,7 @@ export default function App() {
                 onClick={() => setSection('together')}
               >
                 <Sparkles size={19} />
-                Góc chúng mình
+                <span className="nav-label">Góc chúng mình</span>
               </button>
             )}
           </nav>
@@ -536,6 +537,14 @@ export default function App() {
                   }
                 />
               )}
+              <button
+                className="icon-button help-top-button"
+                aria-label="Một chút hướng dẫn"
+                title="Một chút hướng dẫn"
+                onClick={() => setModal('help')}
+              >
+                <HelpCircle size={18} />
+              </button>
               <button
                 className="icon-button"
                 aria-label="Tài khoản"
