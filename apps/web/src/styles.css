@@ -2749,3 +2749,195 @@ fieldset.video-options {
   color: #80551f;
   background: #fbefd9;
 }
+
+/* PWA 1-tap install prompt */
+.pwa-install-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: #fbf9f2;
+  border: 1px solid #e3decfa8;
+  border-left: 3px solid #687653;
+  border-radius: 9px;
+  padding: 10px 14px;
+  margin: 12px 0 16px;
+  box-shadow: 0 2px 10px rgba(67, 63, 53, 0.04);
+  animation: pwaSlideDown 0.3s ease-out;
+}
+@keyframes pwaSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.pwa-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.pwa-banner-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #e9ede0;
+  color: #556641;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.pwa-banner-text {
+  min-width: 0;
+}
+.pwa-banner-text strong {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #3b372f;
+  margin-bottom: 2px;
+}
+.pwa-banner-text p {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.4;
+  color: #7b786c;
+}
+.pwa-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.pwa-banner-actions .button.tiny-action {
+  padding: 6px 12px;
+  font-size: 10.5px;
+  border-radius: 6px;
+  gap: 5px;
+}
+.pwa-close-btn {
+  color: #9c9889;
+}
+@media (max-width: 600px) {
+  .pwa-install-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding: 11px 12px;
+  }
+  .pwa-banner-actions {
+    justify-content: flex-end;
+  }
+}
+
+/* iOS PWA Step Modal */
+.pwa-ios-modal {
+  max-width: 440px;
+  width: 90%;
+  padding: 22px;
+}
+.pwa-ios-intro {
+  font-size: 12px;
+  color: #5e594d;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.pwa-steps-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.pwa-steps-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: #4a4539;
+  background: #f7f4ec;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+.pwa-step-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #eae5d7;
+  color: #687653;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+/* PWA Account Card */
+.pwa-account-card {
+  padding: 14px;
+  background: #fbf9f2;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  margin: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pwa-account-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.pwa-account-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #e9ede0;
+  color: #556641;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.pwa-account-header strong {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+.pwa-account-header p {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.5;
+}
+.pwa-account-action {
+  display: flex;
+  justify-content: flex-end;
+}
+.pwa-installed-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: #4b6135;
+  background: #e9f0e1;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+/* PWA Header & Sidebar buttons */
+.pwa-header-button {
+  color: #536440;
+}
+.pwa-header-button:hover {
+  background: #e9ede0;
+}
+.pwa-sidebar-item {
+  color: #5f6b4c;
+}
+.pwa-sidebar-item:hover {
+  background: #e5e8da;
+}

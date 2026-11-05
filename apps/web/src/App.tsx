@@ -77,7 +77,10 @@ import {
 import { useDocument } from './useDocument.js';
 import AccountDeletionStatus, { readDeletionReceipt } from './AccountDeletionStatus.js';
 import { readAuthLink } from './auth-link.js';
+import { Modal } from './Modal.js';
+import { CreateModal } from './CreateAlbumModal.js';
 import { TextOverflowWarning } from './TextOverflowWarning.js';
+import { PwaInstallBanner, PwaHeaderButton, PwaSidebarButton } from './PwaInstallPrompt.js';
 import JournalDashboard, { clearDashboardMemory } from './JournalDashboard.js';
 import { useAppRoute, sectionPaths, type AppSection } from './useAppRoute.js';
 import { UserAvatar } from './UserAvatar.js';
@@ -121,7 +124,6 @@ import {
   zoomPhoto,
   panPhoto,
 } from '../../../packages/domain/photo-edit.js';
-import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
 import type { PublicUser } from './AccountSettings.js';
 const AccountSettings = lazy(() => import('./AccountSettings.js'));
 const AuthLinkPage = lazy(() => import('./AuthLinkPage.js'));
@@ -162,75 +164,6 @@ function TextAlignment({
           <Icon size={18} />
         </button>
       ))}
-    </div>
-  );
-}
-function Modal({
-  title,
-  children,
-  onClose,
-  wide = false,
-  className = '',
-}: {
-  title: string;
-  children: ReactNode;
-  onClose: () => void;
-  wide?: boolean;
-  className?: string;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const close = useRef(onClose);
-  close.current = onClose;
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement;
-    const first =
-      ref.current?.querySelector<HTMLElement>('[data-autofocus]') ||
-      ref.current?.querySelector<HTMLElement>('input,button,textarea,select');
-    first?.focus();
-    const key = (e: KeyboardEvent) => {
-      if (e.isComposing) return;
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        close.current();
-      }
-      if (e.key === 'Tab') {
-        const items = Array.from(
-          ref.current?.querySelectorAll<HTMLElement>(
-            'button:not(:disabled),input,textarea,select,a[href]',
-          ) || [],
-        ).filter((item) => item.getClientRects().length > 0 && !item.closest('[inert]'));
-        if (e.shiftKey && document.activeElement === items[0]) {
-          e.preventDefault();
-          items.at(-1)?.focus();
-        } else if (!e.shiftKey && document.activeElement === items.at(-1)) {
-          e.preventDefault();
-          items[0]?.focus();
-        }
-      }
-    };
-    document.addEventListener('keydown', key);
-    return () => {
-      document.removeEventListener('keydown', key);
-      previous?.focus();
-    };
-  }, []);
-  return (
-    <div className="modal-backdrop">
-      <div
-        ref={ref}
-        className={`modal ${wide ? 'wide' : ''} ${className}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-      >
-        <header className="modal-header">
-          <h2>{title}</h2>
-          <button className="icon-button" onClick={onClose} aria-label="Đóng">
-            <X />
-          </button>
-        </header>
-        {children}
-      </div>
     </div>
   );
 }
@@ -464,6 +397,7 @@ export default function App() {
             <span className="hand">giữ lại một chút thương ♡</span>
           </div>
           <div className="sidebar-bottom">
+            <PwaSidebarButton />
             <button className="nav-item" onClick={() => setModal('help')}>
               <HelpCircle size={18} />
               Một chút hướng dẫn
@@ -537,6 +471,7 @@ export default function App() {
                   }
                 />
               )}
+              <PwaHeaderButton />
               <button
                 className="icon-button help-top-button"
                 aria-label="Một chút hướng dẫn"
@@ -554,6 +489,7 @@ export default function App() {
               </button>
             </div>
           </header>
+          <PwaInstallBanner />
           {user && section === 'together' && (
             <Suspense fallback={<p role="status">Đang mở Góc chúng mình…</p>}>
               <TogetherPage
@@ -826,142 +762,6 @@ export default function App() {
         </div>
       )}
     </MotionConfig>
-  );
-}
-
-function CreateModal({
-  onClose,
-  onCreated,
-  presentationEnabled,
-  designExperienceEnabled,
-}: {
-  onClose: () => void;
-  onCreated: (album: Album) => void;
-  presentationEnabled: boolean;
-  designExperienceEnabled: boolean;
-}) {
-  const [title, setTitle] = useState('Ngày mình bên nhau');
-  const [theme, setTheme] = useState<Theme>('polaroid');
-  const [templateId, setTemplateId] = useState('polaroid');
-  const [kind, setKind] = useState<'album' | 'invitation'>('album');
-  const [readingMode, setReadingMode] = useState<'book' | 'scroll'>('book');
-  const previewAlbum: Album = {
-    ...createAlbumContent(),
-    id: 'preview',
-    revision: 0,
-    createdAt: '',
-    updatedAt: '',
-    assets: [],
-    schemaVersion: 1,
-  };
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      onCreated(
-        await api<Album>('/albums', {
-          method: 'POST',
-          body: JSON.stringify({
-            title,
-            theme,
-            templateId,
-            ...(presentationEnabled ? { documentKind: kind } : {}),
-            ...(designExperienceEnabled
-              ? { readingMode: kind === 'invitation' ? readingMode : 'book' }
-              : {}),
-          }),
-        }),
-      );
-    } catch (e) {
-      setError((e as Error).message);
-      setBusy(false);
-    }
-  };
-  return (
-    <Modal title="Bắt đầu một cuốn sổ" onClose={onClose} className="create-album-modal">
-      <form onSubmit={(e) => void submit(e)} className="form-stack">
-        <div className="create-album-fields">
-          {designExperienceEnabled && kind === 'invitation' && (
-            <label>
-              Cách đọc thiệp
-              <select
-                aria-label="Cách đọc thiệp"
-                value={readingMode}
-                onChange={(e) => setReadingMode(e.target.value as 'book' | 'scroll')}
-              >
-                <option value="book">Lật từng trang</option>
-                <option value="scroll">Thiệp dài · cuộn dọc</option>
-              </select>
-            </label>
-          )}
-          {presentationEnabled && (
-            <div className="document-kind-picker" role="group" aria-label="Loại thiết kế">
-              {(['album', 'invitation'] as const).map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  aria-pressed={kind === value}
-                  onClick={() => {
-                    setKind(value);
-                    setTemplateId(value === 'album' ? 'polaroid' : 'invite-date');
-                    setTheme(value === 'album' ? 'polaroid' : 'letter');
-                    setTitle(value === 'album' ? 'Ngày mình bên nhau' : 'Một lời mời dành cho bạn');
-                  }}
-                >
-                  {value === 'album' ? 'Sổ kỉ niệm' : 'Thiệp mời'}
-                </button>
-              ))}
-            </div>
-          )}
-          <label>
-            Tên cuốn sổ
-            <input
-              required
-              maxLength={120}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </label>
-          <label>Chọn một phong cách</label>
-          <div className="template-picker">
-            {builtInTemplates
-              .filter((t) => t.id.startsWith('invite-') === (kind === 'invitation'))
-              .map((t) => (
-                <button
-                  type="button"
-                  key={t.id}
-                  aria-label={t.name}
-                  aria-pressed={templateId === t.id}
-                  className={templateId === t.id ? 'chosen' : ''}
-                  onClick={() => {
-                    setTheme(t.theme);
-                    setTemplateId(t.id);
-                  }}
-                >
-                  <span className="built-in-preview">
-                    <PagePreview
-                      album={{ ...previewAlbum, pages: [templatePage(t.id)] }}
-                      width={105}
-                    />
-                  </span>
-                  <span className="template-name">{t.name}</span>
-                  {templateId === t.id && <Check size={15} />}
-                </button>
-              ))}
-          </div>
-          <p className="muted small">
-            Bạn có thể đổi ảnh, chữ và bố cục từng trang sau khi chọn mẫu.
-          </p>
-          {error && <p className="error">{error}</p>}
-        </div>
-        <button className="button primary full" disabled={busy}>
-          {busy ? <LoaderCircle className="spin" size={17} /> : <Plus size={17} />}Tạo cuốn sổ của
-          mình
-        </button>
-      </form>
-    </Modal>
   );
 }
 

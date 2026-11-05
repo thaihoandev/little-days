@@ -3,6 +3,7 @@ import { LoaderCircle, Lock, LogOut } from 'lucide-react';
 import { api } from './api.js';
 import { UsagePanel } from './UsagePanel.js';
 import { ProfileSettings, type ProfileView } from './ProfileSettings.js';
+import { PwaAccountCard } from './PwaInstallPrompt.js';
 
 export type PublicUser = {
   previewAudioClipVersion?: number;
@@ -95,6 +96,7 @@ export default function AccountSettings({
               onChange={(value) => onProfileChange?.(value)}
             />
           )}
+          <PwaAccountCard />
           <UsagePanel />
         </div>
         <div className="account-security-column" data-active={accountTab === 'security'}>
@@ -460,6 +462,7 @@ export default function AccountSettings({
       {mode === 'register' && (
         <p className="muted small">Sau khi đăng ký, kiểm tra hộp thư để xác minh email của bạn.</p>
       )}
+      <PwaAccountCard />
     </form>
   );
 }
