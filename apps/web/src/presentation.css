@@ -150,6 +150,45 @@
   pointer-events: none;
   z-index: 3;
 }
+.viewer > .viewer-ambience {
+  inset: 85px 0 85px;
+  z-index: 2;
+  contain: paint;
+}
+.viewer > header,
+.viewer > .viewer-controls {
+  position: relative;
+  z-index: 4;
+}
+.viewer > .viewer-ambience > span {
+  font-size: 17px;
+}
+.preview-audio-editor {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #dce2cf;
+  border-radius: 12px;
+  background: #fffdf7;
+  min-width: 0;
+}
+.preview-audio-editor audio {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+}
+.audio-original-name {
+  overflow-wrap: anywhere;
+}
+.audio-clip-values {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  color: #69765a;
+}
+.audio-clip-values span {
+  font-variant-numeric: tabular-nums;
+}
 .viewer-ambience > span {
   position: absolute;
   top: -30px;

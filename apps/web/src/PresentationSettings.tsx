@@ -9,14 +9,18 @@ import {
 } from '../../../packages/domain/index.js';
 import { musicCatalog } from '../../../packages/domain/music.js';
 import { api } from './api.js';
+import { PreviewAudio } from './PreviewAudio.js';
+import { previewAudioClip } from '../../../packages/domain/preview-audio.js';
 
 export function PresentationSettings({
   album,
   onChange,
   designExperienceEnabled = false,
+  audioClipEnabled = false,
 }: {
   album: Album;
   designExperienceEnabled?: boolean;
+  audioClipEnabled?: boolean;
   onChange: (patch: Partial<AlbumContent>) => void;
 }) {
   const p = album.presentation || defaultPresentation;
@@ -24,6 +28,21 @@ export function PresentationSettings({
     [error, setError] = useState(''),
     [loading, setLoading] = useState(true),
     [busy, setBusy] = useState(false);
+  const [loaded, setLoaded] = useState({ source: '', duration: 0 });
+  const selectedTrack = tracks.find((t) => t.id === p.audioId);
+  const builtIn = musicCatalog.find((t) => t.id === p.musicId);
+  const source = builtIn
+    ? `/audio/${builtIn.file}`
+    : p.musicId === 'custom'
+      ? selectedTrack?.url
+      : undefined;
+  const duration =
+    selectedTrack && p.musicId === 'custom'
+      ? selectedTrack.duration
+      : loaded.source === source
+        ? loaded.duration
+        : 0;
+  const clip = previewAudioClip(p, duration);
   const update = (patch: Partial<AlbumPresentation>) =>
     onChange({ presentation: { ...p, ...patch } });
   useEffect(() => {
@@ -126,8 +145,20 @@ export function PresentationSettings({
               track = tracks.find((t) => t.id === value);
             update(
               track
-                ? { musicId: 'custom', audioId: track.id }
-                : { musicId: value as AlbumPresentation['musicId'], audioId: undefined },
+                ? {
+                    musicId: 'custom',
+                    audioId: track.id,
+                    ...(audioClipEnabled
+                      ? { audioStart: 0, audioEnd: undefined, audioLabel: undefined }
+                      : {}),
+                  }
+                : {
+                    musicId: value as AlbumPresentation['musicId'],
+                    audioId: undefined,
+                    ...(audioClipEnabled
+                      ? { audioStart: 0, audioEnd: undefined, audioLabel: undefined }
+                      : {}),
+                  },
             );
           }}
         >
@@ -142,7 +173,10 @@ export function PresentationSettings({
           )}
           {tracks.map((t, i) => (
             <option key={t.id} value={t.id}>
-              Nhạc của mình {i + 1} · {Math.round(t.duration)} giây
+              {p.musicId === 'custom' && p.audioId === t.id && p.audioLabel
+                ? p.audioLabel
+                : t.name || `Nhạc của mình ${i + 1}`}{' '}
+              · {Math.round(t.duration)} giây
             </option>
           ))}
         </select>
@@ -184,9 +218,76 @@ export function PresentationSettings({
         />
       </label>
       <small>
-        Chọn bản vừa tải trong danh sách. Chỉ dùng nhạc bạn có quyền chia sẻ. Người xem bấm bật nhạc
-        để nghe.
+        Chọn bản vừa tải trong danh sách. Chỉ dùng nhạc bạn có quyền chia sẻ. Preview tự thử phát;
+        nếu trình duyệt chặn, người xem chạm Bật nhạc một lần.
       </small>
+      {audioClipEnabled && source && (
+        <section className="preview-audio-editor" aria-label="Đoạn nhạc bản chia sẻ">
+          <label>
+            Tên nhạc hiển thị
+            <input
+              aria-label="Tên nhạc bản chia sẻ"
+              maxLength={150}
+              value={p.audioLabel ?? selectedTrack?.name ?? builtIn?.name ?? ''}
+              onChange={(e) =>
+                update({ audioLabel: e.target.value.trim() ? e.target.value : undefined })
+              }
+            />
+          </label>
+          {selectedTrack && (
+            <small className="audio-original-name">File gốc: {selectedTrack.name}</small>
+          )}
+          <PreviewAudio
+            source={source}
+            presentation={p}
+            controls
+            onDuration={(value) => setLoaded({ source, duration: value })}
+            onError={() => setError('Chưa tải được nhạc để nghe thử.')}
+          />
+          {duration > 0 && (
+            <>
+              <div className="audio-clip-values">
+                <strong>Đoạn đã chọn</strong>
+                <span>
+                  {clip.start.toFixed(1)}s → {clip.end.toFixed(1)}s ·{' '}
+                  {(clip.end - clip.start).toFixed(1)}s
+                </span>
+              </div>
+              <label>
+                Bắt đầu
+                <input
+                  aria-label="Bắt đầu nhạc bản chia sẻ"
+                  type="range"
+                  min="0"
+                  max={Math.max(0, clip.end - 0.1)}
+                  step="0.1"
+                  value={clip.start}
+                  onChange={(e) =>
+                    update({ audioStart: Math.min(Number(e.target.value), clip.end - 0.1) })
+                  }
+                />
+              </label>
+              <label>
+                Kết thúc
+                <input
+                  aria-label="Kết thúc nhạc bản chia sẻ"
+                  type="range"
+                  min={clip.start + 0.1}
+                  max={duration}
+                  step="0.1"
+                  value={clip.end}
+                  onChange={(e) =>
+                    update({ audioEnd: Math.max(Number(e.target.value), clip.start + 0.1) })
+                  }
+                />
+              </label>
+              <small>
+                Nghe thử và preview lặp lại đúng đoạn đã chọn. Ảnh và trang sổ giữ nguyên.
+              </small>
+            </>
+          )}
+        </section>
+      )}
       {p.musicId !== 'none' && (
         <label>
           Âm lượng · {Math.round(p.volume * 100)}%

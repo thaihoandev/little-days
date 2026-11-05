@@ -16,6 +16,7 @@ import { thumbnailUrl } from './thumbnail.js';
 import { useBodyScrollLock } from './Overlays.js';
 import { LegalLinks } from './LegalLinks.js';
 import { builtInMusic } from '../../../packages/domain/music.js';
+import { PreviewAudio } from './PreviewAudio.js';
 
 function useMotionPreference() {
   const [reduced, setReduced] = useState(
@@ -165,6 +166,11 @@ export function Viewer({
   const host = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    document
+      .querySelectorAll<HTMLAudioElement>('.preview-audio-editor audio')
+      .forEach((node) => node.pause());
+  }, []);
+  useEffect(() => {
     const escape = (event: KeyboardEvent) => {
       if (
         event.key === 'Escape' &&
@@ -306,26 +312,6 @@ export function Viewer({
         </p>
       </div>
       <div className="viewer-page" ref={host}>
-        {presentation.ambience !== 'none' && !reducedMotion && (
-          <div className={'viewer-ambience ambience-' + presentation.ambience} aria-hidden="true">
-            {Array.from({ length: 12 }, (_, i) => (
-              <span
-                key={i}
-                style={{
-                  left: `${5 + ((i * 37) % 90)}%`,
-                  animationDelay: `${-i * 1.7}s`,
-                  animationDuration: `${11 + (i % 5)}s`,
-                }}
-              >
-                {presentation.ambience === 'hearts'
-                  ? '♡'
-                  : presentation.ambience === 'petals'
-                    ? '❀'
-                    : '✧'}
-              </span>
-            ))}
-          </div>
-        )}
         {scrolling ? (
           <div className="scroll-story" style={{ width }}>
             {album.pages.map((page, i) => (
@@ -428,13 +414,12 @@ export function Viewer({
         {scrolling && <span>Thiệp cuộn · {album.pages.length} phần</span>}
         {source && (
           <>
-            <audio
-              ref={audio}
-              src={source}
-              preload="none"
-              loop
-              onPlay={() => setPlaying(true)}
-              onPause={() => setPlaying(false)}
+            <PreviewAudio
+              audioRef={audio}
+              source={source}
+              presentation={presentation}
+              autoStart
+              onPlaying={setPlaying}
               onError={() => {
                 setPlaying(false);
                 setAudioError('Chưa phát được nhạc. Bạn vẫn có thể xem các trang.');
@@ -465,6 +450,26 @@ export function Viewer({
           </span>
         )}
       </nav>
+      {presentation.ambience !== 'none' && !reducedMotion && (
+        <div className={'viewer-ambience ambience-' + presentation.ambience} aria-hidden="true">
+          {Array.from({ length: 12 }, (_, i) => (
+            <span
+              key={i}
+              style={{
+                left: `${5 + ((i * 37) % 90)}%`,
+                animationDelay: `${-i * 1.7}s`,
+                animationDuration: `${11 + (i % 5)}s`,
+              }}
+            >
+              {presentation.ambience === 'hearts'
+                ? '♡'
+                : presentation.ambience === 'petals'
+                  ? '❀'
+                  : '✧'}
+            </span>
+          ))}
+        </div>
+      )}
       <div className="semantic-album">
         <h2>{album.title}</h2>
         {album.pages.map((p) => (

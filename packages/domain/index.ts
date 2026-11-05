@@ -112,9 +112,16 @@ export const presentationSchema = z
       .enum(['none', 'gentle', 'warm-piano', 'little-waltz', 'evening', 'custom'])
       .default('none'),
     audioId: z.uuid().optional(),
+    audioStart: finite.min(0).max(599.9).optional(),
+    audioEnd: finite.min(0.1).max(600).optional(),
+    audioLabel: z.string().trim().min(1).max(150).optional(),
     volume: finite.min(0).max(1).default(0.4),
   })
-  .refine((p) => p.musicId !== 'custom' || !!p.audioId, 'Chọn một bản nhạc của album.');
+  .refine((p) => p.musicId !== 'custom' || !!p.audioId, 'Chọn một bản nhạc của album.')
+  .refine(
+    (p) => p.audioEnd === undefined || p.audioEnd - (p.audioStart ?? 0) >= 0.1 - 1e-6,
+    'Đoạn nhạc tối thiểu 0,1 giây.',
+  );
 export type AlbumPresentation = z.infer<typeof presentationSchema>;
 export const defaultPresentation: AlbumPresentation = {
   binding: 'stitched',

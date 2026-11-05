@@ -13,11 +13,15 @@ Các mẫu giữ hệ tọa độ 720 × 900, không thêm loại phần tử ri
 
 Trong **Thiết lập → Khi người thương mở link**, chủ album chọn gáy sổ, chuyển trang, không khí (hoa/sao/trái tim) và nhạc. Có bốn bản nhạc gốc hiện có hoặc tải MP3/WAV/M4A của mình, tối đa 20 MB theo bộ xử lý âm thanh hiện tại. Sau khi tải, chọn bản nhạc mới trong danh sách; upload xong không tự ghi đè lựa chọn đang chỉnh. Chỉ dùng nhạc có quyền chia sẻ.
 
-Nhạc được lặp với âm lượng đã lưu. Người nhận bấm **Bật nhạc** để bắt đầu, có thể tắt lại; không tự phát âm thanh khi mở link. Khi tab bị ẩn, nhạc tạm dừng. Khi đóng viewer hoặc rời trang, phần tử audio được gỡ. Lỗi nhạc không ngăn xem các trang. Âm thanh dùng `preload="none"`, chỉ tải khi người xem bật.
+Từ 05/11/2026, chọn nhạc sẽ hiển thị tên file gốc, ô **Tên nhạc hiển thị**, hai thanh **Bắt đầu/Kết thúc** và bộ nghe thử. Có thể đổi tên hiển thị cho bản đang chọn; không đổi tên object hoặc ghi đè file gốc. Đoạn nhạc tối thiểu 0,1 giây; API chặn đoạn vượt thời lượng nhạc tải lên. Các lựa chọn đi cùng autosave/undo/lịch sử album. Frontend chỉ hiện công cụ mới khi session có `previewAudioClipVersion: 1`.
+
+Nhạc lặp đoạn đã chọn với âm lượng đã lưu, dùng chung cho nghe thử, preview chủ album và link chia sẻ. Preview tự thử phát khi đã tải metadata (`preload="auto"`). Trình duyệt có thể chặn autoplay có tiếng; khi đó nút **Bật nhạc** vẫn hiện để người xem chạm phát, không có popup lỗi chỉ vì autoplay bị chặn. Khi tab bị ẩn, nhạc tạm dừng; không tự phát lại khi quay về. Mở viewer sẽ dừng bộ nghe thử của editor để tránh hai bản nhạc chồng nhau. Đóng viewer hoặc rời trang sẽ dừng nhạc; lỗi nhạc không ngăn xem các trang.
 
 **Chia sẻ** đợi lưu xong trước khi tạo link. Người nhận chỉ xem/lật trang và bật/tắt nhạc, không thấy bộ chọn gáy sổ hoặc chuyển trang. Chủ album vẫn có bộ chọn trong **Xem album**; lựa chọn được đưa vào lịch sử tự lưu nếu API hỗ trợ phiên bản mới. Link hiện nội dung đã lưu hiện tại, không phải bản snapshot bất biến.
 
 Chữ/ảnh có hiệu ứng xuất hiện theo thiết lập phần tử; hiệu ứng lặp hiện có vẫn hoạt động. Giảm chuyển động của hệ điều hành tắt hiệu ứng trang, không khí và hiệu ứng lặp. Vòng vẽ phần tử dừng khi tab ẩn; trang không có hiệu ứng lặp dừng vòng vẽ sau khi xuất hiện xong.
+
+Lớp hoa/sao/trái tim nằm ở vùng nhìn của viewer, tách khỏi nội dung thiệp cuộn. Cuộn xuống không cuốn lớp hiệu ứng đi mất theo đầu trang. Lớp này không nhận thao tác chuột/chạm và không phủ khu vực nút điều khiển; vẫn tắt theo reduced motion.
 
 Hiệu ứng không khí và nhạc trong hướng dẫn này dành cho viewer chia sẻ. Thiết lập xuất MP4 vẫn độc lập ở **Tạo video**, giữ các lựa chọn nhạc/thời lượng vốn có. Không tự tạo worker cloud.
 
@@ -40,7 +44,7 @@ Tham khảo [Canva Invitations](https://www.canva.com/invitations/) về luồng
 
 Kiểm chứng liên quan:
 
-- `tests/invitations.test.ts`: tương thích tài liệu cũ, nội dung bản nháp, schema, hình học và ID của bốn mẫu.
+- `tests/invitations.test.ts`, `tests/preview-audio.test.ts`: tương thích tài liệu cũ, nội dung bản nháp, schema, hình học/ID mẫu và biên đoạn nhạc.
 - `tests/couple-rituals.test.ts`: không tự đồng ý, không mở sau một phiếu, đồng thuận nhiều thành viên, tương thích lời cũ, lịch mở và backup/restore.
 - `npm run test:api`: nhạc riêng/chia sẻ, byte range, âm thanh ngoài album, CAS/history, đổi nhạc và thu hồi link. Runner PostgreSQL chạy cùng API trên schema QA riêng.
 - `node --import tsx scripts/pilot-qa.ts invitations`: tạo thiệp từ UI, sửa chữ/giữ focus, lưu lựa chọn, nghe nhạc gốc/nhạc fixture tải lên, viewer chỉ đọc, thu hồi link, reduced motion, layout 1600/390/320 và xuất MP4 QA.

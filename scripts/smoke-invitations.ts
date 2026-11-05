@@ -17,6 +17,14 @@ try {
     const p = await owner.newPage(),
       v = await visitor.newPage(),
       errors: string[] = [];
+    await visitor.addInitScript(`{
+      const play = HTMLMediaElement.prototype.play;
+      let attempted = false;
+      HTMLMediaElement.prototype.play = function() {
+        if (!this.controls && !attempted) { attempted = true; return Promise.reject(new DOMException('Fixture autoplay blocked', 'NotAllowedError')); }
+        return play.call(this);
+      };
+    }`);
     p.on('pageerror', (e) => errors.push(e.message));
     v.on('pageerror', (e) => errors.push(e.message));
     try {
@@ -52,7 +60,9 @@ try {
       await p.getByRole('button', { name: 'Xem album', exact: true }).click();
       const ownerViewer = p.getByRole('dialog', { name: 'Xem album', exact: true });
       await expect(ownerViewer.getByLabel('Phong cách cuốn sổ')).toHaveValue('spiral');
-      await ownerViewer.getByRole('button', { name: 'Bật nhạc', exact: true }).click();
+      await expect(
+        ownerViewer.getByRole('button', { name: 'Tắt nhạc', exact: true }),
+      ).toBeVisible();
       await expect
         .poll(() => ownerViewer.locator('audio').evaluate((a: HTMLAudioElement) => a.currentTime))
         .toBeGreaterThan(0);
@@ -74,6 +84,9 @@ try {
         .toBe(1);
       const audio = (await (await owner.request.get(origin + `/api/albums/${id}/audio`)).json())[0];
       await p.getByLabel('Nhạc bản chia sẻ', { exact: true }).selectOption(audio.id);
+      await p.getByLabel('Tên nhạc bản chia sẻ', { exact: true }).fill('Lời mời của hai đứa');
+      await p.getByLabel('Bắt đầu nhạc bản chia sẻ', { exact: true }).fill('2');
+      await p.getByLabel('Kết thúc nhạc bản chia sẻ', { exact: true }).fill('4');
       await p.getByRole('button', { name: 'Chia sẻ', exact: true }).click();
       const link = await p.getByLabel('Link chia sẻ', { exact: true }).inputValue();
       await v.goto(link);
@@ -82,12 +95,24 @@ try {
       await expect(viewer.locator('input,select,textarea')).toHaveCount(0);
       await expect(viewer.locator('.book-shell')).toHaveClass(/book-spiral/);
       await expect(viewer.locator('.ambience-hearts')).toBeVisible();
-      await expect(viewer.locator('audio')).toHaveAttribute('preload', 'none');
+      await expect(viewer.locator('audio')).toHaveAttribute('preload', 'auto');
+      await expect(viewer.locator('audio')).toHaveAttribute('aria-label', 'Lời mời của hai đứa');
       assert.equal(await viewer.locator('audio').evaluate((a: HTMLAudioElement) => a.paused), true);
       await viewer.getByRole('button', { name: 'Bật nhạc', exact: true }).click();
       await expect
         .poll(() => viewer.locator('audio').evaluate((a: HTMLAudioElement) => a.currentTime))
         .toBeGreaterThan(0);
+      await expect
+        .poll(() => viewer.locator('audio').evaluate((a: HTMLAudioElement) => a.currentTime))
+        .toBeGreaterThanOrEqual(2);
+      await new Promise((resolve) => setTimeout(resolve, 2600));
+      const clipTime = await viewer
+        .locator('audio')
+        .evaluate((a: HTMLAudioElement) => a.currentTime);
+      assert.ok(
+        clipTime >= 2 && clipTime <= 4.2,
+        'selected clip loops without replaying the intro: ' + clipTime,
+      );
       await viewer.getByRole('button', { name: 'Tắt nhạc', exact: true }).click();
       await expect
         .poll(() =>
@@ -103,6 +128,33 @@ try {
         ),
       );
       await v.screenshot({ path: `test-results/invitation-share-${width}.png` });
+      await p.getByLabel('Cách đọc bản chia sẻ', { exact: true }).selectOption('scroll');
+      await expect.poll(async () => (await read()).presentation.readingMode).toBe('scroll');
+      await v.reload();
+      await expect(viewer.locator('.scroll-story')).toBeVisible();
+      await expect
+        .poll(() =>
+          viewer
+            .locator('.scroll-story [data-visual-effect]')
+            .first()
+            .evaluate((node) => Number((node.parentElement as HTMLElement).style.opacity)),
+        )
+        .toBe(1);
+      const beforeAtmosphere = await viewer.locator('.viewer-ambience').boundingBox();
+      await viewer.locator('.viewer-page').evaluate((node) => {
+        node.scrollTop = node.scrollHeight;
+      });
+      const afterAtmosphere = await viewer.locator('.viewer-ambience').boundingBox();
+      assert.ok(
+        beforeAtmosphere && afterAtmosphere && Math.abs(beforeAtmosphere.y - afterAtmosphere.y) < 1,
+      );
+      assert.equal(
+        await viewer
+          .locator('.viewer-ambience')
+          .evaluate((node) => getComputedStyle(node).pointerEvents),
+        'none',
+      );
+      await v.screenshot({ path: `test-results/invitation-scroll-atmosphere-${width}.png` });
       await v.emulateMedia({ reducedMotion: 'reduce' });
       await expect(viewer.locator('.viewer-ambience')).toHaveCount(0);
       await v.setViewportSize({ width: 640, height: 360 });

@@ -80,3 +80,17 @@ test('in-flight invalidation and aborted consumers cannot publish stale results'
     name: 'AbortError',
   });
 });
+
+test('simultaneous identical reads do not double-count retained memory', async () => {
+  const cache = new ValidatedReads();
+  const payload = { text: 'x'.repeat(900000) };
+  const read = async <T>(path: string): Promise<T> =>
+    (path === '/journal-state' ? { scope: 'alice', version: '1' } : payload) as T;
+  for (let i = 0; i < 12; i++) {
+    const values = await Promise.all([
+      cache.read<typeof payload>('/photos?q=' + i, read),
+      cache.read<typeof payload>('/photos?q=' + i, read),
+    ]);
+    assert.equal(values[0].text.length, payload.text.length);
+  }
+});

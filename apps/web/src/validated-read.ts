@@ -38,9 +38,10 @@ export class ValidatedReads {
     check();
     const size = JSON.stringify(value).length * 2;
     if (size <= 4 * 1024 * 1024) {
-      if (cached) {
+      const current = this.entries.get(key);
+      if (current) {
         this.entries.delete(key);
-        this.bytes -= cached.size;
+        this.bytes -= current.size;
       }
       this.entries.set(key, { value: structuredClone(value), size, at: Date.now() });
       this.bytes += size;

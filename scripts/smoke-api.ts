@@ -339,12 +339,37 @@ try {
   const inviteAudio = await (
     await alice(`/albums/${invitation.id}/audio`, 'POST', inviteAudioForm)
   ).json();
+  assert.equal(
+    (
+      await alice(`/albums/${invitation.id}`, 'PATCH', {
+        expectedRevision: invitation.revision,
+        content: {
+          ...invitation,
+          presentation: {
+            ...invitation.presentation,
+            musicId: 'custom',
+            audioId: inviteAudio.id,
+            audioStart: 2,
+            audioEnd: inviteAudio.duration + 5,
+          },
+        },
+      })
+    ).status,
+    400,
+  );
   invitation = await (
     await alice(`/albums/${invitation.id}`, 'PATCH', {
       expectedRevision: invitation.revision,
       content: {
         ...invitation,
-        presentation: { ...invitation.presentation, musicId: 'custom', audioId: inviteAudio.id },
+        presentation: {
+          ...invitation.presentation,
+          musicId: 'custom',
+          audioId: inviteAudio.id,
+          audioStart: 2,
+          audioEnd: 4,
+          audioLabel: 'Nhạc ngày của mình',
+        },
       },
     })
   ).json();
@@ -357,6 +382,9 @@ try {
   const shareRoute = `/shared/${inviteShare.token}`;
   const sharedInvite = await (await client()(shareRoute)).json();
   assert.equal(sharedInvite.presentation.audioId, inviteAudio.id);
+  assert.equal(sharedInvite.presentation.audioStart, 2);
+  assert.equal(sharedInvite.presentation.audioEnd, 4);
+  assert.equal(sharedInvite.presentation.audioLabel, 'Nhạc ngày của mình');
   assert.equal(sharedInvite.previewAudio.url, `/api${shareRoute}/audio/${inviteAudio.id}`);
   const publicAudio = await fetch(base + shareRoute + '/audio/' + inviteAudio.id, {
     headers: { Range: 'bytes=0-63' },

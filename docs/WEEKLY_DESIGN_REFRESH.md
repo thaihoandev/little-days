@@ -26,7 +26,7 @@ Khi tạo **Thiệp mời**, chọn **Thiệp dài · cuộn dọc**. Mẫu kh�
 
 Trong editor, các phần xếp dọc. Bấm **Sửa phần…** để chuyển phần đang sửa; chỉ một canvas tương tác chạy cùng lúc. Thêm/xóa/đổi thứ tự phần qua mục Trang sổ, giữ autosave, bản nháp và undo/redo hiện có. Mỗi phần vẫn theo hệ tọa độ 720 × 900; đây là thiệp nhiều phần liên tục, chưa phải một canvas có chiều cao tùy ý.
 
-Trong **Thiết lập → Cách đọc**, đổi giữa lật trang và cuộn liên tục mà không mất nội dung. Bản chia sẻ cuộn ngay trong trang, chỉ xem và bật/tắt nhạc; không có chọn kiểu/gáy/hiệu ứng cho khách. Hiệu ứng của từng phần chỉ chạy khi phần đó đi vào vùng nhìn, tôn trọng reduced motion và trạng thái tab. Nhạc cần bấm phát theo chính sách của trình duyệt.
+Trong **Thiết lập → Cách đọc**, đổi giữa lật trang và cuộn liên tục mà không mất nội dung. Bản chia sẻ cuộn ngay trong trang, chỉ xem và bật/tắt nhạc; không có chọn kiểu/gáy/hiệu ứng cho khách. Hiệu ứng của từng phần chỉ chạy khi phần đó đi vào vùng nhìn, tôn trọng reduced motion và trạng thái tab. Preview tự thử phát đoạn nhạc đã chọn; nếu trình duyệt chặn autoplay có tiếng, người xem bấm **Bật nhạc**. Xem [hướng dẫn nhạc và thiệp](INVITATIONS_AND_SHARED_PREVIEW.md).
 
 Video vẫn xuất các phần được chọn theo thứ tự cảnh, chưa tạo chuyển động camera cuộn một tờ thiệp dài. Worker cloud vẫn chưa được triển khai; kiểm tra MP4 dùng worker fixture cô lập.
 

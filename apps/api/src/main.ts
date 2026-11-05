@@ -216,6 +216,11 @@ async function validateReferences(album: Album) {
       (await repository.owner('audio', audioId)) !== (await repository.owner('album', album.id))
     )
       throw new BadRequestException('Nhạc không thuộc album hoặc đã bị xóa.');
+    if (
+      (album.presentation.audioStart ?? 0) >= audio.duration ||
+      (album.presentation.audioEnd ?? audio.duration) > audio.duration + 0.05
+    )
+      throw new BadRequestException('Đoạn nhạc nằm ngoài thời lượng bản tải lên.');
   }
 }
 async function albumWrite<T>(owner: string, action: () => Promise<T>) {
@@ -607,6 +612,7 @@ class AppController {
       remindersVersion: 1,
       coupleRitualsVersion: 1,
       albumPresentationVersion: 1,
+      previewAudioClipVersion: 1,
       weeklyRecapVersion: 1,
       calendarRecurrenceVersion: 1,
       designExperienceVersion: 1,

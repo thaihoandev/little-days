@@ -383,6 +383,7 @@ export default function App() {
           presentationEnabled={user.albumPresentationVersion === 1}
           designExperienceEnabled={user.designExperienceVersion === 1}
           recurrenceEnabled={user.calendarRecurrenceVersion === 1}
+          audioClipEnabled={user.previewAudioClipVersion === 1}
           notify={notify}
           onBack={() => {
             setActive(null);
@@ -987,6 +988,7 @@ function AccountModal({
 }
 
 function Editor({
+  audioClipEnabled,
   recurrenceEnabled,
   initial,
   userId,
@@ -997,6 +999,7 @@ function Editor({
   presentationEnabled,
   designExperienceEnabled,
 }: {
+  audioClipEnabled: boolean;
   initial: Album;
   recurrenceEnabled: boolean;
   userId: string;
@@ -1828,6 +1831,7 @@ function Editor({
               <div className="form-stack">
                 {presentationEnabled && (
                   <PresentationSettings
+                    audioClipEnabled={audioClipEnabled}
                     designExperienceEnabled={designExperienceEnabled}
                     album={album}
                     onChange={(patch) => doc.edit((a) => ({ ...a, ...patch }))}
