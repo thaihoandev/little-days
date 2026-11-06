@@ -4,7 +4,11 @@
 
 Mở **Hôm nay → Tuần của chúng mình**. Chọn không gian chung nếu bạn tham gia nhiều không gian; dùng mũi tên để xem tuần trước. Dải ảnh có bảy ngày từ thứ Hai đến Chủ nhật theo giờ Việt Nam. Bấm ngày chưa có ảnh để thêm dấu mốc; các ngày tương lai chưa cho thêm từ dải này.
 
-**Tạo recap tuần** mở bộ chọn 1–9 ảnh. Thẻ ảnh có tên/avatar người đăng; số trên ảnh là thứ tự trong collage. Bỏ chọn để thay ảnh, hoặc dùng mũi tên trong danh sách thứ tự để đưa ảnh lên trước. Có ba bố cục Ô ảnh, Thước phim, Nhật ký ảnh và bốn màu giấy. Không cần có ảnh đủ bảy ngày.
+**Tạo recap tuần** mở ba bước **Ảnh → Thiết kế → Xem trước**. Chọn 1–9 ảnh; thẻ ảnh có tên/avatar người đăng và số thứ tự. Mở **Sắp xếp … ảnh đã chọn** để xem ảnh nhỏ, đưa ảnh lên/xuống hoặc bỏ ảnh. Khi đủ chín ảnh, bỏ một ảnh để chọn ảnh khác. Không cần có ảnh đủ bảy ngày.
+
+Ở bước Thiết kế, nhập tiêu đề/lời nhắn rồi chọn một trong ba thẻ bố cục Ô ảnh, Thước phim, Nhật ký ảnh và bốn màu giấy. Có thể quay lại từng bước mà không mất các lựa chọn trong phiên. Bước Xem trước hiển thị toàn bộ trang 720 × 900, co theo cả chiều rộng và chiều cao vùng nhìn, kể cả khi xoay điện thoại. Trên desktop bản nháp còn xuất hiện cạnh bảng tùy chọn. Chỉ vùng tùy chọn cuộn; header, các bước và nút tiếp tục/lưu giữ trong khung.
+
+Giao diện theo chiều cao `visualViewport` khi bàn phím làm hẹp vùng nhìn, giữ chữ nhập mobile từ 16px và không chặn pinch zoom. Chromium kiểm tra vùng nhìn ngắn/màn hình ngang; bàn phím và Safari/iPhone thật chưa được nghiệm thu. ID của phần tử trong bản nháp giữ ổn định khi gõ, tránh remount ảnh chỉ vì sửa tiêu đề hoặc lời nhắn. Các ID này không thay ID/nội dung do server tạo khi lưu sổ.
 
 Chọn **Lưu và mở trong editor** để tạo sổ cá nhân. Ảnh được sao chép qua media store, tính quota của người lưu và vẫn sửa/thay/crop được. Recap không nhân bản dấu mốc nguồn vào mục kỉ niệm của album; ngày bắt đầu sổ là thứ Hai của tuần. Sổ không tự công khai. Người dùng bật chia sẻ như album thường, hoặc **Tải trang PNG** để lưu một ảnh collage 720 × 900. Trong **Album → Recap tuần**, các sổ đã lưu được lọc riêng; một tuần có thể có nhiều bản thiết kế theo chủ ý người dùng.
 
@@ -41,7 +45,7 @@ Video vẫn xuất các phần được chọn theo thứ tự cảnh, chưa t�
 Các bài kiểm tra dùng tài khoản, database, mail và ảnh fixture; không tương đương xác nhận pilot người dùng thật hoặc chứng minh production đã deploy.
 
 - `tests/weekly-recap.test.ts`: bố cục 1–9 ảnh, phần thiệp hợp lệ, quyền riêng/chung, tác giả, sai tuần/revision, retry, thu hồi quyền và dọn bản sao chưa commit khi nguồn đổi.
-- `node --import tsx scripts/pilot-qa.ts weekly-experience`: desktop 1600 px, mobile 390/320 px; recap, PNG, gallery, chỉ một canvas, thiệp share chỉ xem/cuộn, reduced motion; tải MP4 thực tế có chín kiểu ảnh và các phần thiệp.
+- `node --import tsx scripts/pilot-qa.ts weekly-experience`: desktop 1600 px, mobile 390/320 px; 10 ảnh nguồn/giới hạn 9, bỏ/chọn/sắp xếp, ba bước, focus/nhập giữa câu, ảnh không remount khi gõ, preview vừa khung ở vùng nhìn ngắn và màn hình ngang. Tiếp tục kiểm tra PNG, gallery, một canvas, thiệp share chỉ xem/cuộn, reduced motion và MP4 thật. Kết quả thực tế đối chiếu log của lượt chạy.
 - Runner PostgreSQL có thêm bài recap để kiểm tra SQL JSON/window/keyset trên driver thực tế; không dùng database production.
 
 CI và trạng thái triển khai của đúng commit cần được kiểm tra riêng khi bàn giao.

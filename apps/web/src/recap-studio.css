@@ -1,0 +1,505 @@
+/* Recap is a bounded studio: only the active options panel scrolls. */
+.recap-dialog.recap-studio[open] {
+  display: flex;
+  flex-direction: column;
+  width: min(1000px, calc(100vw - 40px));
+  height: min(820px, calc(100dvh - 40px));
+  max-height: calc(100dvh - 40px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 24px 90px #20242d30;
+}
+.recap-studio [hidden] {
+  display: none !important;
+}
+.recap-studio::backdrop {
+  background: #20263285;
+  backdrop-filter: blur(5px);
+}
+.recap-studio > header {
+  flex: none;
+  padding: 18px 22px 12px;
+  gap: 12px;
+}
+.recap-studio h2 {
+  font: 700 24px/1.3 var(--ui-font);
+  letter-spacing: -0.035em;
+  margin: 5px 0 0;
+}
+.recap-studio > header .eyebrow {
+  font-size: 10px;
+  color: var(--muted);
+}
+.recap-studio > header .icon-button {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  background: #f4f5f9;
+}
+.recap-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+  padding: 0 22px 14px;
+  border-bottom: 1px solid var(--line);
+  flex: none;
+}
+.recap-steps button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--muted);
+  font: 600 12px var(--ui-font);
+  background: #f6f7fa;
+}
+.recap-steps b {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font: 600 10px var(--ui-font);
+  background: #e9ecf2;
+  flex: none;
+}
+.recap-steps button[aria-current='step'] {
+  background: #fff3f7;
+  border-color: #eac0ce;
+  color: var(--accent);
+}
+.recap-steps button[aria-current='step'] b {
+  background: var(--accent);
+  color: #fff;
+}
+.recap-steps button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.recap-studio .recap-compose {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.85fr);
+  flex: 1;
+  min-height: 0;
+  gap: 22px;
+  margin: 0;
+  padding: 18px 22px;
+  overflow: hidden;
+}
+.recap-studio .recap-options {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 0 6px 0 0;
+  scrollbar-gutter: stable;
+}
+.recap-studio .recap-options fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.recap-studio .recap-options legend {
+  color: var(--ink);
+  font: 600 13px/1.5 var(--ui-font);
+  margin-bottom: 12px;
+}
+.recap-options legend > span {
+  float: right;
+  margin-left: 10px;
+  color: var(--accent);
+  font-size: 11px;
+}
+.recap-help {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 0 0 14px;
+}
+.recap-studio .recap-photo-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.recap-studio .recap-photo-grid > button {
+  border: 2px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+.recap-studio .recap-photo-grid > button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: #fff5f8;
+}
+.recap-studio .recap-photo-grid > button:disabled {
+  opacity: 0.5;
+}
+.recap-studio .recap-photo-grid b {
+  background: var(--accent);
+  padding: 4px 6px;
+  gap: 3px;
+}
+.recap-studio .recap-photo-grid button > span {
+  min-height: 31px;
+  gap: 4px;
+  padding: 6px 5px;
+  color: var(--muted);
+}
+.recap-photo-grid em {
+  font-style: normal;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10px;
+}
+.recap-studio .recap-photo-grid small {
+  font-size: 8px;
+  flex: none;
+}
+.recap-studio .recap-photo-grid .user-avatar {
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+}
+.recap-load-more {
+  width: 100%;
+  margin-top: 12px;
+}
+.recap-reorder {
+  border-top: 1px dashed var(--rose-line);
+  margin-top: 18px;
+  padding-top: 13px;
+}
+.recap-reorder summary {
+  font-size: 12px;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 7px 0;
+}
+.recap-studio .recap-order {
+  margin: 8px 0 0;
+}
+.recap-studio .recap-order li {
+  gap: 5px;
+  padding: 9px 0;
+  border-color: var(--line);
+}
+.recap-order li > img {
+  width: 34px;
+  height: 42px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex: none;
+}
+.recap-order li > span {
+  min-width: 0;
+  padding: 0 5px;
+}
+.recap-order strong {
+  display: block;
+  font-size: 11px;
+  color: var(--ink);
+  font-weight: 600;
+}
+.recap-order small {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-top: 4px;
+}
+.recap-order .icon-button {
+  width: 36px;
+  height: 40px;
+  flex: none;
+  background: #f7f8fb;
+  border-radius: 8px;
+}
+.recap-studio .form-stack {
+  gap: 16px;
+}
+.recap-studio .form-stack label {
+  font-size: 12px;
+  color: #5e687b;
+}
+.recap-studio .form-stack textarea {
+  resize: none;
+  min-height: 84px;
+}
+.recap-studio fieldset.recap-layouts {
+  margin: 0;
+}
+.recap-layouts > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+.recap-layouts button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 5px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f8f9fc;
+  color: var(--ink);
+}
+.recap-layouts button[aria-pressed='true'] {
+  background: #fff5f8;
+  border-color: #cb8198;
+}
+.recap-layouts strong {
+  font-size: 10px;
+  font-weight: 600;
+}
+.recap-layouts small {
+  font-size: 8px;
+  line-height: 1.4;
+  color: var(--muted);
+  text-align: center;
+}
+.recap-layout-icon {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  width: 47px;
+  height: 52px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #ead6de;
+  border-radius: 3px;
+  box-shadow: 2px 3px 0 #ebdce34d;
+}
+.recap-layout-icon i {
+  background: #d6a7b5;
+  border-radius: 1px;
+}
+.recap-layout-icon.film i {
+  border-top: 1px dotted white;
+  border-bottom: 1px dotted white;
+  background: #776d79;
+}
+.recap-layout-icon.editorial {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+.recap-layout-icon.editorial i:first-child {
+  grid-row: span 2;
+}
+.recap-studio .recap-palettes {
+  margin-top: 0;
+  gap: 12px;
+  padding: 3px;
+}
+.recap-studio .recap-palettes button {
+  width: 42px;
+  height: 42px;
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px #dce0e9;
+  display: grid;
+  place-items: center;
+  color: #744052;
+}
+.recap-studio .recap-palettes button[aria-pressed='true'] {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.recap-studio .recap-palettes button:last-child {
+  color: #fff;
+}
+.recap-dialog.recap-studio .recap-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  align-self: stretch;
+  position: static;
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  padding: 12px;
+  gap: 10px;
+  overflow: hidden;
+  background: #f0f2f7;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+}
+.recap-dialog.recap-studio .recap-preview > div {
+  transform: none;
+  margin: 0;
+}
+.recap-preview-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--muted);
+  flex: none;
+}
+.recap-preview-caption span {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+.recap-preview-caption small {
+  font-size: 9px;
+}
+.recap-paper-host {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+.recap-paper-host > div {
+  flex: none;
+  box-shadow: 0 7px 25px #2c34411a;
+}
+.recap-confirm-info {
+  padding: 20px 6px;
+}
+.recap-confirm-info h3 {
+  font: 700 23px/1.4 var(--ui-font);
+  overflow-wrap: anywhere;
+  margin: 14px 0;
+}
+.recap-confirm-info p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.recap-studio > .error-banner {
+  flex: none;
+  font-size: 11px;
+  padding: 9px 14px;
+  margin: 0 18px 8px;
+  max-height: 90px;
+  overflow: auto;
+}
+.recap-studio > footer {
+  flex: none;
+  margin: 0;
+  padding: 12px 22px 16px;
+  border-top: 1px solid var(--line);
+  background: #fff;
+  gap: 12px;
+}
+.recap-studio > footer > span {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.recap-studio > footer > div {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+.recap-studio > footer .button {
+  min-height: 44px;
+  font-size: 12px;
+}
+.recap-studio .recap-back {
+  width: 44px;
+  min-width: 44px;
+  max-width: 44px;
+  flex: none;
+  padding: 10px;
+}
+@media (max-width: 640px) {
+  .recap-dialog.recap-studio[open] {
+    position: fixed;
+    inset: var(--recap-viewport-top, 0px) auto auto 50%;
+    transform: translateX(-50%);
+    margin: 8px 0 0;
+    width: calc(100vw - 16px);
+    height: calc(var(--recap-viewport-height, 100dvh) - 16px);
+    max-height: calc(var(--recap-viewport-height, 100dvh) - 16px);
+    border-radius: 18px;
+  }
+  .recap-studio > header {
+    padding: 12px 14px 9px;
+  }
+  .recap-studio h2 {
+    font-size: 20px;
+  }
+  .recap-steps {
+    padding: 0 12px 10px;
+    gap: 5px;
+  }
+  .recap-steps button {
+    padding: 8px 4px;
+    font-size: 11px;
+    gap: 5px;
+    min-height: 42px;
+  }
+  .recap-steps b {
+    width: 20px;
+    height: 20px;
+  }
+  .recap-dialog.recap-studio .recap-compose {
+    display: block;
+    padding: 13px 12px;
+    margin: 0;
+  }
+  .recap-studio .recap-options {
+    padding-right: 3px;
+    scrollbar-gutter: auto;
+  }
+  .recap-dialog.recap-studio:not([data-step='2']) .recap-preview {
+    display: none;
+  }
+  .recap-dialog.recap-studio[data-step='2'] .recap-options {
+    display: none;
+  }
+  .recap-dialog.recap-studio .recap-preview {
+    max-height: none;
+    padding: 10px;
+  }
+  .recap-studio > footer {
+    padding: 9px 12px max(12px, env(safe-area-inset-bottom));
+    gap: 7px;
+  }
+  .recap-studio > footer > span {
+    font-size: 9px;
+  }
+  .recap-studio > footer > div {
+    width: 100%;
+  }
+  .recap-studio > footer .primary {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    padding: 10px 7px;
+    font-size: 11px;
+    gap: 6px;
+  }
+  .recap-studio > .error-banner {
+    margin: 0 12px 7px;
+  }
+}
+@media (max-height: 500px) {
+  .recap-studio > header {
+    padding-block: 7px;
+  }
+  .recap-studio h2 {
+    font-size: 18px;
+  }
+  .recap-studio .recap-steps {
+    padding-bottom: 7px;
+  }
+  .recap-studio > footer > span {
+    display: none;
+  }
+  .recap-studio > footer {
+    padding-block: 8px;
+  }
+}

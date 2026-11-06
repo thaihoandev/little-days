@@ -59,6 +59,7 @@ import './main-pages.css';
 import './interaction-polish.css';
 import './photo-journal.css';
 import './little-days-layout.css';
+import './recap-studio.css';
 
 if (
   'serviceWorker' in navigator &&

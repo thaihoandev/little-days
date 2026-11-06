@@ -109,11 +109,31 @@ try {
           },
         })
       ).json();
-      const uploaded = await partner.request.post(origin + '/api/journal/' + entry.id + '/assets', {
-        multipart: { file: { name: 'fixture.png', mimeType: 'image/png', buffer: bytes } },
-      });
-      assert.equal(uploaded.status(), 201, await uploaded.text());
-      entry = await uploaded.json();
+      for (let i = 0; i < 10; i++) {
+        if (i === 6)
+          entry = await (
+            await partner.request.post(origin + '/api/journal', {
+              data: {
+                title: 'Một buổi chiều khác',
+                note: '',
+                date,
+                kind: 'memory',
+                annual: false,
+                timelineId: alice.id,
+              },
+            })
+          ).json();
+        const uploaded = await partner.request.post(
+          origin + '/api/journal/' + entry.id + '/assets',
+          {
+            multipart: {
+              file: { name: 'fixture-' + i + '.png', mimeType: 'image/png', buffer: bytes },
+            },
+          },
+        );
+        assert.equal(uploaded.status(), 201, await uploaded.text());
+        entry = await uploaded.json();
+      }
       await p.goto(origin + '/today');
       const weekly = p.getByRole('region', { name: 'Tuần của chúng mình', exact: true });
       await expect(weekly.locator('.week-tape > button')).toHaveCount(7);
@@ -128,8 +148,98 @@ try {
       await p.screenshot({ path: 'test-results/weekly-home-' + width + '.png', fullPage: true });
       await weekly.getByRole('button', { name: 'Tạo recap tuần', exact: true }).click();
       const composer = p.getByRole('dialog', { name: 'Thiết kế recap tuần', exact: true });
-      await expect(composer.getByRole('button', { name: /Bỏ chọn ảnh Bình/ })).toBeVisible();
+      await expect(composer.getByRole('button', { name: /Bỏ chọn ảnh Bình/ })).toHaveCount(9);
+      await expect(composer.locator('.recap-photo-grid > button')).toHaveCount(10);
+      await expect(composer.locator('.recap-photo-grid > button').last()).toBeDisabled();
+      const fitting = async () => {
+        await expect
+          .poll(async () => {
+            const frame = await composer.locator('.recap-paper-host').boundingBox();
+            const paper = await composer.locator('.recap-paper-host > div').boundingBox();
+            return !!(
+              frame &&
+              paper &&
+              paper.width >= Math.min(360, frame.width, (frame.height * 720) / 900) - 2 &&
+              paper.x >= frame.x - 1 &&
+              paper.y >= frame.y - 1 &&
+              paper.x + paper.width <= frame.x + frame.width + 1 &&
+              paper.y + paper.height <= frame.y + frame.height + 1
+            );
+          })
+          .toBe(true);
+        const frame = await composer.locator('.recap-paper-host').boundingBox();
+        const paper = await composer.locator('.recap-paper-host > div').boundingBox();
+        assert.ok(
+          frame &&
+            paper &&
+            paper.x >= frame.x - 1 &&
+            paper.y >= frame.y - 1 &&
+            paper.x + paper.width <= frame.x + frame.width + 1 &&
+            paper.y + paper.height <= frame.y + frame.height + 1,
+          'complete recap paper fits preview',
+        );
+        assert.ok(
+          await composer.evaluate((node) => node.scrollHeight <= node.clientHeight + 1),
+          'dialog itself never scrolls',
+        );
+        const footer = await composer.locator('footer').boundingBox();
+        assert.ok(
+          footer &&
+            footer.y >= 0 &&
+            footer.y + footer.height <= (await p.evaluate(() => innerHeight)) + 1,
+          'primary action stays inside viewport',
+        );
+        assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        for (const button of await composer.locator('footer button').all()) {
+          await expect(button).toBeInViewport({ ratio: 1 });
+        }
+      };
+      await composer.locator('.recap-reorder > summary').click();
+      const order = composer.locator('.recap-order > li');
+      const firstId = await order.first().getAttribute('data-asset-id');
+      await composer.getByRole('button', { name: 'Đưa ảnh 1 xuống sau', exact: true }).click();
+      await expect(order.nth(1)).toHaveAttribute('data-asset-id', firstId!);
+      await composer.getByRole('button', { name: 'Đưa ảnh 2 lên trước', exact: true }).click();
+      await expect(order.first()).toHaveAttribute('data-asset-id', firstId!);
+      await composer.getByRole('button', { name: 'Bỏ ảnh 9', exact: true }).click();
+      await expect(composer.locator('.recap-photo-grid > button').last()).toBeEnabled();
+      await composer.locator('.recap-photo-grid > button').last().click();
+      await expect(order).toHaveCount(9);
+      await composer.getByRole('button', { name: 'Đóng recap', exact: true }).click();
+      await expect(composer).not.toBeVisible();
+      await expect(weekly.locator('h2')).toBeFocused();
+      await weekly.getByRole('button', { name: 'Tạo recap tuần', exact: true }).click();
+      const picked = composer.locator('.recap-photo-grid > button[aria-pressed="true"]');
+      for (let i = 0; i < 9; i++) await picked.first().click();
+      await expect(
+        composer.getByRole('button', { name: 'Tiếp tục: Thiết kế', exact: true }),
+      ).toBeDisabled();
+      await expect(composer.getByRole('button', { name: 'Xem trước', exact: true })).toBeDisabled();
+      for (let i = 0; i < 9; i++)
+        await composer.locator('.recap-photo-grid > button').nth(i).click();
+      await p.screenshot({ path: 'test-results/recap-photos-' + width + '.png' });
+      await composer.getByRole('button', { name: 'Tiếp tục: Thiết kế', exact: true }).click();
+      await composer.getByRole('button', { name: 'Thước phim', exact: true }).click();
+      await composer.getByRole('button', { name: 'Xem trước', exact: true }).click();
+      await fitting();
+      await composer.getByRole('button', { name: 'Thiết kế', exact: true }).click();
+      await p.evaluate(() => {
+        (window as any).qaRecapImage = document.querySelector('.recap-preview img');
+      });
       await composer.getByLabel('Tiêu đề recap', { exact: true }).fill('Một tuần thật vui');
+      await composer.getByLabel('Tiêu đề recap', { exact: true }).press('Home');
+      await p.keyboard.insertText('Nhớ ');
+      await expect(composer.getByLabel('Tiêu đề recap', { exact: true })).toHaveValue(
+        'Nhớ Một tuần thật vui',
+      );
+      await expect(composer.getByLabel('Tiêu đề recap', { exact: true })).toBeFocused();
+      assert.equal(
+        await p.evaluate(
+          () => (window as any).qaRecapImage === document.querySelector('.recap-preview img'),
+        ),
+        true,
+        'typing does not remount recap photos',
+      );
       if (width === 1600) {
         await partner.request.post(origin + '/api/journal', {
           data: {
@@ -148,18 +258,47 @@ try {
         await refresh;
         await expect(composer).toBeVisible();
         await expect(composer.getByLabel('Tiêu đề recap', { exact: true })).toHaveValue(
-          'Một tuần thật vui',
+          'Nhớ Một tuần thật vui',
         );
       }
-      await composer.getByLabel('Bố cục recap', { exact: true }).selectOption('film');
+      await composer.getByRole('button', { name: 'Thước phim', exact: true }).click();
       await composer.getByRole('button', { name: 'Xanh đêm', exact: true }).click();
+      await p.screenshot({ path: 'test-results/recap-design-' + width + '.png' });
+      if (width < 500) {
+        await p.setViewportSize({ width, height: 568 });
+        await expect
+          .poll(
+            async () => {
+              const footer = await composer.locator('footer').boundingBox();
+              return !!footer && footer.y + footer.height <= 569;
+            },
+            { message: 'footer follows a shortened mobile viewport' },
+          )
+          .toBe(true);
+        assert.ok(
+          await composer
+            .getByLabel('Tiêu đề recap', { exact: true })
+            .evaluate((node) => parseFloat(getComputedStyle(node).fontSize) >= 16),
+        );
+      }
+      await composer.getByRole('button', { name: 'Xem trước recap', exact: true }).click();
+      await fitting();
+      if (width < 500) {
+        await p.screenshot({ path: 'test-results/recap-short-preview-' + width + '.png' });
+        await p.setViewportSize({ width: 844, height: 390 });
+        await fitting();
+        await p.setViewportSize({ width, height: 844 });
+        await fitting();
+      }
       await p.screenshot({ path: 'test-results/weekly-composer-' + width + '.png' });
       await composer.getByRole('button', { name: 'Lưu và mở trong editor', exact: true }).click();
       await expect(p).toHaveURL(/\/albums\/[\w-]+$/);
       const id = new URL(p.url()).pathname.split('/').at(-1)!,
         album = await (await owner.request.get(origin + '/api/albums/' + id)).json();
       assert.equal(album.weeklyRecap.layout, 'film');
-      assert.equal(album.assets.length, 1);
+      assert.equal(album.assets.length, 9);
+      assert.equal(album.title, 'Nhớ Một tuần thật vui');
+      assert.equal(album.pages[0].background, '#24364e');
       assert.equal(
         (
           await visitor.request.get(origin + '/api/albums/' + id + '/assets/' + album.assets[0].id)
@@ -252,7 +391,7 @@ try {
         await expect(
           weekly.locator('.week-count'),
           'Saving a new photo refreshes the week without a reload or focus event.',
-        ).toHaveText(['2']);
+        ).toHaveText(['11']);
       }
       if (width === 1600) {
         const content = { ...album };
