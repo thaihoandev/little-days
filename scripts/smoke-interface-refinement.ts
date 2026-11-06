@@ -239,7 +239,24 @@ try {
       ).toBeVisible();
       const trash = await page.locator('.journal-trash-action').boundingBox(),
         filters = await page.locator('.journal-filters').boundingBox();
-      assert.ok(trash && filters && trash.y + trash.height <= filters.y + 1);
+      assert.ok(trash && filters);
+      if (mobile)
+        assert.ok(
+          trash.y >= filters.y + filters.height - 1,
+          'mobile management actions follow the primary filters',
+        );
+      else
+        assert.ok(
+          trash.x >= filters.x + filters.width - 1,
+          'desktop management actions sit beside the filters',
+        );
+      const toolbar = await page.locator('.journal-feed > .section-heading').boundingBox();
+      assert.ok(
+        toolbar &&
+          trash.x + trash.width <= toolbar.x + toolbar.width + 1 &&
+          trash.y + trash.height <= toolbar.y + toolbar.height + 1,
+        'trash stays inside its toolbar',
+      );
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
       assert.deepEqual(errors, []);
       assert.deepEqual(externalFonts, []);
