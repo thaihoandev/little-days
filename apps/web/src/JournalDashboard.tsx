@@ -174,7 +174,6 @@ export default function JournalDashboard({
       null,
     ),
     [trashOpen, setTrashOpen] = useState(false);
-  const [weeklyOpen, setWeeklyOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false),
     [mapPoint, setMapPoint] = useState<MilestoneLocation | null>(null);
   const [openingPoint, setOpeningPoint] = useState(false);
@@ -716,41 +715,29 @@ export default function JournalDashboard({
           <ArrowUpRight size={16} />
         </button>
       )}
+      {mode === 'home' && weeklyReady && (
+        <WeeklyRecap
+          spaces={sharing.spaces || []}
+          ready={sharingReady}
+          refreshKey={`${syncState.current?.version || ''}:${contentVersion}`}
+          onCreated={onCreatedAlbum}
+          onViewRecaps={onViewRecaps}
+          onAddDay={(date, space) => {
+            setSelected(date);
+            setMonth(date.slice(0, 7));
+            setSelectedTimeline(space);
+            setNewKind('memory');
+            setEditing(null);
+          }}
+        />
+      )}
+
       {mode === 'home' &&
         homeActions?.(
           sharing.spaces || [],
           String(syncState.current?.version || '') + ':' + contentVersion,
           sharingReady,
         )}
-      {mode === 'home' && weeklyReady && (
-        <details
-          className="weekly-recap-disclosure"
-          onToggle={(event) => setWeeklyOpen(event.currentTarget.open)}
-        >
-          <summary>
-            <BookOpen size={18} />
-            Nhìn lại tuần này
-            <ChevronRight size={16} />
-          </summary>
-          {weeklyOpen && (
-            <WeeklyRecap
-              spaces={sharing.spaces || []}
-              ready={sharingReady}
-              refreshKey={`${syncState.current?.version || ''}:${contentVersion}`}
-              onCreated={onCreatedAlbum}
-              onViewRecaps={onViewRecaps}
-              onAddDay={(date, space) => {
-                setSelected(date);
-                setMonth(date.slice(0, 7));
-                setSelectedTimeline(space);
-                setNewKind('memory');
-                setEditing(null);
-              }}
-            />
-          )}
-        </details>
-      )}
-
       {mode === 'timeline' &&
         (separateSpaces || timelineOptions.length > 1 || sharing.spaces?.some((s) => s.shared)) && (
           <div className="timeline-scope">

@@ -57,6 +57,7 @@ import './experience.css';
 import './daily-polish.css';
 import './main-pages.css';
 import './interaction-polish.css';
+import './photo-journal.css';
 
 if (
   'serviceWorker' in navigator &&

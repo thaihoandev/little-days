@@ -113,7 +113,7 @@
   min-width: 0;
   border: 1px solid #e2dfd3;
   border-radius: 16px;
-  background: #fffdf7;
+  background: var(--surface);
   box-shadow: 0 4px 18px #63543306;
 }
 .journal-home.daily-cards .journal-day-stories .journal-entry-body {
@@ -549,7 +549,7 @@
 .calendar-mode .journal-feed {
   padding: 24px;
   background: #faf9f3;
-  border: 1px solid #e7e4d8;
+  border: 1px solid var(--line);
   border-radius: 22px;
 }
 .calendar-mode .journal-timeline {
@@ -571,7 +571,7 @@
   padding: 13px;
   width: 100%;
   text-align: left;
-  background: #fffdf5;
+  background: var(--surface);
   border: 1px solid #e5dfc9;
   border-radius: 12px;
 }

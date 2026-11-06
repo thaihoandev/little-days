@@ -23,8 +23,8 @@
   font-size: 9px;
 }
 .plan-summary {
-  border: 1px solid #dfe4d0;
-  background: #f4f6eb;
+  border: 1px solid var(--line);
+  background: var(--paper);
   border-radius: 12px;
   padding: 14px;
   margin: 14px 0;
@@ -94,10 +94,10 @@
   padding: 9px 10px;
 }
 .plan-editor {
-  border: 1px solid #dfe4d0;
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 15px;
-  background: #f4f6eb;
+  background: var(--paper);
   margin: 14px 0;
 }
 .plan-editor header {
@@ -144,14 +144,14 @@
   padding: 9px;
   border-radius: 7px;
   border: 1px solid #d7ddc7;
-  background: #fffdf6;
+  background: var(--surface);
 }
 .plan-task-editor input[type='checkbox'] {
   padding: 0;
 }
 .shared-space-members {
   padding: 14px;
-  background: #f0f3e7;
+  background: var(--accent-soft);
   border-radius: 12px;
   margin: 16px 0;
 }

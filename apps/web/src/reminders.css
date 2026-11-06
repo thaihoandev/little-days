@@ -18,11 +18,11 @@
   padding: 0 4px;
   border-radius: 9px;
   background: #b36358;
-  color: #fffdf5;
+  color: var(--surface);
   font:
     9px 'Be Vietnam Pro',
     sans-serif;
-  border: 2px solid #fffdf5;
+  border: 2px solid var(--surface);
 }
 .reminder-dialog {
   width: min(620px, calc(100vw - 28px));
@@ -31,7 +31,7 @@
   border: 1px solid #dddac8;
   border-radius: 18px;
   padding: 25px;
-  background: #fffdf7;
+  background: var(--surface);
   color: #4f5344;
   box-shadow: 0 24px 100px #27322435;
 }
@@ -47,9 +47,7 @@
   margin-bottom: 20px;
 }
 .reminder-dialog h2 {
-  font:
-    24px Lora,
-    serif;
+  font: 24px var(--ui-font);
   margin: 8px 0 0;
 }
 .reminder-dialog .eyebrow {
@@ -71,9 +69,7 @@
   padding: 14px;
   border-radius: 10px;
   background: #eef2e4;
-  font:
-    18px Lora,
-    serif;
+  font: 18px var(--ui-font);
   overflow-wrap: anywhere;
 }
 .reminder-offsets {
@@ -135,7 +131,7 @@
   border-radius: 8px;
 }
 .reminder-tabs button[aria-pressed='true'] {
-  background: #fffdf7;
+  background: var(--surface);
   color: #607845;
   box-shadow: 0 2px 6px #42523012;
 }
@@ -204,9 +200,7 @@
   margin: 0 auto 8px;
 }
 .reminder-empty h3 {
-  font:
-    20px Lora,
-    serif;
+  font: 20px var(--ui-font);
   color: #6c785a;
 }
 .reminder-rule-list article {
@@ -238,7 +232,7 @@
   padding: 10px;
   border: 1px solid #d7ddc8;
   border-radius: 8px;
-  background: #fffef8;
+  background: var(--surface);
   color: #566448;
 }
 .calendar-grid button.has-holiday {
@@ -291,7 +285,7 @@
   gap: 10px;
   padding: 12px;
   border: 1px solid #eadfcd;
-  background: #fffaf0;
+  background: var(--surface);
   border-radius: 11px;
 }
 .selected-holidays article > div {
@@ -365,15 +359,13 @@
   flex: 1;
 }
 .today-reminders h2 {
-  font:
-    17px Lora,
-    serif;
+  font: 17px var(--ui-font);
   margin: 0;
 }
 .today-reminders > button {
   text-align: left;
   padding: 9px 12px;
-  background: #fffdf5;
+  background: var(--surface);
   border-radius: 9px;
   max-width: 260px;
 }

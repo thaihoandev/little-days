@@ -26,6 +26,8 @@ Vietnamese lunar dates are calculated on the API with `date-chinese` 2.1.4 (`Cal
 
 ## Fonts
 
+The product interface uses Plus Jakarta Sans, bundled locally through Fontsource 5.3.0 with Latin and Vietnamese subsets. Its original OFL-1.1 notice is preserved in `licenses/fonts/plus-jakarta-sans-OFL.txt`. This UI font does not replace the font choices saved in scrapbook documents or their video artwork.
+
 Be Vietnam Pro, Caveat, Lora and Patrick Hand are bundled through Fontsource. Their original SIL Open Font License 1.1 notices, authors and reserved names are preserved in `licenses/fonts/`. Font licensing is independent from Little Days' code license; do not remove the font notices or rename modified fonts contrary to their reserved-name requirements.
 
 The additional Roboto, Nunito, Quicksand, Playfair Display, Merriweather, Montserrat, Source Sans 3, Comfortaa, Dancing Script and EB Garamond families are also bundled through Fontsource with their original OFL-1.1 notices in `licenses/fonts/`. Latin and Vietnamese subsets are served locally for web and video; no Google Fonts API request is required.

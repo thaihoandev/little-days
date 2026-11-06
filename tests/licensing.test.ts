@@ -27,7 +27,7 @@ test('project licensing includes original AGPL text, approved exception, fonts a
   assert.equal(inventory.lockSha256, createHash('sha256').update(lock).digest('hex'));
   assert.ok(inventory.entries.some((e: { name: string }) => e.name === 'remotion'));
   assert.ok(inventory.entries.length > 100);
-  for (const font of ['be-vietnam-pro', 'caveat', 'lora', 'patrick-hand'])
+  for (const font of ['be-vietnam-pro', 'caveat', 'lora', 'patrick-hand', 'plus-jakarta-sans'])
     assert.match(
       await readFile('licenses/fonts/' + font + '-OFL.txt', 'utf8'),
       /SIL OPEN FONT LICENSE/,

@@ -2,7 +2,7 @@
   display: inline-flex;
   gap: 3px;
   padding: 4px;
-  background: #eef1e5;
+  background: var(--accent-soft);
   border: 1px solid #dce2ce;
   border-radius: 10px;
   align-self: start;
@@ -15,7 +15,7 @@
   margin: 10px 0;
   border: 1px solid #d9dfcb;
   border-radius: 10px;
-  background: #f4f5e9;
+  background: var(--paper);
 }
 .upload-retry-list p {
   flex-basis: 100%;
@@ -34,7 +34,7 @@
   color: #859270;
 }
 .text-align-control button[aria-pressed='true'] {
-  background: #fffdf7;
+  background: var(--surface);
   color: #536d3d;
   box-shadow: 0 2px 7px #57633a18;
 }
@@ -56,7 +56,7 @@
   padding: 9px;
   border: 1px solid #dce1ce;
   border-radius: 8px;
-  background: #fffdf7;
+  background: var(--surface);
 }
 .text-editor-modal .large-textarea {
   width: 100%;
@@ -181,9 +181,7 @@
   background: #fafaf1;
 }
 .account-security-column > h3 {
-  font:
-    20px Lora,
-    serif;
+  font: 20px var(--ui-font);
   margin: 0 0 3px;
 }
 .account-security-column > p {
@@ -219,7 +217,7 @@
   gap: 9px;
   padding: 14px;
   margin: 12px 0;
-  background: #f0f3e7;
+  background: var(--accent-soft);
   color: #859470;
   border-radius: 10px;
   font-size: 12px;
@@ -245,7 +243,7 @@
     display: flex;
     gap: 8px;
     padding: 5px;
-    background: #eef1e4;
+    background: var(--accent-soft);
     border-radius: 10px;
     margin-bottom: 14px;
   }
@@ -256,7 +254,7 @@
     font-size: 12px;
   }
   .account-mobile-tabs button[aria-pressed='true'] {
-    background: #fffdf6;
+    background: var(--surface);
     color: #5a7045;
   }
   .account-modal .account-settings > div[data-active='false'] {

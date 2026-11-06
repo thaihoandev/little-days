@@ -115,7 +115,6 @@ try {
       assert.equal(uploaded.status(), 201, await uploaded.text());
       entry = await uploaded.json();
       await p.goto(origin + '/today');
-      await p.getByText('Nhìn lại tuần này', { exact: true }).click();
       const weekly = p.getByRole('region', { name: 'Tuần của chúng mình', exact: true });
       await expect(weekly.locator('.week-tape > button')).toHaveCount(7);
       await expect(
@@ -242,7 +241,6 @@ try {
       await expect(viewer.locator('.viewer-ambience')).toHaveCount(0);
       if (width === 1600) {
         await p.goto(origin + '/today');
-        await p.getByText('Nhìn lại tuần này', { exact: true }).click();
         await p.getByRole('button', { name: 'Thêm dấu mốc', exact: true }).click();
         const form = p.getByRole('dialog', { name: 'Thêm dấu mốc', exact: true });
         await form.getByLabel('Tên dấu mốc', { exact: true }).fill('Ảnh vừa thêm');

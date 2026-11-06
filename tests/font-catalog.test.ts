@@ -36,5 +36,26 @@ test('13 font choices preserve legacy aliases and include local Vietnamese/Latin
     );
   }
   const stylesheet = await readFile('packages/scrapbook-renderer/additional-fonts.css', 'utf8');
-  assert.equal((stylesheet.match(/@import/g) || []).length, 20);
+  const uiImports = stylesheet
+    .split('\n')
+    .filter((line) => line.startsWith('@import') && line.includes('plus-jakarta-sans'));
+  assert.equal(uiImports.length, 8, 'UI has four weights for each local subset');
+  for (const subset of ['latin', 'vietnamese'])
+    for (const weight of [400, 500, 600, 700]) {
+      assert.ok(
+        uiImports.includes(`@import '@fontsource/plus-jakarta-sans/${subset}-${weight}.css';`),
+      );
+      assert.match(
+        await readFile(
+          `node_modules/@fontsource/plus-jakarta-sans/${subset}-${weight}.css`,
+          'utf8',
+        ),
+        /@font-face/,
+      );
+    }
+  assert.equal(
+    (stylesheet.match(/@import/g) || []).length - uiImports.length,
+    20,
+    'document font imports remain intact',
+  );
 });

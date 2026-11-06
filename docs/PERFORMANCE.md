@@ -1,5 +1,11 @@
 # Upload phục hồi và thư viện lớn
 
+## Photo Journal — bổ sung 06/11/2026
+
+- Dải tuần trên Hôm nay hiện mở sẵn khi API có capability recap, thay cho phần thu gọn trước đây. Đổi này ưu tiên ảnh cá nhân và có thêm lượt đọc metadata tuần khi vào trang; giữ validated cache theo tài khoản/phạm vi/revision và tối đa bảy ảnh đại diện. Không đọc tài liệu album đầy đủ cho dải tuần.
+- Font UI Plus Jakarta Sans được bundle Latin/tiếng Việt, không có request đến Google Fonts. Font nội dung sổ cũ và các giới hạn GPU/cache bên dưới vẫn giữ nguyên. Không suy diễn thời gian fixture thành tốc độ production.
+- Build cục bộ: tám file WOFF2 mới tổng khoảng **65,4 kB** (bốn weight × Latin/tiếng Việt); trình duyệt chọn subset/weight cần dùng. JS chính **233,86 kB gzip** so với **233,81 kB** ở bản trước. Đây là kích thước bundle, không phải thời gian tải mạng; WOFF fallback cũng được đóng gói. Không thêm request dịch vụ font ngoài.
+
 ## Đồng hồ cát và form — bổ sung 06/11/2026
 
 - Cảnh đang chạy phát lệnh WebGL; mở popup tài khoản có **0 lệnh drawElements trong 250ms** và đóng popup thì vẽ tiếp, kiểm tra trực tiếp trên API WebGL của fixture. Đổi màu/chế độ/tiến độ giữ nguyên DOM canvas và renderer. Chưa ghép đôi chỉ tải ảnh kết xuất, có nút chủ động thử 3D; cảnh ghép đôi khởi tạo lúc idle, ưu tiên form và ảnh đầu trang.
@@ -9,7 +15,7 @@
 
 ## Trang chính và cảnh 3D — 06/11/2026
 
-- Lịch tháng chỉ mount trong Lịch; bản đồ chỉ ở Dòng thời gian. Hôm nay giới hạn bốn thẻ đúng ngày; recap tuần chỉ mount và lấy dữ liệu sau khi người dùng mở phần nhìn lại. Các kiểm tra cache thư viện ảnh khi đổi trang/mở popup vẫn giữ nguyên.
+- Lịch tháng chỉ mount trong Lịch; bản đồ chỉ ở Dòng thời gian. Hôm nay giới hạn bốn thẻ đúng ngày. Bản trước Photo Journal chỉ mount recap khi mở phần nhìn lại; hành vi hiện tại đã đổi như ghi ở đầu tài liệu. Các kiểm tra cache thư viện ảnh khi đổi trang/mở popup vẫn giữ nguyên.
 - Cảnh đồng hồ được tách bằng dynamic import và chỉ tải khi gần viewport. Build cục bộ ở lần cập nhật này: chunk cảnh 544,58 kB minified / 136,00 kB gzip; đây là bytes mã JavaScript, chưa phải thời gian tải trên mạng. Giới hạn DPR 1.5, render tối đa 24 fps, dừng khi khuất/ẩn tab, reduced motion giữ cảnh tĩnh; thiết bị thiếu WebGL dùng PNG từ cùng mô hình.
 - Nhịp dùng metadata DISTINCT ngày/thành viên trong 60 ngày. Feed hoạt động lấy tối đa 200 dòng mỗi nguồn, trả tối đa 200 thông báo/30 ngày và không đọc bytes media hoặc text kín để dựng chuông. Chuông refresh khi tab hiển thị mỗi 30 giây; nhịp mỗi 60 giây, focus và thao tác liên quan. Đây là polling có giới hạn, không phải realtime push.
 - Suite `main-pages` dùng fixture 16 dấu mốc, kiểm tra 1440/390/320px: cuộn danh sách tỉnh và danh sách kỉ niệm không đổi bounding box của SVG, header, ô tìm kiếm hoặc tiêu đề tỉnh; dialog/sidebar không cuộn toàn bộ. Canvas 3D có pixel thực, reduced motion đứng yên, ảnh dự phòng giải mã được khi chặn WebGL. Các kiểm tra này không đo FPS/GPU trên điện thoại thật hoặc cold start Render.

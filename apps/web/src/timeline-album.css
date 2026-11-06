@@ -5,7 +5,7 @@
   gap: 18px;
   padding: 19px 22px;
   margin-top: 24px;
-  background: #eef1e4;
+  background: var(--accent-soft);
   border: 1px solid #dce3cd;
   border-radius: 12px;
 }
@@ -67,8 +67,8 @@
   border: 1px solid #dedacb;
   border-radius: 16px;
   padding: 25px;
-  background: #fffdf7;
-  color: #53513f;
+  background: var(--surface);
+  color: var(--ink);
   overflow: hidden;
 }
 .timeline-album-dialog[open] {
@@ -285,7 +285,7 @@
   padding: 26px;
   border: 1px solid #ded9c9;
   border-radius: 14px;
-  background: #fffdf7;
+  background: var(--surface);
   color: #635c4d;
   font-size: 12px;
   line-height: 1.8;

@@ -346,7 +346,7 @@ export default function App() {
           <a href="/" className="wordmark">
             little days<span>♡</span>
           </a>
-          <div className="workspace-label">GÓC NHỎ CỦA BẠN</div>
+          <div className="workspace-label">Không gian của bạn</div>
           <nav>
             <button
               className={
@@ -382,15 +382,6 @@ export default function App() {
               <span className="nav-count">{albums.length}</span>
             </button>
           </nav>
-          <div className="sidebar-note">
-            <Flower2 size={30} />
-            <p>
-              Điều nhỏ xíu hôm nay,
-              <br />
-              kỉ niệm thật lâu sau này.
-            </p>
-            <span className="hand">giữ lại một chút thương ♡</span>
-          </div>
           <div className="sidebar-bottom">
             <PwaSidebarButton />
             <button className="nav-item" onClick={() => setModal('help')}>

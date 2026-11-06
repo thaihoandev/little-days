@@ -111,18 +111,39 @@ try {
       const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(
         new Date(),
       );
-      for (let i = 0; i < 16; i++)
+      let photoEntry = '';
+      for (let i = 0; i < 16; i++) {
+        const created = await b.request.post(origin + '/api/journal', {
+          data: {
+            title: 'Dạo phố fixture ' + i,
+            date: today,
+            note: '',
+            kind: 'memory',
+            annual: false,
+            timelineId: an.id,
+            location: { label: 'Hà Nội', latitude: 21.03, longitude: 105.85 },
+          },
+        });
+        assert.equal(created.status(), 201);
+        photoEntry = (await created.json()).id;
+      }
+      const fixturePhoto = await sharp(
+        Buffer.from(
+          '<svg width="600" height="800"><rect width="600" height="800" fill="#dbe8e1"/><path d="M0 600L230 260 600 650V800H0Z" fill="#6d9e8c"/><circle cx="455" cy="160" r="75" fill="#f4bf72"/><path d="M0 720L420 430 600 600V800H0Z" fill="#41675b"/></svg>',
+        ),
+      )
+        .png()
+        .toBuffer();
+      for (let i = 0; i < 3; i++)
         assert.equal(
           (
-            await b.request.post(origin + '/api/journal', {
-              data: {
-                title: 'Dạo phố fixture ' + i,
-                date: today,
-                note: '',
-                kind: 'memory',
-                annual: false,
-                timelineId: an.id,
-                location: { label: 'Hà Nội', latitude: 21.03, longitude: 105.85 },
+            await b.request.post(origin + '/api/journal/' + photoEntry + '/assets', {
+              multipart: {
+                file: {
+                  name: 'landscape-fixture.png',
+                  mimeType: 'image/png',
+                  buffer: fixturePhoto,
+                },
               },
             })
           ).status(),
@@ -147,6 +168,12 @@ try {
       await expect(page.locator('.calendar-card')).toHaveCount(0);
       await expect(page.locator('.timeline-map-panel')).toHaveCount(0);
       await expect(page.locator('.together-home')).toBeVisible();
+      await expect(page.locator('.journal-hero h1')).toHaveCSS('font-weight', '700');
+      assert.match(
+        await page.locator('.journal-hero h1').evaluate((el) => getComputedStyle(el).fontFamily),
+        /Plus Jakarta Sans/,
+      );
+      await page.locator('.hourglass-stage').scrollIntoViewIfNeeded();
       await expect(page.locator('.hourglass-stage')).toHaveAttribute('data-renderer', 'ready', {
         timeout: 45000,
       });
@@ -255,10 +282,6 @@ try {
         path: 'test-results/main-pages-today-' + width + '.png',
         fullPage: true,
       });
-      await expect(
-        page.getByRole('region', { name: 'Tuần của chúng mình', exact: true }),
-      ).toHaveCount(0);
-      await page.getByText('Nhìn lại tuần này', { exact: true }).click();
       await expect(
         page.getByRole('region', { name: 'Tuần của chúng mình', exact: true }),
       ).toBeVisible();
@@ -387,6 +410,7 @@ try {
           } as typeof original;
         });
         await page.goto(origin + '/today');
+        await page.locator('.hourglass-stage').scrollIntoViewIfNeeded();
         await expect(page.locator('.hourglass-stage')).toHaveAttribute('data-renderer', 'fallback');
         await expect(page.locator('.hourglass-still')).toBeVisible();
         await expect

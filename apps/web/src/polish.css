@@ -10,7 +10,7 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #b3bba0;
+  background: var(--muted);
   border: 2px solid transparent;
   background-clip: padding-box;
   border-radius: 12px;
@@ -60,10 +60,10 @@
   max-height: calc(100dvh - 32px);
   overflow: auto;
   padding: 28px;
-  border: 1px solid #ddd8c9;
+  border: 1px solid var(--line);
   border-radius: 16px;
-  background: #fffdf7;
-  color: #514b3e;
+  background: var(--surface);
+  color: var(--muted);
   box-shadow: 0 20px 80px #33281740;
 }
 .confirm-dialog::backdrop,

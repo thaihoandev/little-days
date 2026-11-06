@@ -10,7 +10,7 @@
   border-radius: 20px;
   background:
     radial-gradient(ellipse at 87% 5%, #ecd5bb99, transparent 40%),
-    linear-gradient(110deg, #edf0e2, #f7f4e8);
+    linear-gradient(110deg, var(--accent-soft), #f7f4e8);
 }
 .journey-banner-copy {
   position: relative;
@@ -23,9 +23,7 @@
 }
 .journey-banner-copy h2 {
   margin: 12px 0 7px;
-  font:
-    27px/1.45 Lora,
-    serif;
+  font: 27px/1.45 var(--ui-font);
   color: #515c43;
 }
 .journey-banner-copy p {
@@ -310,9 +308,7 @@
   margin-bottom: 12px;
 }
 .timeline-map-panel h2 {
-  font:
-    20px/1.4 Lora,
-    serif;
+  font: 20px/1.4 var(--ui-font);
   margin: 7px 0 5px;
 }
 .timeline-map-panel .eyebrow {
@@ -340,7 +336,7 @@
   width: 32px;
   height: 32px;
   border: 1px solid #dce0d0;
-  background: #fffdf5;
+  background: var(--surface);
   border-radius: 8px;
 }
 .map-tools output {
@@ -370,7 +366,7 @@
   position: relative;
   width: 48px;
   height: 48px;
-  border: 3px solid #fffdf7;
+  border: 3px solid var(--surface);
   border-radius: 12px;
   background: #91a37a;
   box-shadow: 0 3px 10px #3e4a3a45;
@@ -397,7 +393,7 @@
   place-items: center;
   height: 100%;
   font-size: 19px;
-  color: #fff9e7;
+  color: var(--surface);
 }
 .has-photo .memory-pin-dot {
   display: none;
@@ -414,7 +410,7 @@
   border-radius: 50%;
   background: #b5796d;
   color: white;
-  border: 2px solid #fffdf7;
+  border: 2px solid var(--surface);
   font-size: 10px;
 }
 .map-memory-row {

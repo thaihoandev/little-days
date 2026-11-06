@@ -18,3 +18,12 @@
 @import '@fontsource/dancing-script/vietnamese-400.css';
 @import '@fontsource/eb-garamond/latin-400.css';
 @import '@fontsource/eb-garamond/vietnamese-400.css';
+/* UI font faces are local in web/video bundles; saved font IDs remain unchanged. */
+@import '@fontsource/plus-jakarta-sans/latin-400.css';
+@import '@fontsource/plus-jakarta-sans/vietnamese-400.css';
+@import '@fontsource/plus-jakarta-sans/latin-500.css';
+@import '@fontsource/plus-jakarta-sans/vietnamese-500.css';
+@import '@fontsource/plus-jakarta-sans/latin-600.css';
+@import '@fontsource/plus-jakarta-sans/vietnamese-600.css';
+@import '@fontsource/plus-jakarta-sans/latin-700.css';
+@import '@fontsource/plus-jakarta-sans/vietnamese-700.css';

@@ -86,10 +86,10 @@ export function WeeklyRecap({
     <section className="weekly-recap" aria-label="Tuần của chúng mình">
       <header>
         <div>
-          <span className="eyebrow">TUẦN CỦA CHÚNG MÌNH</span>
-          <h2>
-            {short(week)} <span>— {short(shiftDate(week, 6))}</span>
-          </h2>
+          <h2>{week === current ? 'Tuần này của hai đứa' : 'Một tuần đã giữ'}</h2>
+          <p className="week-range">
+            {short(week)} — {short(shiftDate(week, 6))}
+          </p>
         </div>
         <div className="weekly-actions">
           <button
@@ -131,7 +131,17 @@ export function WeeklyRecap({
       {!ready || loading ? (
         <p role="status">Đang gom những ngày nhỏ…</p>
       ) : !actual ? (
-        <p>Mời người thương vào không gian chung để bắt đầu tuần của hai người.</p>
+        <div className="week-onboarding">
+          <div className="week-empty-tape" aria-hidden="true">
+            {Array.from({ length: 7 }, (_, i) => (
+              <span key={i}>
+                <Plus size={18} />
+                <small>{['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'][i]}</small>
+              </span>
+            ))}
+          </div>
+          <p>Mời người thương vào không gian chung để bắt đầu tuần của hai người.</p>
+        </div>
       ) : error ? (
         <div role="alert">
           {error}{' '}
@@ -146,6 +156,7 @@ export function WeeklyRecap({
               {data.days.map((day) => (
                 <button
                   key={day.date}
+                  aria-current={day.date === today ? 'date' : undefined}
                   disabled={day.date > today}
                   onClick={() => (day.photos ? setComposer(data) : onAddDay(day.date, actual))}
                   aria-label={`${dayName(day.date)} ${short(day.date)} · ${day.photos} ảnh`}

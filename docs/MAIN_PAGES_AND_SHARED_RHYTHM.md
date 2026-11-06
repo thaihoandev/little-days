@@ -8,7 +8,7 @@ Bổ sung giao diện: xem [chuyển động, đồng hồ cát và nhập liệ
 
 | Trang | Nội dung chính |
 | --- | --- |
-| Hôm nay | Một việc nhỏ để trao nhau, nhịp tuần, tối đa bốn thẻ của đúng hôm nay và các cuộc hẹn tương lai. Xem thêm mở đúng ngày trong Lịch. Recap tuần chỉ mở khi chọn “Nhìn lại tuần này”. |
+| Hôm nay | Dải ảnh tuần mở sẵn, tối đa bốn thẻ đúng hôm nay; nhịp chung và các cuộc hẹn ở cột phụ desktop. Xem thêm mở đúng ngày trong Lịch. Bố cục Photo Journal theo [quy chuẩn thiết kế](DESIGN_SYSTEM.md). |
 | Dòng thời gian | Không gian riêng/chung, tìm/lọc, lịch sử/thùng rác và bản đồ kỉ niệm. Banner được thu thành số liệu; mở rộng bản đồ từ đây hoặc chạm địa điểm trên dấu mốc. |
 | Lịch của mình | Lịch tháng, ngày lễ, ghi chú/ngày đang chọn và chuẩn bị kế hoạch. |
 | Album của mình | Sổ, thiệp, recap và nút **Ảnh đã lưu**. Đường dẫn `/photos` được giữ; thanh điều hướng vẫn đánh dấu Album khi xem ảnh. |

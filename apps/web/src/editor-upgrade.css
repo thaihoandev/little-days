@@ -30,8 +30,8 @@
   padding: 24px;
   border: 1px solid #dfd9ca;
   border-radius: 20px;
-  background: #fffcf4;
-  color: #514b3a;
+  background: var(--surface);
+  color: var(--muted);
   overflow: hidden;
 }
 .photo-editor-dialog::backdrop {
@@ -59,7 +59,7 @@
 .photo-crop-surface {
   position: relative;
   overflow: hidden;
-  background: #ded8c8;
+  background: var(--line);
   touch-action: none;
   cursor: grab;
   border-radius: 6px;
@@ -98,7 +98,7 @@
 }
 .removal-progress progress {
   width: 100%;
-  accent-color: #758260;
+  accent-color: var(--accent);
 }
 .cutout-options {
   display: grid;
@@ -118,7 +118,7 @@
   padding: 0;
   margin: 0;
   flex-shrink: 0;
-  accent-color: #758260;
+  accent-color: var(--accent);
 }
 .photo-crop-surface img {
   position: absolute;
@@ -148,15 +148,15 @@
 }
 .photo-replacement-grid button {
   padding: 5px;
-  border: 1px solid #ddd5c7;
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: #fffdf8;
+  background: var(--surface);
   min-width: 0;
   color: inherit;
 }
 .photo-replacement-grid button[aria-pressed='true'] {
   border: 2px solid #6c7a54;
-  background: #e9eddc;
+  background: var(--accent-soft);
 }
 .photo-replacement-grid img {
   width: 100%;
@@ -211,9 +211,9 @@
   max-width: 650px;
 }
 .timeline-heading-edit .form-stack {
-  background: #fffcf4;
+  background: var(--surface);
   padding: 18px;
-  border: 1px solid #ddd5c7;
+  border: 1px solid var(--line);
   border-radius: 14px;
   min-width: min(450px, 70vw);
 }

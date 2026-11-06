@@ -91,7 +91,7 @@
   padding: 14px;
   border-radius: 14px;
   border: 1px solid #ddd4c3;
-  background: #fffdf7;
+  background: var(--surface);
   box-shadow: 0 12px 32px #64512a24;
 }
 .hourglass-settings fieldset {
@@ -271,7 +271,7 @@
     transform: translateY(0) scale(0.98);
   }
   .app-shell .icon-button:hover {
-    background-color: #e9ecdf;
+    background-color: var(--accent-soft);
   }
   .page-back:hover svg {
     transform: translateX(-3px);

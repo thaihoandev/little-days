@@ -7,7 +7,7 @@
   margin-bottom: 22px;
   border: 1px solid #dfdfcf;
   border-radius: 14px;
-  background: #fffdf6;
+  background: var(--surface);
 }
 .timeline-scope > div {
   display: grid;
@@ -15,9 +15,7 @@
   min-width: 0;
 }
 .timeline-scope strong {
-  font:
-    18px Lora,
-    serif;
+  font: 18px var(--ui-font);
   color: #5b694b;
 }
 .timeline-scope small {
@@ -32,7 +30,7 @@
 .timeline-scope select {
   width: min(360px, 48%);
   max-width: none;
-  background: #f4f5e9;
+  background: var(--paper);
   border-color: #d5ddc4;
   padding: 12px 32px 12px 13px;
 }

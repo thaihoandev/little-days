@@ -79,9 +79,7 @@
   margin: 22px 0 30px;
 }
 .ritual-heading h1 {
-  font:
-    38px Lora,
-    serif;
+  font: 38px var(--ui-font);
   margin: 12px 0;
   color: #535d48;
 }
@@ -96,7 +94,7 @@
   place-items: center;
   width: 82px;
   height: 82px;
-  background: #e9eddc;
+  background: var(--accent-soft);
   border-radius: 28px;
   color: #8f9f77;
   transform: rotate(6deg);
@@ -107,7 +105,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  background: #fffdf6;
+  background: var(--surface);
   border: 1px solid #e2dfd0;
   border-radius: 15px;
   padding: 18px 20px;
@@ -162,7 +160,7 @@
   min-height: 46px;
 }
 .ritual-tabs button.active {
-  background: #fffdf7;
+  background: var(--surface);
   color: #5f6f4b;
   box-shadow: 0 2px 8px #534b2e0a;
 }
@@ -175,13 +173,11 @@
   margin-bottom: 22px;
   border: 1px solid #dfdfce;
   border-radius: 16px;
-  background: linear-gradient(110deg, #edf0e2, #f3e9da);
+  background: linear-gradient(110deg, var(--accent-soft), #f3e9da);
 }
 .ritual-intro h2,
 .jar-layout h2 {
-  font:
-    25px Lora,
-    serif;
+  font: 25px var(--ui-font);
   color: #656c54;
   margin: 12px 0;
 }
@@ -194,14 +190,12 @@
   transform: rotate(-6deg);
 }
 .ritual-letter-art span {
-  font:
-    17px 'Patrick Hand',
-    cursive;
+  font: 17px var(--ui-font);
 }
 .question-card {
   border: 1px solid #e1dac9;
   border-radius: 16px;
-  background: #fffdf7;
+  background: var(--surface);
   padding: 28px;
   box-shadow: 0 4px 18px #594b3105;
 }
@@ -215,9 +209,7 @@
   margin-bottom: 24px;
 }
 .question-card-title h3 {
-  font:
-    23px/1.6 Lora,
-    serif;
+  font: 23px/1.6 var(--ui-font);
   margin: 0;
   color: #635747;
 }
@@ -243,7 +235,7 @@
   align-items: center;
   padding: 14px;
   border-radius: 10px;
-  background: #f4f3e9;
+  background: var(--paper);
   min-width: 0;
 }
 .question-participants > div > div {
@@ -294,16 +286,14 @@
 }
 .answer-waiting {
   text-align: center;
-  background: #f6f3e9;
+  background: var(--paper);
   border: 1px dashed #dcd5bc;
   padding: 24px;
   border-radius: 12px;
   color: #898d72;
 }
 .answer-waiting h4 {
-  font:
-    20px Lora,
-    serif;
+  font: 20px var(--ui-font);
   color: #727a5c;
   margin: 12px 0;
 }
@@ -317,7 +307,7 @@
   color: #6c6253;
   padding: 14px;
   text-align: left;
-  background: #fffdf6;
+  background: var(--surface);
   border-radius: 8px;
 }
 .question-replies {
@@ -343,9 +333,7 @@
 .jar-message {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font:
-    20px/1.8 'Patrick Hand',
-    cursive;
+  font: 20px/1.8 var(--ui-font);
   color: #665a4d;
   margin: 12px 0;
 }
@@ -361,9 +349,7 @@
 }
 .ritual-history h2,
 .jar-collection h2 {
-  font:
-    23px Lora,
-    serif;
+  font: 23px var(--ui-font);
   color: #666e53;
 }
 .ritual-history .section-heading > span,
@@ -382,7 +368,7 @@
   display: grid;
   gap: 12px;
   border: 1px solid #e2ddcd;
-  background: #fffdf6;
+  background: var(--surface);
   border-radius: 12px;
   padding: 20px;
   min-height: 130px;
@@ -392,9 +378,7 @@
   color: #aaa18d;
 }
 .ritual-question-list strong {
-  font:
-    16px/1.7 Lora,
-    serif;
+  font: 16px/1.7 var(--ui-font);
   color: #706958;
 }
 .ritual-question-list span {
@@ -455,9 +439,7 @@
   position: absolute;
   background: #f6e0d3;
   color: #a88776;
-  font:
-    16px 'Patrick Hand',
-    cursive;
+  font: 16px var(--ui-font);
   padding: 12px 9px;
   border-radius: 3px;
   box-shadow: 0 3px 8px #6f543a0d;
@@ -477,7 +459,7 @@
   padding: 28px;
   border: 1px solid #e2ddcd;
   border-radius: 16px;
-  background: #fffdf7;
+  background: var(--surface);
 }
 .jar-composer > p {
   font-size: 12px;
@@ -523,7 +505,7 @@
   padding: 19px;
   border: 1px solid #e1dcca;
   border-radius: 13px;
-  background: #fffdf5;
+  background: var(--surface);
   display: flex;
   flex-direction: column;
 }
@@ -571,9 +553,7 @@
   flex: 1;
 }
 .jar-sealed-body strong {
-  font:
-    16px/1.6 Lora,
-    serif;
+  font: 16px/1.6 var(--ui-font);
   color: #90856f;
 }
 .jar-sealed-body p {
@@ -593,9 +573,7 @@
   padding: 12px;
   width: 100%;
   box-sizing: border-box;
-  font:
-    17px/1.8 'Patrick Hand',
-    cursive;
+  font: 15px/1.8 var(--ui-font);
   text-align: left;
 }
 .jar-card footer {
@@ -640,16 +618,14 @@
   text-align: center;
   gap: 12px;
   padding: 48px 24px;
-  background: #fffdf7;
+  background: var(--surface);
   border: 1px dashed #d9dbc5;
   border-radius: 14px;
   color: #9b9d87;
 }
 .ritual-empty h2,
 .ritual-empty h3 {
-  font:
-    23px/1.6 Lora,
-    serif;
+  font: 23px/1.6 var(--ui-font);
   color: #747c61;
   margin: 0;
 }
@@ -685,7 +661,7 @@
   border: 1px solid #dcd7c5;
   border-radius: 18px;
   padding: 24px;
-  background: #fffdf6;
+  background: var(--surface);
   color: #746b59;
   width: min(760px, calc(100vw - 28px));
   max-height: calc(100dvh - 32px);
@@ -756,9 +732,7 @@
   gap: 6px;
 }
 .ritual-home-links strong {
-  font:
-    16px Lora,
-    serif;
+  font: 16px var(--ui-font);
   color: #757b61;
 }
 .ritual-home-links small {

@@ -10,7 +10,7 @@
   min-width: 0;
   border: 1px solid #e1ddcd;
   border-radius: 10px;
-  background: #faf8ef;
+  background: var(--paper);
   padding: 10px 7px;
   display: flex;
   flex-direction: column;
@@ -190,7 +190,7 @@
   width: 100%;
   aspect-ratio: auto;
   object-fit: cover;
-  border: 4px solid #fffdf8;
+  border: 4px solid var(--surface);
   border-radius: 4px;
   box-shadow: 0 2px 7px #473c2520;
 }
@@ -213,7 +213,7 @@
   inset: 4px;
   display: grid;
   place-items: center;
-  color: #fffaf1;
+  color: var(--surface);
   background: #383f2c88;
   font-size: 12px;
   border-radius: 2px;

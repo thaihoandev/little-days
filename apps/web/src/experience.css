@@ -109,7 +109,7 @@
   color: #7f8276;
 }
 .sidebar {
-  background: #f4f3e9;
+  background: var(--paper);
   border-right: 1px solid #e4e5d8;
 }
 .sidebar-note {
@@ -124,7 +124,7 @@
 .nav-item.active {
   background: #e3e8d7;
   color: #34492e;
-  box-shadow: inset 3px 0 #677b50;
+  box-shadow: inset 3px 0 var(--accent);
 }
 .journal-hero {
   padding: 0 0 23px;
@@ -167,7 +167,7 @@
 .ritual-home-links > button {
   padding: 16px 18px;
   min-height: 80px;
-  background: #fffdf7;
+  background: var(--surface);
   border: 1px solid #e8e4d9;
   box-shadow: none;
   border-radius: 14px;
@@ -216,7 +216,7 @@
 .album-card {
   border-radius: 17px;
   overflow: hidden;
-  background: #fffdf8;
+  background: var(--surface);
 }
 .album-info {
   padding: 18px 20px;
@@ -259,7 +259,7 @@
   width: min(940px, calc(100vw - 32px));
 }
 .weekly-recap {
-  background: #fffdf7;
+  background: var(--surface);
   border: 1px solid #e4dfd1;
   border-radius: 20px;
   padding: 25px;
@@ -369,7 +369,7 @@
   border: 1px solid #e4ddce;
   border-radius: 22px;
   background: #faf8f0;
-  color: var(--ink, #433f35);
+  color: var(--ink, var(--ink));
   overflow: auto;
 }
 .recap-dialog::backdrop {

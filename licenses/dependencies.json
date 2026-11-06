@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "lockSha256": "e3fbe182d3328c849850225b453760577f6cfa6afe2800a9b6471980524757c6",
+  "lockSha256": "4d6ad0028d58b6c047257601c43e448a6e40a4a51a8db547326610a1e084cfd8",
   "platform": "win32",
   "architecture": "x64",
   "entries": [
@@ -1038,6 +1038,19 @@
       "name": "@fontsource/playfair-display",
       "version": "5.3.0",
       "location": "node_modules/@fontsource/playfair-display",
+      "license": "OFL-1.1",
+      "dev": false,
+      "optional": false,
+      "installed": true,
+      "noticeFiles": [
+        "LICENSE"
+      ],
+      "review": "declared-license-not-legal-clearance"
+    },
+    {
+      "name": "@fontsource/plus-jakarta-sans",
+      "version": "5.3.0",
+      "location": "node_modules/@fontsource/plus-jakarta-sans",
       "license": "OFL-1.1",
       "dev": false,
       "optional": false,

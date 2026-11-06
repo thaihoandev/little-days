@@ -15,7 +15,7 @@
   color: #a46e68;
 }
 .journal-hero h1 {
-  font-family: Lora, serif;
+  font-family: var(--ui-font);
   font-weight: 400;
   font-size: clamp(27px, 2.8vw, 40px);
   line-height: 1.35;
@@ -49,7 +49,7 @@
 }
 .calendar-card {
   padding: 24px;
-  background: #fffdf7;
+  background: var(--surface);
   border: 1px solid #e7e3d5;
   border-radius: 15px;
   box-shadow: 0 8px 25px #776a4705;
@@ -63,7 +63,7 @@
 }
 .calendar-card h2,
 .upcoming-card h2 {
-  font-family: Lora, serif;
+  font-family: var(--ui-font);
   font-weight: 400;
   font-size: 22px;
   margin: 9px 0 0;
@@ -110,7 +110,7 @@
   border: 1px solid transparent;
 }
 .calendar-grid button:hover {
-  background: #f2f2e7;
+  background: var(--paper);
 }
 .calendar-grid .outside {
   color: #c6c1b3;
@@ -119,7 +119,7 @@
   border-color: #abb598;
 }
 .calendar-grid .selected {
-  background: #758260;
+  background: var(--accent);
   color: #fffdf3;
 }
 .calendar-grid i {
@@ -177,7 +177,7 @@
 .upcoming-card {
   border: 1px solid #e3e6d7;
   border-radius: 15px;
-  background: linear-gradient(135deg, #eef1e5, #f6f3e9);
+  background: linear-gradient(135deg, var(--accent-soft), var(--paper));
   padding: 26px;
   display: flex;
   flex-direction: column;
@@ -274,8 +274,8 @@
   flex: 1 1 200px;
   gap: 7px;
   align-items: center;
-  background: #fffdf7;
-  border: 1px solid #e5e0d3;
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0 11px;
 }
@@ -291,7 +291,7 @@
   outline: none;
 }
 .journal-search:focus-within {
-  outline: 2px solid #879773;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 .journal-filters select {
@@ -320,7 +320,7 @@
 }
 .journal-date strong {
   display: block;
-  font-family: Lora, serif;
+  font-family: var(--ui-font);
   font-size: 26px;
   font-weight: 400;
 }
@@ -331,8 +331,8 @@
   margin-top: 5px;
 }
 .journal-entry-body {
-  background: #fffdf8;
-  border: 1px solid #e5e0d3;
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 22px 25px;
   min-width: 0;
@@ -361,7 +361,7 @@
   font-size: 8px;
 }
 .journal-entry h3 {
-  font-family: Lora, serif;
+  font-family: var(--ui-font);
   font-size: 20px;
   font-weight: 400;
   margin: 10px 0;
@@ -371,7 +371,7 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   font-size: 12px;
-  color: #8b8675;
+  color: var(--muted);
   line-height: 1.9;
 }
 .journal-photos {
@@ -414,7 +414,7 @@
   color: #bd9585;
 }
 .journal-empty h3 {
-  font-family: Lora, serif;
+  font-family: var(--ui-font);
   font-size: 21px;
   font-weight: 400;
 }
@@ -426,10 +426,10 @@
   width: min(590px, calc(100% - 28px));
   max-height: 90dvh;
   padding: 27px;
-  background: #fffdf7;
-  border: 1px solid #ddd8c9;
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: 14px;
-  color: #53513f;
+  color: var(--ink);
   box-shadow: 0 20px 90px #33281735;
   overflow: hidden;
 }
@@ -476,11 +476,11 @@
   padding: 0;
 }
 .journal-upload input::file-selector-button {
-  border: 1px solid #d7dbc8;
+  border: 1px solid var(--line);
   border-radius: 5px;
   padding: 9px 11px;
-  background: #eef1e5;
-  color: #536440;
+  background: var(--accent-soft);
+  color: var(--green-dark);
   font: inherit;
   cursor: pointer;
   margin-right: 9px;
@@ -497,7 +497,7 @@
   margin-bottom: 18px;
 }
 .journal-dialog h2 {
-  font-family: Lora, serif;
+  font-family: var(--ui-font);
   font-weight: 400;
   font-size: 27px;
   margin: 10px 0;
@@ -538,7 +538,7 @@
 }
 .journal-upload {
   background: #f3f3e9;
-  border: 1px dashed #d7dbc8;
+  border: 1px dashed var(--line);
   border-radius: 9px;
   padding: 14px;
 }
@@ -605,7 +605,7 @@
   gap: 12px;
   padding: 9px;
   border: 1px solid #e1dfd0;
-  background: #faf8ef;
+  background: var(--paper);
   border-radius: 7px;
   overflow: hidden;
 }
@@ -635,8 +635,8 @@
   border: 1px solid #dfe5d1;
 }
 .music-library-preview strong {
-  font-family: Lora, serif;
-  font-weight: 400;
+  font-family: var(--ui-font);
+  font-weight: 600;
 }
 .music-library-preview audio {
   width: 100%;
@@ -694,7 +694,7 @@
   position: absolute;
   top: 8px;
   right: 8px;
-  background: #f0f2e7;
+  background: var(--accent-soft);
   border-radius: 50%;
 }
 .create-album-modal form > .button {
@@ -925,7 +925,7 @@
   margin-bottom: 22px;
   border: 1px solid #dbe1cd;
   border-radius: 14px;
-  background: linear-gradient(120deg, #eef1e5, #faf9f1);
+  background: linear-gradient(120deg, var(--accent-soft), #faf9f1);
 }
 .today-focus span {
   display: block;
@@ -935,9 +935,7 @@
 }
 .today-focus strong {
   display: block;
-  font:
-    23px Lora,
-    serif;
+  font: 23px var(--ui-font);
   margin: 8px 0;
 }
 .today-focus p {
@@ -972,9 +970,7 @@
   padding-bottom: 18px;
 }
 .selected-day-notes h3 {
-  font:
-    19px Lora,
-    serif;
+  font: 19px var(--ui-font);
   margin: 10px 0 16px;
 }
 .day-note {
@@ -1047,8 +1043,8 @@
   overflow: auto;
   border: 1px solid #d8d4c2;
   border-radius: 18px;
-  background: #fffcf4;
-  color: #514b3a;
+  background: var(--surface);
+  color: var(--muted);
 }
 .timeline-sharing-dialog::backdrop {
   background: #292d3866;
@@ -1062,9 +1058,7 @@
   gap: 14px;
 }
 .timeline-sharing-dialog h2 {
-  font:
-    24px Lora,
-    serif;
+  font: 24px var(--ui-font);
   display: flex;
   gap: 10px;
   align-items: center;
@@ -1125,7 +1119,7 @@
 .timeline-member small {
   display: block;
   font-size: 11px;
-  color: #8b8675;
+  color: var(--muted);
   margin-top: 7px;
 }
 .timeline-member .sharing-calendar-toggle {

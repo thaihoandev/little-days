@@ -4,6 +4,7 @@ import type { TimelineSpace } from '../../../packages/domain/journal.js';
 import type { RhythmView } from '../../../packages/domain/rhythm.js';
 import { api, ApiError } from './api.js';
 import { Hourglass3D } from './Hourglass3D.js';
+import { UserAvatar } from './UserAvatar.js';
 import { rhythmCache as cache } from './rhythm-cache.js';
 export { clearRhythmMemory } from './rhythm-cache.js';
 export function TogetherHome({
@@ -105,8 +106,22 @@ export function TogetherHome({
       )}
       <div className="together-home-content">
         <header>
-          <span className="eyebrow">DÀNH MỘT CHÚT CHO NHAU</span>
-          <h2>Giữ một chút thương</h2>
+          <h2>Một điều cho nhau</h2>
+          {space && (
+            <div
+              className="home-space-members"
+              aria-label={
+                'Thành viên không gian: ' + space.members.map((m) => m.displayName).join(', ')
+              }
+            >
+              <span className="home-face-stack">
+                {space.members.map((m) => (
+                  <UserAvatar key={m.id} name={m.displayName} url={m.avatarUrl} />
+                ))}
+              </span>
+              <small>{space.members.map((m) => m.displayName).join(' & ')}</small>
+            </div>
+          )}
         </header>
         {space && shared.length > 1 && (
           <label className="rhythm-space">

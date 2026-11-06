@@ -714,7 +714,7 @@ export function CanvasEditor({
                 y={g.axis === 'y' ? g.value : 0}
                 width={g.axis === 'x' ? 1 : 720}
                 height={g.axis === 'y' ? 1 : 900}
-                fill="#b87978"
+                fill="#c34255"
                 listening={false}
               />
             ))}
@@ -722,8 +722,8 @@ export function CanvasEditor({
               <Rect
                 name="editor-overlay"
                 {...marquee}
-                fill="#6d7c5422"
-                stroke="#6d7c54"
+                fill="#c3425522"
+                stroke="#c34255"
                 strokeWidth={1}
                 listening={false}
               />
@@ -734,9 +734,9 @@ export function CanvasEditor({
               flipEnabled={false}
               ignoreStroke
               anchorSize={12}
-              anchorFill="#fffdf8"
-              anchorStroke="#6d7c54"
-              borderStroke="#6d7c54"
+              anchorFill="#ffffff"
+              anchorStroke="#c34255"
+              borderStroke="#c34255"
               keepRatio={chosen.length > 1 || (chosen[0]?.type === 'image' && keepPhotoRatio)}
               shiftBehavior="none"
               enabledAnchors={

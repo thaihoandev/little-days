@@ -4,6 +4,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Sử dụng
 
+- [Ngôn ngữ thiết kế Photo Journal và ranh giới nội dung sổ](DESIGN_SYSTEM.md)
 - [Chuyển động, đồng hồ cát và nhập liệu mobile](INTERACTION_AND_MOBILE_REFINEMENT.md)
 - [Trang chính, thông báo cộng tác và nhịp yêu thương 3D](MAIN_PAGES_AND_SHARED_RHYTHM.md)
 - [Sửa lặp ngày, Lọ điều thương và thẻ Hôm nay](CALENDAR_AND_DAILY_POLISH.md)

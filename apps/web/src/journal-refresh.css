@@ -43,9 +43,7 @@
 }
 .profile-identity h3 {
   margin: 0 0 10px;
-  font:
-    22px Lora,
-    serif;
+  font: 22px var(--ui-font);
   overflow-wrap: anywhere;
 }
 .profile-avatar-upload {
@@ -81,7 +79,7 @@
   padding: 12px;
   min-height: 0;
   margin: 0 0 24px;
-  background: #f0f2e7;
+  background: var(--accent-soft);
 }
 .journey-intro .journey-numbers {
   display: grid;
@@ -129,9 +127,7 @@
   margin-bottom: 16px;
 }
 .journal-day-heading time {
-  font:
-    21px Lora,
-    serif;
+  font: 21px var(--ui-font);
   color: #515d43;
 }
 .journal-day-heading > span {
@@ -175,7 +171,7 @@
   border: 1px solid #e5e1d5;
   border-radius: 12px;
   box-shadow: 0 4px 15px #5e533408;
-  background: #fffdf7;
+  background: var(--surface);
   display: block;
   transform: none;
 }
@@ -238,9 +234,7 @@
 }
 .journal-day-stories .journal-entry h3 {
   margin: 9px 0;
-  font:
-    22px Lora,
-    serif;
+  font: 22px var(--ui-font);
   line-height: 1.4;
 }
 .journal-day-stories .journal-entry p {
@@ -259,7 +253,7 @@
 }
 .journal-home .journal-day-stories .anniversary:not(.album-story) {
   border-left-color: #bf9862;
-  background: #fffaf1;
+  background: var(--surface);
 }
 .journal-day-stories .journal-photos {
   max-width: 430px;
@@ -285,7 +279,7 @@
   flex-wrap: wrap;
 }
 .location-fields {
-  border: 1px solid #e0e2d4 !important;
+  border: 1px solid var(--line) !important;
   padding: 14px !important;
   border-radius: 10px;
 }
@@ -329,7 +323,7 @@
   max-height: calc(100dvh - 30px);
   overflow: auto;
   border: 1px solid #d6dcc7;
-  background: #fffdf6;
+  background: var(--surface);
   padding: 24px;
   border-radius: 16px;
   color: #535b47;
@@ -345,9 +339,7 @@
   margin-bottom: 16px;
 }
 .memory-map-dialog h2 {
-  font:
-    27px Lora,
-    serif;
+  font: 27px var(--ui-font);
   margin: 0;
 }
 .memory-map-dialog p {

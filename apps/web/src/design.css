@@ -27,15 +27,15 @@ select:disabled {
     transition: rotate 0.15s;
   }
   select:open {
-    border-color: #879773;
+    border-color: var(--accent);
     box-shadow: 0 0 0 3px #87977318;
   }
   select:open::picker-icon {
     rotate: 180deg;
   }
   select::picker(select) {
-    background: #fffdf7;
-    color: #514b3e;
+    background: var(--surface);
+    color: var(--muted);
     border: 1px solid #d8ddca;
     border-radius: 12px;
     padding: 6px;
@@ -68,7 +68,7 @@ select:disabled {
     outline: none;
   }
   select option::checkmark {
-    color: #687653;
+    color: var(--accent);
     order: 1;
     margin-left: auto;
   }
@@ -96,7 +96,7 @@ select:disabled {
   align-items: center;
   gap: 6px;
   padding: 9px 16px;
-  border-bottom: 1px solid #e4e2d5;
+  border-bottom: 1px solid var(--line);
   background: #faf9f2;
   overflow-x: auto;
 }
@@ -262,13 +262,13 @@ select:disabled {
   height: 58px;
   border: 5px solid var(--paper);
   border-radius: 50%;
-  background: #e7ebdd;
+  background: var(--accent-soft);
   font-size: 24px;
   box-shadow: 0 0 0 1px #c5cdb4;
 }
 .timeline-mode .journal-date small {
   font-size: 8px;
-  color: #96917c;
+  color: var(--muted);
 }
 .timeline-mode .journal-entry::before {
   content: '';
@@ -308,7 +308,7 @@ select:disabled {
 }
 .timeline-mode .journal-entry-meta > span {
   border-radius: 12px;
-  background: #e9ecdf;
+  background: var(--accent-soft);
   color: #74815e;
   padding: 5px 9px;
 }
