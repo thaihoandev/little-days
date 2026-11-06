@@ -45,6 +45,6 @@ Tham khảo cách [Penpot phân vùng workspace và thuộc tính](https://help.
 
 - `main-pages`: hai/bốn thẻ Hôm nay, mở/thu nhóm ngày, không có checkbox ngoài chế độ chọn, menu nằm trong viewport, Escape và hủy xác nhận xóa trả focus; responsive 1440/390/320px, đồng hồ/bản đồ/quyền cộng tác.
 - `daily-polish`: ảnh/cache khi đổi trang và popup, cùng kiểu card giữa Hôm nay/Lịch, ngày lặp và bố cục ngày chọn.
-- `editor`: thu/mở hai dock làm tăng diện tích bàn mà không ghi vào API; tiếp tục gõ tiếng Việt, undo/redo và reload.
+- `editor`: thu/mở hai dock làm tăng diện tích bàn mà không ghi vào API; tiếp tục gõ tiếng Việt, undo/redo và reload. Ở 320px, kiểm tra khi cuộn rằng thanh công cụ nằm dưới header hai hàng, sáu tab vừa chiều ngang và trang không tràn viewport.
 - `journal-album`, `community`, `reminders-holidays`: vào chế độ chọn và menu mới rồi chạy các kiểm tra dữ liệu, history, xóa/khôi phục, lời nhắc hiện có.
 - `test:pilot`, build/typecheck và CI cần đối chiếu log của commit phát hành; ảnh QA không phải nghiệm thu người dùng thật hay Safari/iPhone vật lý.

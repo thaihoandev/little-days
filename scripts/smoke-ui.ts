@@ -129,6 +129,25 @@ try {
     await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1),
     'Mobile editor overflows viewport',
   );
+  await page.setViewportSize({ width: 320, height: 844 });
+  await page.evaluate(() => scrollTo(0, 480));
+  await expect
+    .poll(async () => {
+      const header = await page.locator('.editor-header').boundingBox();
+      const rail = await page.locator('.tool-rail').boundingBox();
+      return rail!.y - header!.y - header!.height;
+    })
+    .toBeGreaterThanOrEqual(-1);
+  const tabs = await page
+    .locator('.tool-rail > button')
+    .evaluateAll((nodes) => nodes.map((node) => node.getBoundingClientRect().right));
+  assert.ok(
+    tabs.every((right) => right <= 321),
+    'all six tool tabs fit a 320px editor',
+  );
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  await page.screenshot({ path: 'test-results/editor-mobile-320.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole('button', { name: 'Về danh sách album' }).click();
   await page.screenshot({ path: 'test-results/dashboard-mobile.png', fullPage: true });
   assert.ok(

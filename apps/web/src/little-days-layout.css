@@ -1384,3 +1384,11 @@ progress::-moz-progress-bar {
     display: block;
   }
 }
+@media (max-width: 380px) {
+  .editor-shell .tool-rail {
+    top: 100px;
+  }
+  .editor-shell .tool-rail > button {
+    min-width: 0;
+  }
+}
