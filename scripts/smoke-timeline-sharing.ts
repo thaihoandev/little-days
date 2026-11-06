@@ -165,10 +165,12 @@ try {
         path: 'test-results/shared-calendar-' + mobile + '.png',
         fullPage: true,
       });
+      await b.getByRole('button', { name: 'Dòng thời gian', exact: true }).click();
       await b.getByRole('button', { name: 'Chia sẻ dòng thời gian', exact: true }).click();
       await bd.getByLabel('Hiện trên lịch của tôi', { exact: true }).uncheck();
       await expect(bd.getByLabel('Hiện trên lịch của tôi', { exact: true })).not.toBeChecked();
       await bd.getByRole('button', { name: 'Xong', exact: true }).click();
+      await b.getByRole('button', { name: 'Lịch của mình', exact: true }).click();
       await expect(b.getByRole('heading', { name: entry.title, exact: true })).toHaveCount(0);
       await b.getByRole('button', { name: 'Dòng thời gian', exact: true }).click();
       await expect(b.getByRole('heading', { name: entry.title, exact: true })).toBeVisible();
