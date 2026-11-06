@@ -126,6 +126,7 @@
     "remotion": "4.0.440",
     "rxjs": "^7.8.1",
     "sharp": "^0.34.0",
+    "three": "0.187.0",
     "zod": "4.3.6"
   },
   "devDependencies": {
@@ -139,6 +140,7 @@
     "@types/pg": "^8.15.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/three": "0.187.0",
     "@vitejs/plugin-react": "^4.4.0",
     "concurrently": "^9.1.0",
     "polygon-clipping": "^0.15.7",

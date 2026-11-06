@@ -169,6 +169,7 @@ try {
         if (new URL(request.url()).pathname === '/api/library/photos') photoReads++;
       };
       p.on('request', countPhotoReads);
+      await p.getByRole('button', { name: /^Album của mình/ }).click();
       await p.getByRole('button', { name: /^Ảnh đã lưu/ }).click();
       await expect(p.locator('.memory-library img').first()).toBeVisible();
       const initialReads = photoReads;
@@ -202,6 +203,7 @@ try {
       }
       await p.screenshot({ path: 'test-results/calendar-cards-' + width + '.png', fullPage: true });
       assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+      await p.getByRole('button', { name: /^Album của mình/ }).click();
       await p.getByRole('button', { name: /^Ảnh đã lưu/ }).click();
       await expect(p.locator('.memory-library img').first()).toBeVisible();
       assert.equal(photoReads, initialReads, 'unchanged photo page reuses validated payload');

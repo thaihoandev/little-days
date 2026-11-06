@@ -25,8 +25,13 @@ import type { AccountDeletion } from './account-deletion.js';
 import type { ResourcePolicy } from './resource-policy.js';
 import type { MediaStore } from './storage.js';
 import { normalizePhoto } from './images.js';
+import { sharedJournalSql } from './journal-privacy.js';
+import { summarizeRhythm } from '../../../packages/domain/rhythm.js';
+import { shiftDate } from '../../../packages/domain/weekly-recap.js';
 const TZ = 'Asia/Ho_Chi_Minh';
 const digest = (s: string) => createHash('sha256').update(s).digest('hex');
+export const membershipEpoch = (ids: string[], grants: string[]) =>
+  digest(JSON.stringify([[...ids].sort(), [...grants].sort()]));
 // Legacy sealed notes included an implicit author vote. Require fresh explicit votes.
 const explicitApprovals = (n: LoveNote) =>
   n.consentVersion === 2 || n.openedAt ? n.approvals : [];
@@ -72,7 +77,57 @@ export class CoupleRituals {
       )
       .map((g) => g.id)
       .sort();
-    return { spaceId, members: space.members, ids, epoch: digest(JSON.stringify([ids, grants])) };
+    return {
+      spaceId,
+      members: space.members,
+      ids,
+      epoch: membershipEpoch(ids, grants),
+      joinedAt:
+        state.grants
+          .filter((g) => grants.includes(g.id))
+          .map((g) => g.acceptedAt || g.createdAt)
+          .sort()
+          .at(-1) || '1970-01-01T00:00:00.000Z',
+    };
+  }
+  async rhythm(actor: string, spaceId: string) {
+    const scope = await this.context(actor, spaceId),
+      today = todayIn(TZ, this.clock());
+    const f = (name: string, alias = 'r') =>
+      this.db.driver === 'postgresql'
+        ? `${alias}.payload::jsonb->>'${name}'`
+        : `json_extract(${alias}.payload,'$.${name}')`;
+    const source = `SELECT ${f('createdAt')} AS at,${f('authorId')} AS author FROM records r WHERE r.kind='love-note' AND ${f('spaceId')}=? AND ${f('epoch')}=?
+      UNION ALL SELECT ${f('createdAt')} AS at,${f('actorId')} AS author FROM records r JOIN records q ON q.kind='couple-round' AND q.id=${f('roundId')} WHERE r.kind='couple-answer' AND ${f('spaceId')}=? AND ${f('epoch', 'q')}=?
+      UNION ALL SELECT ${f('createdAt')} AS at,${f('createdBy')} AS author FROM records r WHERE r.kind='journal' AND r.owner=? AND ${sharedJournalSql(this.db.driver)} AND ${f('deletedAt')} IS NULL AND ${f('createdAt')}>=?
+      UNION ALL SELECT ${f('createdAt')} AS at,${f('actorId')} AS author FROM records r JOIN records e ON e.kind='journal' AND e.id=${f('entryId')} AND e.owner=r.owner WHERE r.kind='journal-version' AND r.owner=? AND ${f('action')}='photo' AND ${sharedJournalSql(this.db.driver, 'e')} AND ${f('deletedAt', 'e')} IS NULL AND ${f('createdAt')}>=?`;
+    const day =
+      this.db.driver === 'postgresql'
+        ? `to_char((at::timestamptz AT TIME ZONE 'Asia/Ho_Chi_Minh'),'YYYY-MM-DD')`
+        : `date(at,'+7 hours')`;
+    const rows = await this.db.query(
+      `SELECT DISTINCT ${day} AS day,author FROM (${source}) activity WHERE at>=? AND at<=? AND author IN (${scope.ids.map(() => '?').join(',')})`,
+      [
+        spaceId,
+        scope.epoch,
+        spaceId,
+        scope.epoch,
+        spaceId,
+        scope.joinedAt,
+        spaceId,
+        scope.joinedAt,
+        new Date(shiftDate(today, -59) + 'T00:00:00+07:00').toISOString(),
+        this.now(),
+        ...scope.ids,
+      ],
+    );
+    return summarizeRhythm(
+      spaceId,
+      today,
+      scope.ids,
+      actor,
+      rows.map((r) => ({ date: String(r.day), author: String(r.author) })),
+    );
   }
   private async write<T>(
     actor: string,

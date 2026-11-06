@@ -1,5 +1,13 @@
 # Upload phục hồi và thư viện lớn
 
+## Trang chính và cảnh 3D — 06/11/2026
+
+- Lịch tháng chỉ mount trong Lịch; bản đồ chỉ ở Dòng thời gian. Hôm nay giới hạn bốn thẻ đúng ngày; recap tuần chỉ mount và lấy dữ liệu sau khi người dùng mở phần nhìn lại. Các kiểm tra cache thư viện ảnh khi đổi trang/mở popup vẫn giữ nguyên.
+- Cảnh đồng hồ được tách bằng dynamic import và chỉ tải khi gần viewport. Build cục bộ ở lần cập nhật này: chunk cảnh 544,58 kB minified / 136,00 kB gzip; đây là bytes mã JavaScript, chưa phải thời gian tải trên mạng. Giới hạn DPR 1.5, render tối đa 24 fps, dừng khi khuất/ẩn tab, reduced motion giữ cảnh tĩnh; thiết bị thiếu WebGL dùng PNG từ cùng mô hình.
+- Nhịp dùng metadata DISTINCT ngày/thành viên trong 60 ngày. Feed hoạt động lấy tối đa 200 dòng mỗi nguồn, trả tối đa 200 thông báo/30 ngày và không đọc bytes media hoặc text kín để dựng chuông. Chuông refresh khi tab hiển thị mỗi 30 giây; nhịp mỗi 60 giây, focus và thao tác liên quan. Đây là polling có giới hạn, không phải realtime push.
+- Suite `main-pages` dùng fixture 16 dấu mốc, kiểm tra 1440/390/320px: cuộn danh sách tỉnh và danh sách kỉ niệm không đổi bounding box của SVG, header, ô tìm kiếm hoặc tiêu đề tỉnh; dialog/sidebar không cuộn toàn bộ. Canvas 3D có pixel thực, reduced motion đứng yên, ảnh dự phòng giải mã được khi chặn WebGL. Các kiểm tra này không đo FPS/GPU trên điện thoại thật hoặc cold start Render.
+- Quy tắc quyền, cache nhỏ và giới hạn hiện tại được ghi trong [trang chính và nhịp yêu thương](MAIN_PAGES_AND_SHARED_RHYTHM.md).
+
 ## Giảm tải lại khi điều hướng — 05/11/2026
 
 - Danh sách timeline, ảnh, ghim bản đồ và recap tuần giữ payload trong RAM tối đa 32 truy vấn / khoảng 8 MiB, hết hạn sau 2 phút. Không lưu nội dung riêng tư vào localStorage hay service worker. Mỗi lần tái sử dụng đều gọi `/api/journal-state` để kiểm tra tài khoản, tập quyền và revision hiện tại; lỗi xác thực không dùng dữ liệu cũ. Các lượt kiểm tra đồng thời dùng chung request đang chạy. Request danh sách bị hủy khi rời trang.

@@ -84,7 +84,7 @@ try {
           body: JSON.stringify({ message: 'Legacy API fixture' }),
         }),
       );
-      await a.goto(origin + '/today');
+      await a.goto(origin + '/timeline');
       await expect(a.getByRole('heading', { name: entry.title, exact: true })).toBeVisible();
       await expect(
         a.getByRole('button', { name: 'Chia sẻ dòng thời gian', exact: true }),
@@ -105,7 +105,7 @@ try {
       assert.equal((await bob.request.get(origin + '/api/journal')).ok(), true);
       assert.equal((await (await bob.request.get(origin + '/api/journal')).json()).length, 0);
       assert.equal((await bob.request.get(origin + entry.assets[0].url)).status(), 404);
-      await b.goto(origin + '/today');
+      await b.goto(origin + '/timeline');
       await b.getByRole('button', { name: 'Chia sẻ dòng thời gian', exact: false }).first().click();
       const bd = b.getByRole('dialog', { name: 'Chia sẻ dòng thời gian', exact: true });
       await bd.getByRole('button', { name: 'Chấp nhận lời mời ' + aliceMail, exact: true }).click();

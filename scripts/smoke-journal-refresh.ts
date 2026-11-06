@@ -127,7 +127,7 @@ try {
       }
       await page.goto(origin + '/today');
       await expect(
-        page.getByRole('heading', { name: 'Những điều mình đã giữ', exact: true }),
+        page.getByRole('heading', { name: 'Trong ngày hôm nay', exact: true }),
       ).toBeVisible();
       const day = page.getByRole('region', { name: 'Kỉ niệm ngày ' + today, exact: true });
       await expect(day.locator('.journal-day-heading time')).toHaveCount(1);

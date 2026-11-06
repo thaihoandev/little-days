@@ -65,6 +65,8 @@ export type ReminderNotification = {
   attemptedAt?: string;
 };
 export type NotificationView = {
+  kind?: 'memory' | 'photo' | 'love-note' | 'invite' | 'accepted';
+  target?: string;
   id: string;
   title: string;
   occurrenceDate: string;

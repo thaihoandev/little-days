@@ -76,8 +76,8 @@ try {
         },
       });
       assert.equal(milestone.status(), 201, await milestone.text());
-      await page.goto(origin + '/today');
-      await page.getByRole('button', { name: /^Bản đồ \(/ }).click();
+      await page.goto(origin + '/timeline');
+      await page.getByRole('button', { name: 'Mở rộng bản đồ', exact: true }).click();
       await page.getByRole('tab', { name: 'Dấu chân Việt Nam', exact: true }).click();
       await expect(page.locator('.vietnam-svg-map > path')).toHaveCount(34);
       await expect(page.locator('.footprint-stats-card strong')).toHaveText('1');

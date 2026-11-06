@@ -38,4 +38,6 @@ The repository does not commit these downloaded executables. Runtime installatio
 
 ## Original project assets and external services
 
+The daily hourglass is an original procedural model in `apps/web/src/hourglass-scene.ts`; its fallback PNG is rendered from the same model. The WebGL renderer and RoomEnvironment come from Three.js 0.187.0 (MIT). Installed dependency license texts, including Three.js and its type packages, are preserved in `licenses/THIRD-PARTY-LICENSE-TEXTS.txt`.
+
 The original demo SVGs, vector decoration catalog and generated music are maintained in this repository; generators and design source are available with the covered project code. User-uploaded material is not included in that grant. Cloudinary, Brevo, Render, Neon and hosting services have separate service terms; a software license does not grant service accounts, quotas, trademarks or paid entitlements.

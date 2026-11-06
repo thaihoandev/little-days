@@ -38,7 +38,8 @@ export function VietnamFootprintMap({
   const svgId = useId();
   const inspector = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (inspector.current) inspector.current.scrollTop = 0;
+    const list = inspector.current?.querySelector('.inspector-entries-list');
+    if (list) list.scrollTop = 0;
   }, [selectedProvinceId]);
 
   // Map provinceId -> array of journal entries
@@ -292,7 +293,10 @@ export function VietnamFootprintMap({
         </div>
 
         {/* Right Column: Province Inspector & Browser */}
-        <div className="footprint-sidebar" ref={inspector}>
+        <div
+          className={'footprint-sidebar' + (selectedProvince ? ' has-selection' : '')}
+          ref={inspector}
+        >
           {/* Active Province Inspector Drawer */}
           {selectedProvince && (
             <div className="footprint-inspector-card">
@@ -318,7 +322,12 @@ export function VietnamFootprintMap({
                       <Sparkles size={15} />
                       Đã lưu <strong>{selectedEntries.length}</strong> kỉ niệm tại đây
                     </p>
-                    <div className="inspector-entries-list">
+                    <div
+                      className="inspector-entries-list"
+                      role="region"
+                      aria-label="Kỉ niệm tại tỉnh đang chọn"
+                      tabIndex={0}
+                    >
                       {selectedEntries.map((e) => (
                         <button
                           key={e.id}
@@ -352,10 +361,11 @@ export function VietnamFootprintMap({
                 <button
                   type="button"
                   className="button primary full add-at-prov-btn"
+                  aria-label={'Thêm kỉ niệm tại ' + selectedProvince.name}
                   onClick={() => onAddAtProvince?.(selectedProvince)}
                 >
                   <Plus size={16} />
-                  Thêm kỉ niệm tại {selectedProvince.name}
+                  Thêm kỉ niệm
                 </button>
               </div>
             </div>
@@ -367,6 +377,7 @@ export function VietnamFootprintMap({
               <Search size={15} />
               <input
                 type="search"
+                aria-label="Tìm tỉnh thành"
                 placeholder="Tìm tỉnh thành (Hà Nội, Đà Lạt, Sa Pa, Phú Quốc…)"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -378,29 +389,28 @@ export function VietnamFootprintMap({
               )}
             </div>
 
-            {/* Region Filter Buttons */}
-            <div className="footprint-region-pills">
-              <button
-                type="button"
-                className={`pill ${selectedRegion === 'all' ? 'active' : ''}`}
-                onClick={() => setSelectedRegion('all')}
+            <label className="footprint-region-select">
+              <span>Vùng miền</span>
+              <select
+                aria-label="Lọc vùng miền"
+                value={selectedRegion}
+                onChange={(e) => setSelectedRegion(e.target.value as VietnamRegion | 'all')}
               >
-                Tất cả ({VIETNAM_PROVINCES.length})
-              </button>
-              {(Object.keys(regionNames) as VietnamRegion[]).map((reg) => (
-                <button
-                  key={reg}
-                  type="button"
-                  className={`pill ${selectedRegion === reg ? 'active' : ''}`}
-                  onClick={() => setSelectedRegion(reg)}
-                >
-                  {regionNames[reg]}
-                </button>
-              ))}
-            </div>
-
+                <option value="all">Tất cả (34)</option>
+                {(Object.keys(regionNames) as VietnamRegion[]).map((region) => (
+                  <option key={region} value={region}>
+                    {regionNames[region]}
+                  </option>
+                ))}
+              </select>
+            </label>
             {/* Province List Cards */}
-            <div className="footprint-province-grid">
+            <div
+              className="footprint-province-grid"
+              role="region"
+              aria-label="Danh sách tỉnh thành"
+              tabIndex={0}
+            >
               {filteredProvinces.map((prov, index) => {
                 const count = (footprints.get(prov.id) || []).length;
                 const isVisited = count > 0;

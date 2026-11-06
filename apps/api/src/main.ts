@@ -72,6 +72,7 @@ import { Observability, logEvent, errorDiagnostics } from './observability.js';
 import { OpsMonitor } from './ops-monitor.js';
 import { BackupLock, backupSafeStore } from './backup-lock.js';
 import { JournalService } from './journal.js';
+import { SharedActivity } from './shared-activity.js';
 import { JournalAlbumService } from './journal-album.js';
 import { WeeklyRecaps } from './weekly-recap.js';
 import { normalizePhoto } from './images.js';
@@ -121,6 +122,7 @@ const imagePreviews = new ImagePreviews(store);
 const profiles = new ProfileService(repository, store, resources, deletion, journal.sharing);
 const journalSocial = new JournalSocial(repository, journal);
 const coupleRituals = new CoupleRituals(repository, journal, deletion, resources, store);
+const sharedActivity = new SharedActivity(repository, journal, deletion);
 const journalAlbums = new JournalAlbumService(repository, store, resources, deletion, journal);
 const weeklyRecaps = new WeeklyRecaps(repository, journal, journalAlbums);
 const security = new AccountSecurity(
@@ -237,6 +239,12 @@ async function albumWrite<T>(owner: string, action: () => Promise<T>) {
 
 @Controller('api')
 class AppController {
+  @Get('together/:spaceId/rhythm') async togetherRhythm(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+  ) {
+    return coupleRituals.rhythm(req.userId, spaceId);
+  }
   @Get('together/:spaceId') async together(
     @Req() req: UserRequest,
     @Param('spaceId') spaceId: string,
@@ -368,13 +376,23 @@ class AppController {
     return reminders.removeRule(req.userId, id, body);
   }
   @Get('notifications') async notifications(@Req() req: UserRequest) {
-    return reminders.notifications(req.userId);
+    const [scheduled, activity] = await Promise.all([
+      reminders.notifications(req.userId),
+      sharedActivity.inbox(req.userId),
+    ]);
+    const items = [...scheduled.items, ...activity]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id))
+      .slice(0, 200);
+    return { items, unread: items.filter((n) => !n.readAt).length };
   }
   @Post('notifications/:id/read') async notificationRead(
     @Req() req: UserRequest,
     @Param('id') id: string,
   ) {
-    return reminders.markRead(req.userId, id);
+    if (id.startsWith('act-')) return sharedActivity.markRead(req.userId, id);
+    const result = await reminders.markRead(req.userId, id);
+    if (id === 'all') await sharedActivity.markRead(req.userId, id);
+    return result;
   }
   @Post('reminder-cron') @HttpCode(200) async reminderTick(@Req() req: Request) {
     if (!reminderCronToken) throw new HttpException('Lịch nhắc chưa được cấu hình.', 503);
@@ -650,6 +668,7 @@ class AppController {
       libraryVersion: 1,
       remindersVersion: 1,
       coupleRitualsVersion: 1,
+      coupleRhythmVersion: 1,
       jarPhotoVersion: 1,
       albumPresentationVersion: 1,
       previewAudioClipVersion: 1,

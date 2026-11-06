@@ -1,4 +1,5 @@
 import { ValidatedReads } from './validated-read.js';
+import { clearRhythmMemory } from './rhythm-cache.js';
 const reads = new ValidatedReads();
 export const clearReadMemory = () => reads.clear();
 export async function validatedApi<T>(path: string, signal?: AbortSignal): Promise<T> {
@@ -52,6 +53,11 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
       code,
       Math.min(300, Math.max(1, Number.isFinite(seconds) ? seconds : 15)) * 1000,
     );
+  }
+  if (mutation && /^\/(together|journal|timeline-sharing|auth)(\/|$|\?)/.test(path)) {
+    clearRhythmMemory();
+    if (typeof window !== 'undefined')
+      window.dispatchEvent(new Event('little-days:shared-activity'));
   }
   return response.json() as Promise<T>;
 }

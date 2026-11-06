@@ -1,0 +1,629 @@
+/* Each page has one job: a daily moment, the story, the schedule, or the library. */
+.home-mode .journal-hero {
+  margin-bottom: 14px;
+}
+.home-mode .today-focus {
+  margin-bottom: 18px;
+  padding: 14px 18px;
+}
+.home-mode .today-focus p {
+  display: none;
+}
+.home-mode .journal-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+  gap: 20px;
+  align-items: start;
+}
+.home-mode .journal-feed {
+  min-width: 0;
+}
+.home-mode .journal-feed > .section-heading p {
+  display: none;
+}
+.home-upcoming {
+  border: 1px solid #e2dfcf;
+  background: #faf8ef;
+  border-radius: 16px;
+  padding: 20px;
+}
+.home-upcoming header {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin-bottom: 12px;
+  color: #6b7954;
+}
+.home-upcoming h2 {
+  font:
+    18px Lora,
+    serif;
+  margin: 0;
+}
+.home-upcoming > button:not(.text-button) {
+  display: grid;
+  grid-template-columns: 55px minmax(0, 1fr) 15px;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  width: 100%;
+  padding: 13px 0;
+  border-bottom: 1px solid #e6e2d5;
+}
+.home-upcoming button > span {
+  font-size: 11px;
+  color: #897c63;
+}
+.home-upcoming button > strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.home-upcoming > .text-button {
+  margin-top: 14px;
+}
+.home-upcoming > p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #8e8773;
+}
+.weekly-recap-disclosure {
+  border: 1px solid #e1ddce;
+  border-radius: 14px;
+  background: #fffdf6;
+  margin: 18px 0;
+}
+.weekly-recap-disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #6b7355;
+  list-style: none;
+}
+.weekly-recap-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.weekly-recap-disclosure > summary > svg:last-child {
+  margin-left: auto;
+  transition: transform 0.2s;
+}
+.weekly-recap-disclosure[open] > summary > svg:last-child {
+  transform: rotate(90deg);
+}
+.weekly-recap-disclosure .weekly-recap {
+  margin: 0;
+  padding: 16px;
+}
+.timeline-mode .journey-intro {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  margin: 10px 0 18px;
+  min-height: 0;
+}
+.timeline-mode .journey-numbers {
+  width: 100%;
+  border: 0;
+  padding: 10px 18px;
+  border-radius: 14px;
+  background: #f2f2e7;
+}
+.timeline-mode .journey-numbers > div {
+  padding: 5px 10px;
+}
+.album-library-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.together-home {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  min-height: 330px;
+  border: 1px solid #ded8c6;
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 20% 30%, #fff7e6 0, #f6eee0 45%, #f4f2e7 100%);
+  overflow: hidden;
+  box-shadow: 0 10px 34px #5b513009;
+  margin-bottom: 16px;
+}
+.together-home.rhythm-hidden {
+  grid-template-columns: 1fr;
+  min-height: 0;
+}
+.together-home.is-loading {
+  display: block;
+  min-height: 180px;
+  padding: 35px;
+}
+.together-home-content {
+  min-width: 0;
+  padding: 28px 28px 24px 8px;
+}
+.rhythm-hidden .together-home-content {
+  padding: 24px;
+}
+.together-home h2 {
+  margin: 8px 0 12px;
+  font:
+    clamp(22px, 2.8vw, 31px) Lora,
+    serif;
+  color: #4c5039;
+}
+.together-home p {
+  color: #8b806c;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.hourglass-stage {
+  position: relative;
+  min-height: 330px;
+  height: 100%;
+  isolation: isolate;
+}
+.hourglass-canvas {
+  position: absolute;
+  inset: 0 0 18px;
+  touch-action: pan-y;
+}
+.hourglass-canvas > canvas {
+  display: block;
+  max-width: 100%;
+}
+.hourglass-caption {
+  position: absolute;
+  bottom: 10px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: #a28d70;
+  font:
+    12px Lora,
+    serif;
+}
+.hourglass-placeholder {
+  position: absolute;
+  inset: 35%;
+  font-size: 12px;
+  text-align: center;
+  color: #9a8769;
+}
+.rhythm-space {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: #8b806e;
+  margin: 6px 0 12px;
+}
+.rhythm-space select {
+  border: 0;
+  background: transparent;
+  font-size: 11px;
+  padding: 4px;
+  min-width: 0;
+  max-width: 100%;
+  appearance: none;
+}
+.rhythm-summary {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+.rhythm-summary > strong {
+  font:
+    38px Lora,
+    serif;
+  color: #685b42;
+}
+.rhythm-summary strong > small {
+  font:
+    12px 'Be Vietnam Pro',
+    sans-serif;
+  margin-left: 8px;
+  color: #9b8b73;
+}
+.rhythm-streak {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  border-radius: 20px;
+  padding: 5px 9px;
+  background: #eadbc0;
+  color: #916640;
+  font-size: 10px;
+}
+.rhythm-week {
+  display: flex;
+  gap: clamp(8px, 2vw, 18px);
+  margin: 16px 0 8px;
+}
+.rhythm-week > span {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: #a99b82;
+}
+.rhythm-week i {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid #ddd0b9;
+  background: #f1e8d9;
+  color: #8c784f;
+  font-style: normal;
+}
+.rhythm-week .together i {
+  background: #75835c;
+  color: #fff9e7;
+  border-color: #75835c;
+  box-shadow: 0 3px 9px #77805425;
+}
+.rhythm-week .started i {
+  background: #e5cfaa;
+  color: #997343;
+}
+.rhythm-week .future {
+  opacity: 0.45;
+}
+.rhythm-week .is-today i {
+  outline: 1px solid #a7936e;
+  outline-offset: 3px;
+}
+.rhythm-week small {
+  font-size: 9px;
+}
+.rhythm-today {
+  min-height: 20px;
+  margin: 12px 0;
+}
+.together-home .ritual-home-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 16px 0 10px;
+}
+.together-home .ritual-home-links > button {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fffdf6a8;
+  border: 1px solid #e2dac8;
+  box-shadow: none;
+  min-width: 0;
+}
+.together-home .ritual-home-links > button > svg {
+  flex: none;
+  color: #9a8060;
+}
+.together-home .ritual-home-links span {
+  min-width: 0;
+}
+.together-home .ritual-home-links strong {
+  display: block;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.together-home .ritual-home-links small {
+  display: block;
+  font-size: 9px;
+  color: #9a8f7c;
+  margin-top: 4px;
+}
+.rhythm-footer {
+  display: flex;
+  gap: 15px;
+  align-items: start;
+  justify-content: space-between;
+  color: #9e927e;
+  font-size: 10px;
+  margin-top: 14px;
+}
+.rhythm-footer details {
+  max-width: 75%;
+}
+.rhythm-footer summary {
+  cursor: pointer;
+}
+.rhythm-footer p {
+  font-size: 10px;
+  max-width: 380px;
+}
+.rhythm-footer .text-button {
+  font-size: 10px;
+  white-space: nowrap;
+}
+/* Only province and memory lists scroll; their headers and controls stay in place. */
+.memory-map-dialog .footprint-sidebar {
+  overflow: hidden;
+  padding-right: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  gap: 10px;
+}
+.memory-map-dialog .footprint-sidebar.has-selection {
+  grid-template-rows: minmax(130px, 0.85fr) minmax(180px, 1.3fr);
+}
+.memory-map-dialog .footprint-browser-card,
+.memory-map-dialog .footprint-inspector-card {
+  min-height: 0;
+  overflow: hidden;
+  padding: 12px;
+  gap: 10px;
+}
+.memory-map-dialog .footprint-browser-card {
+  display: flex;
+  flex-direction: column;
+}
+.memory-map-dialog .footprint-search-box,
+.memory-map-dialog .footprint-region-pills,
+.memory-map-dialog .inspector-header {
+  flex: none;
+}
+.memory-map-dialog .footprint-province-grid {
+  min-height: 0;
+  max-height: none;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  align-content: start;
+  scrollbar-gutter: stable;
+}
+.memory-map-dialog .inspector-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  flex: 1;
+}
+.memory-map-dialog .inspector-entries-list {
+  min-height: 0;
+  max-height: none;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.memory-map-dialog .inspector-count {
+  flex: none;
+  font-size: 10px;
+  margin: 0;
+}
+.memory-map-dialog .add-at-prov-btn {
+  flex: none;
+  min-height: 32px;
+  padding: 8px;
+  font-size: 11px;
+}
+.memory-map-dialog .inspector-empty {
+  padding: 3px;
+  gap: 2px;
+  min-height: 0;
+  flex: 1;
+  justify-content: center;
+}
+.memory-map-dialog .inspector-empty > svg {
+  display: none;
+}
+.memory-map-dialog .inspector-empty p {
+  font-size: 11px;
+  margin: 0;
+}
+@media (max-width: 820px) {
+  .home-mode .journal-workspace {
+    grid-template-columns: 1fr;
+  }
+  .home-upcoming {
+    padding: 16px;
+  }
+  .home-upcoming > button:not(.text-button) {
+    padding: 10px 0;
+  }
+  .together-home {
+    grid-template-columns: minmax(130px, 0.6fr) minmax(0, 1.4fr);
+    min-height: 300px;
+  }
+  .together-home-content {
+    padding: 20px 16px 20px 0;
+  }
+  .hourglass-stage {
+    min-height: 300px;
+  }
+  .together-home .ritual-home-links {
+    grid-template-columns: 1fr;
+  }
+  .together-home .ritual-home-links small {
+    display: none;
+  }
+  .together-home .ritual-home-links > button {
+    padding: 10px;
+  }
+  .rhythm-week {
+    gap: 8px;
+  }
+  .rhythm-week i {
+    width: 22px;
+    height: 22px;
+  }
+  .rhythm-summary > strong {
+    font-size: 30px;
+  }
+  .rhythm-summary strong > small {
+    font-size: 10px;
+  }
+  .hourglass-caption {
+    font-size: 9px;
+    padding: 0 8px;
+  }
+  .rhythm-footer {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .rhythm-footer details {
+    max-width: 100%;
+  }
+  .memory-map-dialog .footprint-layout {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    grid-template-rows: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .memory-map-dialog .footprint-map-meta {
+    font-size: 9px;
+  }
+  .memory-map-dialog .footprint-browser-card,
+  .memory-map-dialog .footprint-inspector-card {
+    padding: 8px;
+    gap: 7px;
+  }
+  .memory-map-dialog .footprint-search-box {
+    padding: 4px;
+    gap: 3px;
+  }
+  .memory-map-dialog .footprint-search-box input {
+    font-size: 10px;
+    min-width: 0;
+  }
+  .memory-map-dialog .footprint-province-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 5px;
+  }
+  .memory-map-dialog .footprint-region-pills {
+    gap: 3px;
+  }
+  .memory-map-dialog .footprint-region-pills .pill {
+    font-size: 8px;
+    padding: 3px 4px;
+  }
+  .memory-map-dialog .footprint-sidebar.has-selection {
+    grid-template-rows: minmax(125px, 0.7fr) minmax(170px, 1.3fr);
+  }
+  .memory-map-dialog .inspector-region {
+    font-size: 8px;
+  }
+  .memory-map-dialog .inspector-header h4 {
+    font-size: 13px;
+  }
+  .memory-map-dialog .inspector-count {
+    font-size: 9px;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  .memory-map-dialog .inspector-entry-row {
+    padding: 5px;
+    gap: 5px;
+  }
+  .memory-map-dialog .inspector-thumb {
+    width: 26px;
+    height: 26px;
+  }
+  .memory-map-dialog .inspector-entry-text strong {
+    font-size: 10px;
+  }
+  .memory-map-dialog .footprint-svg-wrapper > small {
+    font-size: 8px;
+  }
+}
+@media (max-width: 760px) {
+  .sidebar .nav-item.active {
+    box-shadow: inset 0 -3px #677b50;
+    border-left: 0;
+  }
+  .sidebar .nav-item {
+    border-radius: 10px 10px 3px 3px;
+    padding-bottom: 9px;
+  }
+  .sidebar .nav-item .nav-count {
+    display: none;
+  }
+}
+@media (max-width: 420px) {
+  .together-home {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .hourglass-stage {
+    height: 225px;
+    min-height: 225px;
+  }
+  .hourglass-canvas {
+    inset: -12px 0 15px;
+  }
+  .together-home-content {
+    padding: 0 20px 20px;
+  }
+  .together-home h2 {
+    font-size: 25px;
+  }
+  .together-home .ritual-home-links {
+    grid-template-columns: 1fr 1fr;
+  }
+  .together-home .ritual-home-links > button {
+    gap: 7px;
+    padding: 10px 8px;
+  }
+  .together-home .ritual-home-links strong {
+    font-size: 10px;
+  }
+  .rhythm-week {
+    justify-content: space-between;
+  }
+  .rhythm-footer details {
+    max-width: 65%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .weekly-recap-disclosure > summary > svg:last-child {
+    transition: none;
+  }
+  .footprint-inspector-card {
+    animation: none;
+  }
+}
+.hourglass-still {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.footprint-region-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+  font-size: 10px;
+  color: #827b68;
+}
+.footprint-region-select select {
+  min-width: 0;
+  width: 100%;
+  padding: 7px 8px;
+  font-size: 11px;
+  border: 1px solid #ddd5c2;
+  border-radius: 7px;
+  background: #fffdf6;
+}
+@media (max-width: 820px) {
+  .footprint-region-select {
+    display: block;
+  }
+  .footprint-region-select > span {
+    display: none;
+  }
+  .footprint-region-select select {
+    padding: 6px;
+    font-size: 10px;
+  }
+}

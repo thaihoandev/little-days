@@ -82,6 +82,7 @@ import { CreateModal } from './CreateAlbumModal.js';
 import { TextOverflowWarning } from './TextOverflowWarning.js';
 import { PwaInstallBanner, PwaHeaderButton, PwaSidebarButton } from './PwaInstallPrompt.js';
 import JournalDashboard, { clearDashboardMemory } from './JournalDashboard.js';
+import { TogetherHome, clearRhythmMemory } from './TogetherHome.js';
 import { useAppRoute, sectionPaths, type AppSection } from './useAppRoute.js';
 import { UserAvatar } from './UserAvatar.js';
 import { DecorationPreview, CounterPresetPreview } from './DecorationPreview.js';
@@ -365,19 +366,14 @@ export default function App() {
               <span className="nav-label">Lịch của mình</span>
             </button>
             <button
-              className={section === 'albums' ? 'nav-item active' : 'nav-item'}
+              className={
+                section === 'albums' || section === 'photos' ? 'nav-item active' : 'nav-item'
+              }
               onClick={() => setSection('albums')}
             >
               <AlbumIcon size={19} />
               <span className="nav-label">Album của mình</span>
               <span className="nav-count">{albums.length}</span>
-            </button>
-            <button
-              className={section === 'photos' ? 'nav-item active' : 'nav-item'}
-              onClick={() => setSection('photos')}
-            >
-              <Images size={19} />
-              <span className="nav-label">Ảnh đã lưu</span>
             </button>
           </nav>
           <div className="sidebar-note">
@@ -453,6 +449,7 @@ export default function App() {
                 <NotificationCenter
                   key={user.id}
                   userId={user.id}
+                  onNavigate={navigate}
                   onOpenDay={(date) => navigate('/calendar?date=' + date)}
                   onItems={(items) => setNotifications({ userId: user.id, items })}
                   onPreferences={(prefs) =>
@@ -508,25 +505,17 @@ export default function App() {
               weeklyReady={user.weeklyRecapVersion === 1}
               onViewRecaps={() => navigate('/albums?kind=recap')}
               remindersReady={user.remindersVersion === 1}
-              homeActions={
+              homeActions={(spaces, refreshKey, ready) =>
                 user.coupleRitualsVersion === 1 ? (
-                  <div className="ritual-home-links">
-                    <button onClick={() => navigate('/together?tab=questions')}>
-                      <Sparkles size={25} />
-                      <span>
-                        <strong>Câu hỏi dành cho hai người</strong>
-                        <small>Mỗi ngày một câu, cùng hiểu nhau thêm một chút.</small>
-                      </span>
-                    </button>
-                    <button onClick={() => navigate('/together?tab=jar')}>
-                      <Heart size={25} />
-                      <span>
-                        <strong>Lọ điều thương</strong>
-                        <small>Để dành lời thương đến đúng ngày, hoặc cùng đồng ý mở.</small>
-                      </span>
-                    </button>
-                  </div>
-                ) : undefined
+                  <TogetherHome
+                    ready={ready}
+                    userId={user.id}
+                    spaces={spaces}
+                    enabled={user.coupleRhythmVersion === 1}
+                    refreshKey={refreshKey}
+                    onNavigate={navigate}
+                  />
+                ) : null
               }
               sharedPlansReady={user.sharedPlansVersion === 1}
               separateSpaces={user.spacesVersion === 2}
@@ -543,6 +532,9 @@ export default function App() {
               }}
               showHolidays={user.showHolidays !== false}
               focusDate={new URLSearchParams(search).get('date') || undefined}
+              focusEntry={new URLSearchParams(search).get('entry') || undefined}
+              focusSpace={new URLSearchParams(search).get('space') || undefined}
+              onClearFocus={() => navigate('/timeline', true)}
               sharingRequested={new URLSearchParams(search).get('sharing') === '1'}
               notifications={notifications?.userId === user.id ? notifications.items : []}
               onOpenDay={(date) => navigate('/calendar?date=' + date)}
@@ -565,10 +557,16 @@ export default function App() {
                     </h2>
                     <p>Mở một trang cũ, hay bắt đầu một câu chuyện mới.</p>
                   </div>
-                  <button className="button quiet" onClick={() => setModal('create')}>
-                    <Plus size={16} />
-                    Tạo album
-                  </button>
+                  <div className="album-library-actions">
+                    <button className="button quiet" onClick={() => setSection('photos')}>
+                      <Images size={16} />
+                      Ảnh đã lưu
+                    </button>
+                    <button className="button quiet" onClick={() => setModal('create')}>
+                      <Plus size={16} />
+                      Tạo album
+                    </button>
+                  </div>
                 </div>
                 {error && (
                   <div className="error-banner">
@@ -706,6 +704,7 @@ export default function App() {
           onClose={() => setModal(null)}
           onChange={(message, receipt) => {
             clearDashboardMemory();
+            clearRhythmMemory();
             libraryActor.current = undefined;
             if (receipt) {
               setDeletionReceipt(receipt);

@@ -1,8 +1,10 @@
 # Trạng thái triển khai Little Days
 
-Ngày cập nhật: **05/11/2026**.
+Ngày cập nhật: **06/11/2026**.
 
 ## Kết quả hiện tại
+
+Đã viết lại phân vai bốn trang chính, chuyển thư viện ảnh vào Album, bỏ lịch tháng/bản đồ lặp trên Hôm nay và đổi active mobile sang gạch dưới. Chuông có hoạt động cộng tác theo quyền hiện tại; nhịp yêu thương dùng đóng góp thật, hiển thị qua đồng hồ cát WebGL 3D với reduced motion/ảnh dự phòng. Bản đồ chỉ cuộn hai danh sách, các điều khiển giữ cố định. Xem [phạm vi, nghiên cứu và kiểm chứng](MAIN_PAGES_AND_SHARED_RHYTHM.md); CI/deploy phải đối chiếu commit phát hành.
 
 Đã bổ sung ba mẫu Photobooth/kẹp gỗ/vé, ảnh kín cho Lọ điều thương, xuất PNG Story/ảnh dài và sửa luồng cài màn hình chính. Bản đồ dấu chân dùng 34 tỉnh thành theo sắp xếp 2025, có Hoàng Sa/Trường Sa minh họa, chọn viền theo tỉnh và giữ bản đồ vừa modal; chỉ danh sách cuộn. Bỏ mục Góc chúng mình khỏi menu, giữ lối mở câu hỏi/lọ từ Hôm nay. Xem [phạm vi và kiểm chứng](PRIORITY_FLOWS_REVIEW.md) và [nguồn dữ liệu bản đồ](VIETNAM_MAP_DATA.md). Trạng thái deploy cần đối chiếu commit chạy thật.
 

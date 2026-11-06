@@ -121,6 +121,9 @@ export default function JournalDashboard({
   homeActions,
   weeklyReady = false,
   sharingRequested = false,
+  focusEntry,
+  focusSpace,
+  onClearFocus,
   onViewRecaps = () => {},
 }: {
   albums: Album[];
@@ -139,9 +142,16 @@ export default function JournalDashboard({
   onRefreshAlbums?: (force?: boolean) => Promise<void>;
   showHolidays?: boolean;
   focusDate?: string;
+  focusEntry?: string;
+  focusSpace?: string;
+  onClearFocus?: () => void;
   notifications?: NotificationView[];
   onOpenDay?: (date: string) => void;
-  homeActions?: import('react').ReactNode;
+  homeActions?: (
+    spaces: TimelineSpace[],
+    refreshKey: string,
+    ready: boolean,
+  ) => import('react').ReactNode;
   weeklyReady?: boolean;
   sharingRequested?: boolean;
   onViewRecaps?: () => void;
@@ -164,6 +174,7 @@ export default function JournalDashboard({
       null,
     ),
     [trashOpen, setTrashOpen] = useState(false);
+  const [weeklyOpen, setWeeklyOpen] = useState(false);
   const [mapOpen, setMapOpen] = useState(false),
     [mapPoint, setMapPoint] = useState<MilestoneLocation | null>(null);
   const [openingPoint, setOpeningPoint] = useState(false);
@@ -490,6 +501,12 @@ export default function JournalDashboard({
   const upcoming = all
     .map((entry) => ({ entry, next: nextOccurrence(entry, upcomingFrom) }))
     .filter((i): i is { entry: Item; next: string } => !!i.next)
+    .filter(
+      (i) =>
+        mode !== 'home' ||
+        (i.next > today &&
+          (i.entry.kind === 'plan' || i.entry.kind === 'anniversary' || i.entry.annual)),
+    )
     .sort((a, b) => a.next.localeCompare(b.next))
     .slice(0, 4);
   useEffect(() => {
@@ -527,13 +544,12 @@ export default function JournalDashboard({
       .sort((a, b) => b.date.localeCompare(a.date));
   const pagedPoints = useMemo(() => points.items.map(fromFeed), [points.items, albums]);
   const mapEntries = paged ? pagedPoints : mode === 'timeline' ? filtered : all;
+  const todayItems = all.filter((item) => occursOn(item, today));
   const visible =
     mode === 'calendar'
       ? dayItems
       : mode === 'home'
-        ? dayItems.length
-          ? dayItems
-          : filtered.slice(0, 4)
+        ? todayItems.slice(0, 4)
         : paged
           ? filtered
           : filtered.slice(0, limit);
@@ -541,8 +557,8 @@ export default function JournalDashboard({
     days = monthDays(year, monthIndex - 1);
   const groupedDays = groupJournalDays(
     visible.map((entry) =>
-      mode !== 'timeline' && occursOn(entry, selected)
-        ? { ...entry, occurrenceDate: selected }
+      mode !== 'timeline' && occursOn(entry, mode === 'home' ? today : selected)
+        ? { ...entry, occurrenceDate: mode === 'home' ? today : selected }
         : entry,
     ),
   );
@@ -574,6 +590,28 @@ export default function JournalDashboard({
       setOpeningPoint(false);
     }
   };
+  useEffect(() => {
+    if (mode !== 'timeline' || !focusEntry || !sharingReady) return;
+    if (!/^[a-f0-9-]{36}$/i.test(focusEntry)) return;
+    const controller = new AbortController();
+    void api<JournalEntry>('/journal/' + encodeURIComponent(focusEntry), {
+      signal: controller.signal,
+    })
+      .then((entry) => {
+        if (controller.signal.aborted) return;
+        if (focusSpace && entry.spaceId !== focusSpace)
+          throw Error('Dấu mốc không còn ở không gian này.');
+        if (focusSpace) {
+          setSelectedTimeline(focusSpace);
+          spaceSelection.set(userId, focusSpace);
+        }
+        setEditing(entry);
+      })
+      .catch((e) => {
+        if (!controller.signal.aborted) setError(e.message);
+      });
+    return () => controller.abort();
+  }, [mode, focusEntry, focusSpace, sharingReady, userId]);
   const remove = async (entry: JournalEntry) => {
     if (deletingBusy) return;
     setDeletingBusy(true);
@@ -634,28 +672,31 @@ export default function JournalDashboard({
           </span>
         </div>
         <div className="journal-primary-actions">
-          <button
-            className="button quiet journal-share-action"
-            disabled={!sharingReady}
-            aria-label="Chia sẻ dòng thời gian"
-            title={
-              sharingReady
-                ? 'Chia sẻ dòng thời gian'
-                : 'Chia sẻ tạm thời chưa sẵn sàng; lịch riêng vẫn sử dụng bình thường.'
-            }
-            onClick={() => setSharingOpen(true)}
-          >
-            <UsersRound size={17} />
-            <span className="share-action-label">Chia sẻ dòng thời gian</span>
-            {sharing.grants.some((g) => g.memberId === userId && g.state === 'pending') && (
-              <span className="invitation-count">
-                {
-                  sharing.grants.filter((g) => g.memberId === userId && g.state === 'pending')
-                    .length
-                }
-              </span>
-            )}
-          </button>
+          {mode === 'timeline' && (
+            <button
+              className="button quiet journal-share-action"
+              disabled={!sharingReady}
+              aria-label="Chia sẻ dòng thời gian"
+              title={
+                sharingReady
+                  ? 'Chia sẻ dòng thời gian'
+                  : 'Chia sẻ tạm thời chưa sẵn sàng; lịch riêng vẫn sử dụng bình thường.'
+              }
+              onClick={() => setSharingOpen(true)}
+            >
+              <UsersRound size={17} />
+              <span className="share-action-label">Chia sẻ dòng thời gian</span>
+              {mode === 'timeline' &&
+                sharing.grants.some((g) => g.memberId === userId && g.state === 'pending') && (
+                  <span className="invitation-count">
+                    {
+                      sharing.grants.filter((g) => g.memberId === userId && g.state === 'pending')
+                        .length
+                    }
+                  </span>
+                )}
+            </button>
+          )}
           <button
             className="button primary"
             onClick={() => {
@@ -675,44 +716,41 @@ export default function JournalDashboard({
           <ArrowUpRight size={16} />
         </button>
       )}
-      {mode === 'home' && (
-        <div className="today-focus" aria-label="Tổng quan hôm nay">
-          <div>
-            <span>HÔM NAY</span>
-            <strong>{all.filter((e) => occursOn(e, today)).length} điều muốn nhớ</strong>
-            <p>Ảnh, lời hẹn và những điều nhỏ trong ngày.</p>
-          </div>
-          <button
-            className="button quiet"
-            onClick={() => {
-              setSelected(today);
-              setMonth(today.slice(0, 7));
-              setNewKind('note');
-              setEditing(null);
-            }}
-          >
-            <NotebookPen size={16} />
-            Ghi nhanh hôm nay
-          </button>
-        </div>
-      )}
+      {mode === 'home' &&
+        homeActions?.(
+          sharing.spaces || [],
+          String(syncState.current?.version || '') + ':' + contentVersion,
+          sharingReady,
+        )}
       {mode === 'home' && weeklyReady && (
-        <WeeklyRecap
-          spaces={sharing.spaces || []}
-          ready={sharingReady}
-          refreshKey={`${syncState.current?.version || ''}:${contentVersion}`}
-          onCreated={onCreatedAlbum}
-          onViewRecaps={onViewRecaps}
-          onAddDay={(date, space) => {
-            setSelected(date);
-            setMonth(date.slice(0, 7));
-            setSelectedTimeline(space);
-            setNewKind('memory');
-            setEditing(null);
-          }}
-        />
+        <details
+          className="weekly-recap-disclosure"
+          onToggle={(event) => setWeeklyOpen(event.currentTarget.open)}
+        >
+          <summary>
+            <BookOpen size={18} />
+            Nhìn lại tuần này
+            <ChevronRight size={16} />
+          </summary>
+          {weeklyOpen && (
+            <WeeklyRecap
+              spaces={sharing.spaces || []}
+              ready={sharingReady}
+              refreshKey={`${syncState.current?.version || ''}:${contentVersion}`}
+              onCreated={onCreatedAlbum}
+              onViewRecaps={onViewRecaps}
+              onAddDay={(date, space) => {
+                setSelected(date);
+                setMonth(date.slice(0, 7));
+                setSelectedTimeline(space);
+                setNewKind('memory');
+                setEditing(null);
+              }}
+            />
+          )}
+        </details>
       )}
-      {mode === 'home' && homeActions}
+
       {mode === 'timeline' &&
         (separateSpaces || timelineOptions.length > 1 || sharing.spaces?.some((s) => s.shared)) && (
           <div className="timeline-scope">
@@ -749,21 +787,6 @@ export default function JournalDashboard({
         )}
       {mode === 'timeline' && (
         <div className="journey-intro">
-          <div className="journey-banner-copy">
-            <span className="eyebrow">DẤU CHÂN CỦA CHÚNG MÌNH</span>
-            <h2>Mỗi chặng đường, một điều thương.</h2>
-            <p>
-              {groupedDays.length
-                ? `Đang mở ${groupedDays.length} ngày có kỉ niệm`
-                : 'Câu chuyện bắt đầu từ một dấu mốc nhỏ'}
-            </p>
-          </div>
-          <div className="journey-banner-art" aria-hidden="true">
-            <span>♡</span>
-            <BookOpen />
-            <MapPin />
-            <span>✦</span>
-          </div>
           <div className="journey-numbers" aria-label="Câu chuyện qua những con số">
             <div>
               <Heart size={19} />
@@ -812,27 +835,7 @@ export default function JournalDashboard({
           {feed.error} <button onClick={feed.retry}>Thử lại</button>
         </p>
       )}
-      {mode === 'home' && notifications.some((n) => !n.readAt) && (
-        <section className="today-reminders" aria-label="Lời nhắc quan trọng">
-          <div>
-            <Bell size={19} />
-            <h2>Đừng quên những ngày này</h2>
-          </div>
-          {notifications
-            .filter((n) => !n.readAt)
-            .slice(0, 3)
-            .map((n) => (
-              <button key={n.id} onClick={() => onOpenDay?.(n.occurrenceDate)}>
-                <strong>{n.title}</strong>
-                <small>
-                  {dateLabel(n.occurrenceDate)} ·{' '}
-                  {n.offset ? 'Nhắc trước ' + n.offset + ' ngày' : 'Nhắc đúng ngày'}
-                </small>
-              </button>
-            ))}
-        </section>
-      )}
-      {mode !== 'timeline' && (
+      {mode === 'calendar' && (
         <div className="journal-overview">
           <section className="calendar-card" aria-label="Lịch tháng">
             <header>
@@ -984,13 +987,7 @@ export default function JournalDashboard({
                 <h3>Dịp lễ sắp tới</h3>
                 {holidayData.items
                   .filter(
-                    (h) =>
-                      h.date >=
-                      (mode === 'home'
-                        ? today
-                        : selected.slice(0, 7) === month
-                          ? selected
-                          : month + '-01'),
+                    (h) => h.date >= (selected.slice(0, 7) === month ? selected : month + '-01'),
                   )
                   .slice(0, 4)
                   .map((h) => (
@@ -1184,7 +1181,7 @@ export default function JournalDashboard({
                 {mode === 'timeline'
                   ? 'Dòng thời gian'
                   : mode === 'home'
-                    ? 'Những điều mình đã giữ'
+                    ? 'Trong ngày hôm nay'
                     : dateLabel(selected)}
               </h2>
               <p>
@@ -1219,7 +1216,7 @@ export default function JournalDashboard({
                 </select>
               </div>
             )}
-            {communityReady && (
+            {communityReady && mode === 'timeline' && (
               <button
                 className="button quiet journal-trash-action"
                 aria-label="Mở thùng rác dấu mốc"
@@ -1228,19 +1225,6 @@ export default function JournalDashboard({
               >
                 <Trash2 size={17} />
                 <span>Thùng rác</span>
-              </button>
-            )}
-            {enhancedReady && mode !== 'timeline' && (
-              <button
-                className="icon-button"
-                aria-label={`Bản đồ (${mapEntries.filter((e) => e.location).length})`}
-                title="Xem bản đồ kỉ niệm"
-                onClick={() => {
-                  setMapPoint(null);
-                  setMapOpen(true);
-                }}
-              >
-                <MapPin size={15} />
               </button>
             )}
           </header>
@@ -1587,7 +1571,34 @@ export default function JournalDashboard({
               Xem thêm dấu mốc
             </button>
           )}
+          {mode === 'home' && todayItems.length > 4 && (
+            <button className="button quiet" onClick={() => onOpenDay?.(today)}>
+              Xem đủ {todayItems.length} điều trong lịch <ArrowUpRight size={14} />
+            </button>
+          )}
         </section>
+        {mode === 'home' && (
+          <aside className="home-upcoming" aria-label="Hẹn sắp tới">
+            <header>
+              <CalendarDays size={18} />
+              <h2>Hẹn sắp tới</h2>
+            </header>
+            {upcoming.length ? (
+              upcoming.slice(0, 3).map(({ entry, next }) => (
+                <button key={entry.id} onClick={() => onOpenDay?.(next)}>
+                  <span>{dateLabel(next, { day: 'numeric', month: 'short' })}</span>
+                  <strong>{entry.title}</strong>
+                  <ChevronRight size={15} />
+                </button>
+              ))
+            ) : (
+              <p>Chừa một ngày cho điều mình muốn làm cùng nhau.</p>
+            )}
+            <button className="text-button" onClick={() => onOpenDay?.(today)}>
+              Mở lịch của mình <ArrowUpRight size={14} />
+            </button>
+          </aside>
+        )}
         {mode === 'timeline' && enhancedReady && (
           <aside className="timeline-map-panel" aria-label="Bản đồ dòng thời gian">
             <header>
@@ -1715,6 +1726,7 @@ export default function JournalDashboard({
           date={selected}
           onClose={() => {
             setEditing(undefined);
+            if (focusEntry) onClearFocus?.();
             setConvertingPlan(false);
             setHolidayDraft(undefined);
             setLocationDraft(undefined);
@@ -1723,6 +1735,7 @@ export default function JournalDashboard({
           onSaved={(entry) => {
             update(entry);
             setEditing(undefined);
+            if (focusEntry) onClearFocus?.();
             setConvertingPlan(false);
             setHolidayDraft(undefined);
             setLocationDraft(undefined);

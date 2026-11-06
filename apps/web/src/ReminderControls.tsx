@@ -1,5 +1,16 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Bell, BellRing, CheckCheck, Settings, X, Trash2, CalendarDays } from 'lucide-react';
+import {
+  Bell,
+  BellRing,
+  CheckCheck,
+  Settings,
+  X,
+  Trash2,
+  CalendarDays,
+  Heart,
+  ImagePlus,
+  UsersRound,
+} from 'lucide-react';
 import { api } from './api.js';
 import { useBodyScrollLock, ConfirmDialog } from './Overlays.js';
 import type {
@@ -209,11 +220,13 @@ export function ReminderDialog({
 
 export function NotificationCenter({
   userId,
+  onNavigate,
   onOpenDay,
   onItems,
   onPreferences,
 }: {
   userId: string;
+  onNavigate?: (target: string) => void;
   onOpenDay: (date: string) => void;
   onItems: (items: NotificationView[]) => void;
   onPreferences: (preferences: ReminderPreferences) => void;
@@ -231,10 +244,12 @@ export function NotificationCenter({
     [error, setError] = useState(''),
     [message, setMessage] = useState('');
   const callbacks = useRef({ onItems, onPreferences });
+  const loadVersion = useRef(0);
   callbacks.current = { onItems, onPreferences };
   const load = async (signal?: AbortSignal) => {
+    const version = ++loadVersion.current;
     const result = await api<NotificationList>('/notifications', { signal });
-    if (signal?.aborted) return;
+    if (signal?.aborted || version !== loadVersion.current) return;
     setList(result);
     callbacks.current.onItems(result.items);
   };
@@ -244,14 +259,17 @@ export function NotificationCenter({
       if (document.visibilityState === 'visible') void load(abort.signal).catch(() => {});
     };
     refresh();
-    const timer = setInterval(refresh, 60000);
+    const timer = setInterval(refresh, 30000);
     window.addEventListener('focus', refresh);
     window.addEventListener('little-days:reminders', refresh);
+    window.addEventListener('little-days:shared-activity', refresh);
     return () => {
+      loadVersion.current++;
       abort.abort();
       clearInterval(timer);
       window.removeEventListener('focus', refresh);
       window.removeEventListener('little-days:reminders', refresh);
+      window.removeEventListener('little-days:shared-activity', refresh);
     };
   }, [userId]);
   const details = async () => {
@@ -301,7 +319,9 @@ export function NotificationCenter({
     try {
       await api('/notifications/' + n.id + '/read', { method: 'POST' });
       setOpen(false);
-      onOpenDay(n.occurrenceDate);
+      if (n.target && /^\/(timeline|together|calendar)\?/.test(n.target) && onNavigate)
+        onNavigate(n.target);
+      else onOpenDay(n.occurrenceDate);
       await load();
     } catch (e) {
       setError((e as Error).message);
@@ -376,12 +396,27 @@ export function NotificationCenter({
                         onClick={() => void openNotice(n)}
                       >
                         <span className="notice-icon">
-                          <BellRing size={19} />
+                          {n.kind === 'love-note' ? (
+                            <Heart size={19} />
+                          ) : n.kind === 'invite' || n.kind === 'accepted' ? (
+                            <UsersRound size={19} />
+                          ) : n.kind === 'photo' || n.kind === 'memory' ? (
+                            <ImagePlus size={19} />
+                          ) : (
+                            <BellRing size={19} />
+                          )}
                         </span>
                         <span>
                           <strong>{n.title}</strong>
                           <small>
-                            {n.occurrenceDate} · {offsetLabel(n.offset)}
+                            {n.kind
+                              ? new Date(n.createdAt).toLocaleString('vi-VN', {
+                                  day: 'numeric',
+                                  month: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })
+                              : `${n.occurrenceDate} · ${offsetLabel(n.offset)}`}
                           </small>
                           {n.emailDelivery === 'accepted' && (
                             <small>Email đã được dịch vụ tiếp nhận</small>
@@ -403,8 +438,11 @@ export function NotificationCenter({
                   ) : (
                     <div className="reminder-empty">
                       <BellRing size={28} />
-                      <h3>Chưa có lời nhắc đến giờ</h3>
-                      <p>Bấm icon chuông trên thẻ kỉ niệm để chọn ngày muốn được nhắc.</p>
+                      <h3>Mọi điều mới sẽ ở đây</h3>
+                      <p>
+                        Lời mời, dấu mốc, ảnh và điều thương từ không gian chung, cùng những ngày
+                        bạn muốn được nhắc.
+                      </p>
                     </div>
                   )}
                 </section>

@@ -4,6 +4,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Sử dụng
 
+- [Trang chính, thông báo cộng tác và nhịp yêu thương 3D](MAIN_PAGES_AND_SHARED_RHYTHM.md)
 - [Sửa lặp ngày, Lọ điều thương và thẻ Hôm nay](CALENDAR_AND_DAILY_POLISH.md)
 
 - [Recap tuần, khung ảnh mới và thiệp cuộn dọc](WEEKLY_DESIGN_REFRESH.md)

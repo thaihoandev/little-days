@@ -264,6 +264,9 @@ export class TimelineSharing {
           throw new BadRequestException('Thao tác không hợp lệ.');
         const next: TimelineGrant = {
           ...current,
+          ...(input.action === 'accept' && current.state === 'pending'
+            ? { acceptedAt: new Date().toISOString() }
+            : {}),
           state: 'active',
           showOnCalendar:
             input.action === 'calendar' ? input.showOnCalendar! : current.showOnCalendar,

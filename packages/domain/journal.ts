@@ -93,6 +93,7 @@ export type JournalReaction = {
   emoji: string;
 };
 export type TimelineGrant = {
+  acceptedAt?: string;
   ownerAvatarUrl?: string;
   memberAvatarUrl?: string;
   id: string;

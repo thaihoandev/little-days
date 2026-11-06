@@ -32,6 +32,8 @@ try {
       await expect(
         page.getByRole('heading', { name: 'Hôm nay của bạn', exact: true }),
       ).toBeVisible();
+      await expect(page.getByRole('region', { name: 'Lịch tháng' })).toHaveCount(0);
+      await page.getByRole('button', { name: /^Lịch của mình/ }).click();
       await expect(page.getByRole('region', { name: 'Lịch tháng' })).toBeVisible();
       await page.getByRole('button', { name: 'Thêm dấu mốc', exact: true }).click();
       const form = page.getByRole('dialog', { name: 'Thêm dấu mốc', exact: true });

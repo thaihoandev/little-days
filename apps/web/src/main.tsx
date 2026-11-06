@@ -55,6 +55,7 @@ createRoot(document.getElementById('root')!).render(
 
 import './experience.css';
 import './daily-polish.css';
+import './main-pages.css';
 
 if (
   'serviceWorker' in navigator &&

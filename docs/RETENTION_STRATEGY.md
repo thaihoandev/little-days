@@ -1,6 +1,6 @@
 # Giữ chân người dùng Little Days
 
-Nghiên cứu 04/11/2026. Recap ảnh theo tuần đã có mã theo [phạm vi triển khai](WEEKLY_DESIGN_REFRESH.md); các đề xuất nhịp/chuỗi và đo retention dưới đây vẫn là kế hoạch. Chưa có kết quả retention hoặc pilot người thật từ QA tự động.
+Nghiên cứu 04/11/2026; cập nhật trạng thái 06/11/2026. Recap ảnh theo tuần đã có mã theo [phạm vi triển khai](WEEKLY_DESIGN_REFRESH.md). Nhịp tuần mô tả đóng góp thực tế, chuỗi gần đây và đồng hồ cát 3D đã có theo [phạm vi hiện tại](MAIN_PAGES_AND_SHARED_RHYTHM.md): áp dụng cho mọi thành viên của không gian chung, cho ẩn trên thiết bị, không có mục tiêu bắt buộc hoặc cứu chuỗi. Mục tiêu 3 ngày do cả hai chấp nhận, nhắc thói quen và đo retention dưới đây vẫn là đề xuất. Chưa có kết quả retention hoặc pilot người thật từ QA tự động.
 
 ## Chốt hướng
 
@@ -20,7 +20,7 @@ Suy luận thiết kế: tạo điều thật để trao và giữ, kèm nhịp 
 
 ## Đối chiếu mã hiện tại
 
-Đã có câu hỏi ổn định theo ngày, trả lời riêng rồi cùng mở; lọ nhiều lời nhắn với điều kiện ngày/đồng thuận; timeline chung, kế hoạch/checklist, lời nhắc opt-in, Ngày này năm trước và album/thiệp sửa được. Câu hỏi hiện có 60 nội dung luân phiên. Chưa có nhịp tuần, chuỗi hoạt động hoặc recap tuần tự động.
+Đã có câu hỏi ổn định theo ngày, trả lời riêng rồi cùng mở; lọ nhiều lời nhắn với điều kiện ngày/đồng thuận; timeline chung, kế hoạch/checklist, lời nhắc opt-in, Ngày này năm trước và album/thiệp sửa được. Câu hỏi hiện có 60 nội dung luân phiên. Nhịp tuần và chuỗi gần đây tính từ metadata nội dung còn tồn tại/còn quyền; recap ảnh được người dùng chủ động mở/lưu, chưa tự xuất bản hay gửi hằng tuần. Các đợt dưới đây giữ nguyên bối cảnh đề xuất ban đầu; khi khác nhau, dùng phạm vi hiện tại được liên kết ở trên.
 
 Thiếu chủ yếu là thứ tự ưu tiên khi mở web, cảm giác đã hoàn tất và cách biến những lần dùng rời rạc thành vật kỉ niệm. Vì vậy nối tính năng hiện có trước khi tạo hệ hoạt động mới.
 
