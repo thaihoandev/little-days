@@ -1,0 +1,383 @@
+/* Decorative motion stays outside saved scrapbook coordinates and photo crops. */
+.albums-section {
+  border-top: 0;
+  padding-top: 8px;
+}
+.page-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 7px 0;
+  margin: 0 0 12px;
+  color: #6b7756;
+  font-size: 12px;
+}
+.page-back svg {
+  transition: transform 180ms ease;
+}
+.page-back:focus-visible {
+  outline: 2px solid #768362;
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+.hourglass-stage {
+  --aura: #eac982;
+  --aura-soft: #fff7e4;
+}
+.hourglass-stage[data-theme='rose'] {
+  --aura: #dfa9b7;
+  --aura-soft: #fff0f2;
+}
+.hourglass-stage[data-theme='midnight'] {
+  --aura: #a7b9e2;
+  --aura-soft: #edf1fc;
+}
+.hourglass-aura {
+  position: absolute;
+  width: 68%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  left: 16%;
+  top: 15%;
+  background: radial-gradient(circle, var(--aura-soft), transparent 68%);
+  pointer-events: none;
+  box-shadow: inset 0 0 35px color-mix(in srgb, var(--aura) 12%, transparent);
+  transition: background 450ms ease;
+}
+.hourglass-stage[data-motion='lively'] .hourglass-aura {
+  animation: hourglass-aura 5s ease-in-out infinite alternate;
+}
+.hourglass-stage[data-active='false'] .hourglass-aura {
+  animation-play-state: paused;
+}
+.hourglass-canvas {
+  touch-action: pan-y pinch-zoom;
+}
+.hourglass-options {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 4;
+  font-size: 11px;
+}
+.hourglass-options > summary {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  list-style: none;
+  cursor: pointer;
+  border: 1px solid #ded6c5;
+  background: #fffdf5cf;
+  border-radius: 50%;
+  color: #8f7c60;
+}
+.hourglass-options > summary::-webkit-details-marker {
+  display: none;
+}
+.hourglass-options > summary:focus-visible {
+  outline: 2px solid #75825e;
+  outline-offset: 3px;
+}
+.hourglass-options[open] > summary {
+  background: #e9dfcb;
+}
+.hourglass-settings {
+  position: absolute;
+  top: 42px;
+  left: 0;
+  width: 220px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid #ddd4c3;
+  background: #fffdf7;
+  box-shadow: 0 12px 32px #64512a24;
+}
+.hourglass-settings fieldset {
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+}
+.hourglass-settings legend {
+  color: #81725b;
+  font-size: 10px;
+  margin-bottom: 8px;
+}
+.hourglass-swatches,
+.hourglass-motion-options,
+.hourglass-orbit {
+  display: flex;
+  gap: 7px;
+}
+.hourglass-swatch {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: 3px solid #fffdf7;
+  box-shadow: 0 0 0 1px #ded5c4;
+}
+.hourglass-swatch.amber {
+  background: linear-gradient(145deg, #f6e6bd, #a88755);
+}
+.hourglass-swatch.rose {
+  background: linear-gradient(145deg, #f8dfdf, #b57f8b);
+}
+.hourglass-swatch.midnight {
+  background: linear-gradient(145deg, #c7dbff, #617092);
+}
+.hourglass-swatch[aria-pressed='true'] {
+  box-shadow: 0 0 0 2px #77835f;
+}
+.hourglass-motion-options button {
+  padding: 8px;
+  border: 1px solid #e2dbcd;
+  border-radius: 7px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+.hourglass-motion-options button[aria-pressed='true'] {
+  background: #e8ecde;
+  color: #5a6843;
+  border-color: #b5bea3;
+}
+.hourglass-orbit {
+  margin: 2px 0 10px;
+  justify-content: center;
+}
+.hourglass-orbit button {
+  width: 33px;
+  height: 30px;
+  border-radius: 7px;
+  background: #f3efe5;
+  display: grid;
+  place-items: center;
+}
+.hourglass-settings small {
+  font-size: 9px;
+  line-height: 1.5;
+  color: #998b74;
+}
+.hourglass-loading,
+.hourglass-demo {
+  position: absolute;
+  bottom: 36px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  white-space: nowrap;
+}
+.hourglass-loading {
+  color: #9b896b;
+}
+.hourglass-demo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border-radius: 20px;
+  background: #fffdf4db;
+  border: 1px solid #e3d6bd;
+  color: #8b7350;
+}
+.hourglass-stage[data-theme='rose'] .hourglass-still {
+  filter: sepia(0.15) hue-rotate(315deg) saturate(0.8);
+}
+.hourglass-stage[data-theme='midnight'] .hourglass-still {
+  filter: sepia(0.3) hue-rotate(175deg) saturate(0.5);
+}
+
+@keyframes hourglass-aura {
+  to {
+    transform: scale(1.1);
+    opacity: 0.65;
+  }
+}
+@keyframes scrapbook-arrive {
+  from {
+    opacity: 0.25;
+    transform: translateY(7px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes dialog-arrive {
+  from {
+    opacity: 0.25;
+    transform: translateY(9px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes soft-loading {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .app-shell .album-card,
+  .app-shell .memory-photo-tile,
+  .app-shell .journal-entry,
+  .app-shell .question-history-card,
+  .app-shell .question-card,
+  .auth-page .auth-card,
+  .app-shell .jar-card {
+    animation: scrapbook-arrive 260ms ease both;
+  }
+  .app-shell .album-card:nth-child(2),
+  .app-shell .memory-photo-tile:nth-child(2) {
+    animation-delay: 35ms;
+  }
+  .app-shell .album-card:nth-child(3),
+  .app-shell .memory-photo-tile:nth-child(3) {
+    animation-delay: 70ms;
+  }
+  .app-shell .album-card:nth-child(4),
+  .app-shell .memory-photo-tile:nth-child(4) {
+    animation-delay: 105ms;
+  }
+  .modal-backdrop > .modal,
+  .hourglass-options[open] .hourglass-settings {
+    animation: dialog-arrive 180ms ease;
+  }
+  .data-loading .loading-dot {
+    animation: soft-loading 1.2s ease-in-out infinite;
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .app-shell .button,
+  .app-shell .icon-button,
+  .app-shell .nav-item,
+  .editor-shell .button,
+  .editor-shell .icon-button {
+    transition:
+      background-color 160ms ease,
+      box-shadow 180ms ease,
+      transform 160ms ease;
+  }
+  .app-shell .button:hover,
+  .editor-shell .button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px #6a6c4217;
+  }
+  .app-shell .button:active,
+  .editor-shell .button:active {
+    transform: translateY(0) scale(0.98);
+  }
+  .app-shell .icon-button:hover {
+    background-color: #e9ecdf;
+  }
+  .page-back:hover svg {
+    transform: translateX(-3px);
+  }
+  .memory-photo-open img {
+    transition: transform 450ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .memory-photo-open:hover img {
+    transform: scale(1.025);
+  }
+  .album-card {
+    transition:
+      box-shadow 200ms ease,
+      border-color 200ms ease;
+  }
+  .album-card:hover {
+    box-shadow: 0 10px 24px #71624415;
+    border-color: #c7cdb5;
+  }
+}
+
+/* A readable computed font prevents iOS focus zoom; pinch zoom remains available. */
+@media (max-width: 820px), (hover: none) and (pointer: coarse) {
+  html
+    body
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not(
+      [type='file']
+    ):not([type='hidden']):not([type='button']):not([type='submit']),
+  html body select,
+  html body textarea,
+  html body [contenteditable='true'] {
+    font-size: max(16px, 1em) !important;
+    line-height: 1.45;
+  }
+  html body select option {
+    font-size: 16px;
+  }
+  input,
+  select,
+  textarea {
+    max-width: 100%;
+    min-width: 0;
+  }
+  .page-back {
+    min-height: 44px;
+    font-size: 13px;
+  }
+  .hourglass-options > summary,
+  .hourglass-orbit button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .hourglass-settings {
+    width: 222px;
+  }
+  .memory-map-dialog .footprint-sidebar.has-selection {
+    grid-template-rows: minmax(175px, 1fr) minmax(175px, 1fr);
+  }
+  .footprint-region-select select {
+    height: 44px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .library-toolbar,
+  .journal-search,
+  .ritual-space-picker {
+    min-width: 0;
+  }
+  .library-toolbar label {
+    min-width: 0;
+  }
+  .rhythm-space select {
+    max-width: calc(100% - 38px);
+  }
+}
+@media (max-height: 600px) and (min-width: 600px) {
+  .memory-map-dialog .footprint-sidebar.has-selection {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .memory-map-dialog .footprint-layout {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell *,
+  .modal-backdrop *,
+  .editor-shell *,
+  .auth-page * {
+    scroll-behavior: auto !important;
+  }
+  .hourglass-aura,
+  .spin,
+  .data-loading .loading-dot {
+    animation: none !important;
+  }
+  .app-shell .button,
+  .app-shell .icon-button,
+  .memory-photo-open img,
+  .page-back svg {
+    transition: none !important;
+  }
+  .page-back:hover svg,
+  .app-shell .button:hover,
+  .memory-photo-open:hover img {
+    transform: none;
+  }
+}

@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
     // Both libraries already ship bundled ESM. Discovering them inside a lazy worker
     // must not trigger Vite's dependency-optimizer reload during image processing.
     optimizeDeps: {
+      include: ['three', 'three/addons/environments/RoomEnvironment.js'],
       exclude: ['@imgly/background-removal', 'onnxruntime-web', 'onnxruntime-web/webgpu'],
     },
     cacheDir: process.env.QA_VITE_CACHE_DIR || undefined,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Images, Search, BookOpen, Heart, ArrowUpRight } from 'lucide-react';
+import { Images, Search, BookOpen, Heart, ArrowUpRight, ArrowLeft } from 'lucide-react';
 import type { Album, Asset } from '../../../packages/domain/index.js';
 import type { JournalEntry } from '../../../packages/domain/journal.js';
 import { api } from './api.js';
@@ -12,11 +12,13 @@ export function PhotosLibrary({
   albums,
   onAlbums,
   onOpenAlbum,
+  onBack,
   libraryReady = false,
 }: {
   albums: Album[];
   onAlbums: () => void;
   onOpenAlbum: (album: Album) => void;
+  onBack?: () => void;
   libraryReady?: boolean;
 }) {
   const [entries, setEntries] = useState<JournalEntry[]>([]),
@@ -81,6 +83,12 @@ export function PhotosLibrary({
   }, [query, source]);
   return (
     <section className="memory-library" aria-label="Thư viện ảnh kỉ niệm">
+      {onBack && (
+        <button className="page-back" onClick={onBack}>
+          <ArrowLeft size={16} />
+          Về Album
+        </button>
+      )}
       <header className="library-hero">
         <div>
           <span className="eyebrow">NHỮNG KHUNG HÌNH ĐÃ GIỮ</span>

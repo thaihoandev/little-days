@@ -3,6 +3,7 @@ import { LoveJar } from './LoveJar.js';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   ArrowRight,
+  ArrowLeft,
   CalendarDays,
   Camera,
   Check,
@@ -262,6 +263,10 @@ export default function TogetherPage({
   const root = '/together/' + space;
   return (
     <section className="together-page" aria-label="Câu hỏi & Lọ điều thương">
+      <button className="page-back" onClick={() => onNavigate('/today')}>
+        <ArrowLeft size={16} />
+        Về Hôm nay
+      </button>
       <header className="ritual-heading">
         <div>
           <span className="eyebrow">MỖI NGÀY, MỘT CHÚT GẦN NHAU</span>

@@ -2,6 +2,8 @@
 
 Cập nhật ngày 06/11/2026. Phạm vi là frontend/API hiện có, không thêm dịch vụ hoặc biến môi trường.
 
+Bổ sung giao diện: xem [chuyển động, đồng hồ cát và nhập liệu mobile](INTERACTION_AND_MOBILE_REFINEMENT.md) cho ba sắc màu/chế độ, ưu tiên form trước GPU, sửa focus zoom và nút quay lại.
+
 ## Mỗi trang có một vai trò
 
 | Trang | Nội dung chính |

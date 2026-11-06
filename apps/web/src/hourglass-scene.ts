@@ -1,21 +1,46 @@
 import * as T from 'three';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-/** Procedural 3D object, no remote textures/models and no render loop outside the viewport. */
-export function createHourglass(host: HTMLElement, progress: number) {
+export type HourglassTheme = 'amber' | 'rose' | 'midnight';
+export type HourglassMotion = 'gentle' | 'lively' | 'still';
+export type HourglassOptions = { theme: HourglassTheme; motion: HourglassMotion; active: boolean };
+const palettes = {
+  amber: { metal: '#92734b', trim: '#dfb87b', sand: '#d4a568', glass: '#fff7e3', light: '#ffe7b5' },
+  rose: { metal: '#a36e77', trim: '#edc1b9', sand: '#e5b2ac', glass: '#fff0f3', light: '#ffd4df' },
+  midnight: {
+    metal: '#586580',
+    trim: '#adbce3',
+    sand: '#c5d7f3',
+    glass: '#e6edff',
+    light: '#bbd4ff',
+  },
+};
+
+/** Progress/material changes reuse the same meshes and GPU context. */
+export function createHourglass(
+  host: HTMLElement,
+  progress: number,
+  options: Partial<HourglassOptions> = {},
+) {
+  let settings: HourglassOptions = { theme: 'amber', motion: 'gentle', active: true, ...options };
   const renderer = new T.WebGLRenderer({
     alpha: true,
     antialias: true,
     powerPreference: 'low-power',
   });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-  renderer.setSize(host.clientWidth, host.clientHeight);
+  renderer.setSize(Math.max(1, host.clientWidth), Math.max(1, host.clientHeight));
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = 1.05;
   renderer.transmissionResolutionScale = 0.5;
   const scene = new T.Scene(),
-    camera = new T.PerspectiveCamera(34, host.clientWidth / host.clientHeight, 0.1, 30);
+    camera = new T.PerspectiveCamera(
+      34,
+      Math.max(1, host.clientWidth) / Math.max(1, host.clientHeight),
+      0.1,
+      30,
+    );
   camera.position.set(3.8, 2.1, 5.8);
   camera.lookAt(0, 0, 0);
   const pmrem = new T.PMREMGenerator(renderer),
@@ -23,38 +48,48 @@ export function createHourglass(host: HTMLElement, progress: number) {
     environment = pmrem.fromScene(room, 0.04);
   scene.environment = environment.texture;
   const group = new T.Group();
-  group.rotation.z = -0.08;
+  group.rotation.z = -0.065;
   scene.add(group);
-  const bronze = new T.MeshStandardMaterial({ color: '#967752', metalness: 0.68, roughness: 0.3 });
-  const gold = new T.MeshStandardMaterial({ color: '#d3b16e', metalness: 0.28, roughness: 0.66 });
+  const metal = new T.MeshStandardMaterial({ metalness: 0.7, roughness: 0.27 });
+  const trim = new T.MeshStandardMaterial({ metalness: 0.45, roughness: 0.42 });
   const glass = new T.MeshPhysicalMaterial({
     color: '#fff9ee',
-    roughness: 0.06,
-    metalness: 0,
+    roughness: 0.08,
     transmission: 1,
-    thickness: 0.15,
+    thickness: 0.12,
     ior: 1.46,
     clearcoat: 1,
     side: T.DoubleSide,
-    attenuationColor: new T.Color('#e8c6ac'),
     attenuationDistance: 2,
   });
+  const sand = new T.MeshStandardMaterial({ roughness: 0.92, metalness: 0.04 });
   const mesh = (geometry: T.BufferGeometry, material: T.Material, y = 0) => {
-    const m = new T.Mesh(geometry, material);
-    m.position.y = y;
-    group.add(m);
-    return m;
+    const item = new T.Mesh(geometry, material);
+    item.position.y = y;
+    group.add(item);
+    return item;
   };
   for (const y of [-1.48, 1.48]) {
-    mesh(new T.CylinderGeometry(0.86, 0.86, 0.13, 64), bronze, y);
-    mesh(new T.CylinderGeometry(0.72, 0.75, 0.07, 64), gold, y + (y < 0 ? 0.1 : -0.1));
-    const ring = mesh(new T.TorusGeometry(0.8, 0.028, 12, 64), gold, y);
+    mesh(new T.CylinderGeometry(0.86, 0.86, 0.13, 64), metal, y);
+    mesh(new T.CylinderGeometry(0.73, 0.75, 0.07, 64), trim, y + (y < 0 ? 0.1 : -0.1));
+    const ring = mesh(new T.TorusGeometry(0.8, 0.023, 10, 64), trim, y);
     ring.rotation.x = Math.PI / 2;
+    const engraving = mesh(
+      new T.TorusGeometry(0.66, 0.008, 6, 64),
+      metal,
+      y + (y < 0 ? 0.15 : -0.15),
+    );
+    engraving.rotation.x = Math.PI / 2;
   }
   for (let i = 0; i < 3; i++) {
     const a = (i * Math.PI * 2) / 3 + 0.3;
-    const post = mesh(new T.CylinderGeometry(0.037, 0.037, 2.83, 12), bronze);
+    const post = mesh(new T.CylinderGeometry(0.03, 0.035, 2.83, 12), metal);
     post.position.set(Math.cos(a) * 0.75, 0, Math.sin(a) * 0.75);
+    for (const y of [-1.22, 1.22]) {
+      const bead = mesh(new T.SphereGeometry(0.047, 10, 8), trim, y);
+      bead.position.x = post.position.x;
+      bead.position.z = post.position.z;
+    }
   }
   const profile = new T.CatmullRomCurve3([
     new T.Vector3(0.49, -1.35, 0),
@@ -69,53 +104,76 @@ export function createHourglass(host: HTMLElement, progress: number) {
   ])
     .getPoints(56)
     .map((p) => new T.Vector2(p.x, p.y));
-  mesh(new T.LatheGeometry(profile, 64), glass);
-  const sand = new T.MeshStandardMaterial({ color: '#d8af73', roughness: 0.95, metalness: 0.02 });
-  const amount = Math.max(0, Math.min(1, progress)),
-    height = 0.1 + amount * 0.85;
-  mesh(
+  mesh(new T.LatheGeometry(profile, 56), glass);
+  const lathe = (points: number[][]) =>
     new T.LatheGeometry(
-      [
-        new T.Vector2(0, -1.31),
-        new T.Vector2(0.43, -1.31),
-        new T.Vector2(0.58, -1.15),
-        new T.Vector2(0.52, -1.26 + height * 0.45),
-        new T.Vector2(0.29, -1.26 + height),
-        new T.Vector2(0, -1.16 + height),
-      ],
+      points.map(([x, y]) => new T.Vector2(x, y)),
       48,
-    ),
-    sand,
-  );
-  if (amount < 0.98)
-    mesh(
-      new T.LatheGeometry(
-        [
-          new T.Vector2(0, 0.2),
-          new T.Vector2(0.07, 0.25),
-          new T.Vector2(0.35, 0.65),
-          new T.Vector2(0.58, 1.08),
-          new T.Vector2(0.52, 1.18 - amount * 0.35),
-          new T.Vector2(0, 1.18 - amount * 0.35),
-        ],
-        48,
-      ),
-      sand,
     );
-  const stream = mesh(
-    new T.CylinderGeometry(0.009, 0.012, 1.7 - height, 8),
+  const bottom = mesh(
+    lathe([
+      [0, 0],
+      [0.38, 0],
+      [0.56, 0.14],
+      [0.54, 0.2],
+      [0.36, 0.34],
+      [0, 0.46],
+    ]),
     sand,
-    -0.25 + height * 0.5,
+    -1.31,
   );
-  const glow = new T.PointLight('#ffe1ac', 20, 10);
+  const top = mesh(
+    lathe([
+      [0, 0],
+      [0.06, 0.04],
+      [0.3, 0.34],
+      [0.57, 0.75],
+      [0.52, 0.85],
+      [0, 0.85],
+    ]),
+    sand,
+    0.1,
+  );
+  const grainGeometry = new T.BufferGeometry();
+  const grains = new Float32Array(96 * 3);
+  const grainPositions = new T.BufferAttribute(grains, 3).setUsage(T.DynamicDrawUsage);
+  grainGeometry.setAttribute('position', grainPositions);
+  const grainMaterial = new T.PointsMaterial({
+    color: '#ead0a1',
+    size: 0.018,
+    transparent: true,
+    opacity: 0.8,
+    depthWrite: false,
+  });
+  const grainCloud = new T.Points(grainGeometry, grainMaterial);
+  grainCloud.frustumCulled = false;
+  group.add(grainCloud);
+  const starGeometry = new T.BufferGeometry();
+  const stars = new Float32Array(42 * 3);
+  for (let i = 0; i < 42; i++) {
+    const a = i * 2.399963,
+      r = 0.95 + (i % 7) * 0.08;
+    stars.set([Math.cos(a) * r, -1.4 + (i % 17) * 0.17, Math.sin(a) * r], i * 3);
+  }
+  starGeometry.setAttribute('position', new T.BufferAttribute(stars, 3));
+  const starMaterial = new T.PointsMaterial({
+    color: '#dfc18a',
+    size: 0.026,
+    transparent: true,
+    opacity: 0.5,
+    depthWrite: false,
+  });
+  const starCloud = new T.Points(starGeometry, starMaterial);
+  group.add(starCloud);
+  const glow = new T.PointLight('#ffe1ac', 16, 10);
   glow.position.set(-2, 3, 3);
-  scene.add(glow, new T.HemisphereLight('#fff9e6', '#b08a73', 2));
+  scene.add(glow, new T.HemisphereLight('#fff9e6', '#8b7e73', 2));
   const floor = new T.Mesh(
-    new T.CircleGeometry(1.15, 48),
+    new T.CircleGeometry(1.12, 48),
     new T.MeshBasicMaterial({
       color: '#896e50',
       transparent: true,
-      opacity: 0.1,
+      opacity: 0.09,
       depthWrite: false,
     }),
   );
@@ -125,26 +183,80 @@ export function createHourglass(host: HTMLElement, progress: number) {
   host.append(renderer.domElement);
   renderer.domElement.setAttribute('aria-label', 'Đồng hồ cát 3D của nhịp yêu thương');
   renderer.domElement.setAttribute('role', 'img');
-  const motion = matchMedia('(prefers-reduced-motion: reduce)');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   let visible = true,
     frame = 0,
     last = 0,
     disposed = false,
-    dragX = 0;
+    orbit = 0,
+    pointer = 0;
+  let target = Math.max(0, Math.min(1, progress)),
+    amount = target;
+  let blocked = !!document.querySelector('[role="dialog"][aria-modal="true"]');
+  const still = () => reduced.matches || settings.motion === 'still';
+  const applyPalette = () => {
+    const p = palettes[settings.theme];
+    metal.color.set(p.metal);
+    trim.color.set(p.trim);
+    sand.color.set(p.sand);
+    glass.attenuationColor.set(p.glass);
+    glow.color.set(p.light);
+    grainMaterial.color.set(p.sand);
+    starMaterial.color.set(p.trim);
+  };
+  const pose = (now: number) => {
+    const fixed = still();
+    amount = fixed
+      ? target
+      : Math.abs(target - amount) < 0.001
+        ? target
+        : T.MathUtils.lerp(amount, target, 0.09);
+    bottom.scale.y = 0.5 + amount * 1.8;
+    const remaining = Math.max(0.005, 1 - amount);
+    top.visible = amount < 0.999;
+    top.scale.set(Math.sqrt(remaining), 1.2 * remaining, Math.sqrt(remaining));
+    const lively = settings.motion === 'lively';
+    group.rotation.y =
+      orbit + (fixed ? 0 : pointer + Math.sin(now * 0.00022) * (lively ? 0.2 : 0.08));
+    group.position.y = fixed ? 0 : Math.sin(now * 0.00075) * 0.018;
+    starCloud.visible = !fixed && (lively || settings.theme === 'midnight');
+    starCloud.rotation.y = now * 0.00006;
+    starMaterial.opacity = 0.3 + Math.sin(now * 0.0011) * 0.12;
+    grainCloud.visible = !fixed && target < 1;
+    if (grainCloud.visible) {
+      const base = -1.1 + amount * 0.7;
+      for (let i = 0; i < grains.length / 3; i++) {
+        const t = (now * 0.0007 + i / 96) % 1;
+        grainPositions.setXYZ(
+          i,
+          Math.sin(i * 2.4) * 0.012 * (1 + t),
+          0.03 + t * (base - 0.03),
+          Math.cos(i * 1.9) * 0.012,
+        );
+      }
+      grainPositions.needsUpdate = true;
+    }
+  };
   const draw = (now = 0) => {
     frame = 0;
-    if (disposed || !visible || document.hidden) return;
-    if (!motion.matches) frame = requestAnimationFrame(draw);
-    if (!motion.matches && now - last < 1000 / 24) return;
+    if (disposed || !visible || document.hidden || blocked || !settings.active) return;
+    if (!still()) frame = requestAnimationFrame(draw);
+    if (!still() && now - last < 1000 / 24) return;
     last = now;
-    group.rotation.y = dragX + (motion.matches ? 0 : Math.sin(now * 0.00024) * 0.12);
-    group.position.y = motion.matches ? 0 : Math.sin(now * 0.0008) * 0.025;
-    stream.visible = !motion.matches && amount < 1;
+    pose(now);
     renderer.render(scene, camera);
   };
-  const move = (event: PointerEvent) => {
-    if (motion.matches) return;
-    dragX = ((event.clientX - host.getBoundingClientRect().left) / host.clientWidth - 0.5) * 0.5;
+  const resume = () => {
+    cancelAnimationFrame(frame);
+    frame = 0;
+    last = 0;
+    draw(performance.now());
+  };
+  const move = (e: PointerEvent) => {
+    if (still() || e.pointerType === 'touch') return;
+    pointer =
+      ((e.clientX - host.getBoundingClientRect().left) / Math.max(1, host.clientWidth) - 0.5) *
+      0.28;
   };
   host.addEventListener('pointermove', move);
   const resize = new ResizeObserver(() => {
@@ -152,38 +264,50 @@ export function createHourglass(host: HTMLElement, progress: number) {
     camera.aspect = host.clientWidth / host.clientHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(host.clientWidth, host.clientHeight);
-    renderer.render(scene, camera);
+    if (settings.active && !blocked && !document.hidden) {
+      pose(performance.now());
+      renderer.render(scene, camera);
+    }
   });
   resize.observe(host);
-  const resume = () => {
-    cancelAnimationFrame(frame);
-    frame = 0;
-    if (!disposed && visible && !document.hidden) draw(performance.now());
-  };
-  motion.addEventListener('change', resume);
-  document.addEventListener('visibilitychange', resume);
   const intersection = new IntersectionObserver(([entry]) => {
     visible = entry.isIntersecting;
     resume();
   });
   intersection.observe(host);
+  const overlay = new MutationObserver(() => {
+    const next = !!document.querySelector('[role="dialog"][aria-modal="true"]');
+    if (next !== blocked) {
+      blocked = next;
+      resume();
+    }
+  });
+  overlay.observe(document.body, { childList: true, subtree: true });
+  reduced.addEventListener('change', resume);
+  document.addEventListener('visibilitychange', resume);
+  applyPalette();
+  pose(0);
   renderer.render(scene, camera);
   frame = requestAnimationFrame(draw);
-  return () => {
+  const dispose = () => {
     disposed = true;
     cancelAnimationFrame(frame);
     resize.disconnect();
     intersection.disconnect();
+    overlay.disconnect();
     host.removeEventListener('pointermove', move);
-    motion.removeEventListener('change', resume);
+    reduced.removeEventListener('change', resume);
     document.removeEventListener('visibilitychange', resume);
+    const materials = new Set<T.Material>();
     scene.traverse((node) => {
-      if (node instanceof T.Mesh) {
+      if (node instanceof T.Mesh || node instanceof T.Points) {
         node.geometry.dispose();
-        const materials = Array.isArray(node.material) ? node.material : [node.material];
-        materials.forEach((m) => m.dispose());
+        (Array.isArray(node.material) ? node.material : [node.material]).forEach((m) =>
+          materials.add(m),
+        );
       }
     });
+    materials.forEach((m) => m.dispose());
     environment.dispose();
     room.dispose();
     pmrem.dispose();
@@ -191,4 +315,23 @@ export function createHourglass(host: HTMLElement, progress: number) {
     renderer.forceContextLoss();
     renderer.domElement.remove();
   };
+  return Object.assign(dispose, {
+    update: (next: { progress?: number } & Partial<HourglassOptions>) => {
+      if (disposed) return;
+      if (next.progress !== undefined) target = Math.max(0, Math.min(1, next.progress));
+      settings = { ...settings, ...next };
+      applyPalette();
+      resume();
+    },
+    turn: (direction: number) => {
+      orbit += (direction * Math.PI) / 6;
+      resume();
+    },
+    reset: () => {
+      orbit = 0;
+      pointer = 0;
+      resume();
+    },
+  });
 }
+export type HourglassController = ReturnType<typeof createHourglass>;

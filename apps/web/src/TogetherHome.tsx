@@ -12,6 +12,7 @@ export function TogetherHome({
   ready,
   enabled,
   refreshKey,
+  immersiveActive = true,
   onNavigate,
 }: {
   userId: string;
@@ -19,6 +20,7 @@ export function TogetherHome({
   ready: boolean;
   enabled: boolean;
   refreshKey: string;
+  immersiveActive?: boolean;
   onNavigate: (path: string) => void;
 }) {
   const shared = spaces.filter((s) => s.shared && s.members.length > 1),
@@ -94,7 +96,13 @@ export function TogetherHome({
       className={'together-home' + (hidden || !enabled ? ' rhythm-hidden' : '')}
       aria-label="Nhịp yêu thương"
     >
-      {!hidden && enabled && <Hourglass3D progress={(data?.completedDays || 0) / 7} />}
+      {!hidden && enabled && (
+        <Hourglass3D
+          active={immersiveActive}
+          autoStart={!!space}
+          progress={(data?.completedDays || 0) / 7}
+        />
+      )}
       <div className="together-home-content">
         <header>
           <span className="eyebrow">DÀNH MỘT CHÚT CHO NHAU</span>

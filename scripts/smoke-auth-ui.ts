@@ -75,8 +75,39 @@ try {
   await expect.poll(() => new URL(verifyPage.url()).hash).toBe('');
   await verifyPage.getByRole('button', { name: 'Xác minh email', exact: true }).click();
   await expect(verifyPage.getByText('Email đã được xác minh.', { exact: true })).toBeVisible();
+  await verifyPage.route('**/api/session', (route) =>
+    route.fulfill({ status: 503, json: { message: 'Fixture temporarily unavailable' } }),
+  );
   await verifyPage.getByRole('button', { name: 'Tiếp tục tới tài khoản', exact: true }).click();
+  await expect(verifyPage.getByRole('alert')).toContainText('Chưa mở được tài khoản');
+  await expect(
+    verifyPage.getByRole('heading', { name: 'Xác minh email', exact: true }),
+  ).toBeVisible();
+  await verifyPage.unroute('**/api/session');
+  let releaseSession!: () => void,
+    waitingForSession = false;
+  const sessionGate = new Promise<void>((resolve) => {
+    releaseSession = resolve;
+  });
+  await verifyPage.route('**/api/session', async (route) => {
+    waitingForSession = true;
+    await sessionGate;
+    await route.continue();
+  });
+  await verifyPage.getByRole('button', { name: 'Tiếp tục tới tài khoản', exact: true }).click();
+  await expect(
+    verifyPage.getByRole('button', { name: 'Đang mở tài khoản…', exact: true }),
+  ).toBeDisabled();
+  await expect.poll(() => waitingForSession).toBe(true);
+  await expect(
+    verifyPage.getByRole('heading', { name: 'Xác minh email', exact: true }),
+  ).toBeVisible();
+  releaseSession();
   await expect(verifyPage.getByText('Email đã xác minh', { exact: true })).toBeVisible();
+  await expect(
+    verifyPage.getByRole('dialog', { name: 'Tài khoản của bạn', exact: true }),
+  ).toBeVisible();
+  await verifyPage.unroute('**/api/session');
   await page.getByRole('button', { name: 'Đóng', exact: true }).click();
   await page.reload();
   await page.getByRole('button', { name: 'Tài khoản', exact: true }).click();

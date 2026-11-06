@@ -9,7 +9,7 @@ export default function AuthLinkPage({
   onContinue,
 }: {
   link: AuthLink;
-  onContinue: () => void;
+  onContinue: () => Promise<void>;
 }) {
   const [password, setPassword] = useState(''),
     [confirmation, setConfirmation] = useState('');
@@ -20,6 +20,18 @@ export default function AuthLinkPage({
     history.replaceState(null, '', location.pathname + location.search);
   }, []);
   const verify = link.purpose === 'verify-email';
+  const continueToAccount = async () => {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      await onContinue();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <main className="auth-page">
       <section className="auth-card">
@@ -34,8 +46,17 @@ export default function AuthLinkPage({
                 ? 'Email đã được xác minh.'
                 : 'Đã đặt lại mật khẩu. Hãy đăng nhập bằng mật khẩu mới.'}
             </p>
-            <button className="button primary" onClick={onContinue}>
-              Tiếp tục tới tài khoản
+            {error && (
+              <p className="error" role="alert">
+                {error}
+              </p>
+            )}
+            <button
+              className="button primary"
+              disabled={busy}
+              onClick={() => void continueToAccount()}
+            >
+              {busy ? 'Đang mở tài khoản…' : 'Tiếp tục tới tài khoản'}
             </button>
           </>
         ) : (
@@ -109,7 +130,12 @@ export default function AuthLinkPage({
             <button className="button primary" disabled={busy}>
               {busy ? 'Đang xử lý…' : verify ? 'Xác minh email' : 'Lưu mật khẩu mới'}
             </button>
-            <button className="text-button" type="button" disabled={busy} onClick={onContinue}>
+            <button
+              className="text-button"
+              type="button"
+              disabled={busy}
+              onClick={() => void continueToAccount()}
+            >
               Về tài khoản để yêu cầu liên kết mới
             </button>
           </form>

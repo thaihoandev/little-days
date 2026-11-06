@@ -1,4 +1,4 @@
-import { chromium, expect, type BrowserContext } from '@playwright/test';
+import { chromium, expect, type BrowserContext, type Page } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -45,11 +45,50 @@ async function register(context: BrowserContext, name: string) {
   });
   return { email, ...(await (await context.request.get(origin + '/api/session')).json()) };
 }
+async function readableMobileForms(page: Page, width: number) {
+  if (width > 820) return;
+  const bad = await page
+    .locator('input,select,textarea,[contenteditable="true"]')
+    .evaluateAll((nodes) =>
+      nodes
+        .filter((node) => {
+          if (!node.getClientRects().length) return false;
+          if (
+            node instanceof HTMLInputElement &&
+            ['checkbox', 'radio', 'range', 'color', 'file', 'hidden', 'button', 'submit'].includes(
+              node.type,
+            )
+          )
+            return false;
+          return parseFloat(getComputedStyle(node).fontSize) < 16;
+        })
+        .map((node) => ({
+          tag: node.tagName,
+          label: node.getAttribute('aria-label'),
+          size: getComputedStyle(node).fontSize,
+        })),
+    );
+  assert.deepEqual(bad, [], 'all visible mobile text/select controls stay at least 16px');
+  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+}
 try {
   for (const width of [1440, 390, 320]) {
-    const a = await browser.newContext({ viewport: { width, height: width < 500 ? 844 : 1000 } }),
+    const a = await browser.newContext({
+        viewport: { width, height: width < 500 ? 844 : 1000 },
+        hasTouch: width < 500,
+        isMobile: width < 500,
+      }),
       b = await browser.newContext();
     const page = await a.newPage();
+    await page.addInitScript(() => {
+      const qa = window as unknown as { qaDraws: number };
+      qa.qaDraws = 0;
+      const original = WebGL2RenderingContext.prototype.drawElements;
+      WebGL2RenderingContext.prototype.drawElements = function (...args) {
+        qa.qaDraws++;
+        return Reflect.apply(original, this, args);
+      };
+    });
     const errors: string[] = [];
     page.on('pageerror', (e) => errors.push(e.message));
     const tile = await sharp({
@@ -122,12 +161,70 @@ try {
       await expect(page.locator('.rhythm-summary>strong')).toContainText('1');
       await expect(page.locator('.home-mode .journal-entry')).toHaveCount(4);
       if (width === 1440) {
+        await page.evaluate(() => {
+          (window as unknown as { qaClock: Element | null }).qaClock = document.querySelector(
+            '.hourglass-canvas canvas',
+          );
+        });
+        await page.getByLabel('Tùy chỉnh đồng hồ cát', { exact: true }).click();
+        await page.getByRole('button', { name: 'Hồng sương', exact: true }).click();
+        await expect(page.locator('.hourglass-stage')).toHaveAttribute('data-theme', 'rose');
+        await page.getByRole('button', { name: 'Trời sao', exact: true }).click();
+        await expect(page.locator('.hourglass-stage')).toHaveAttribute('data-theme', 'midnight');
+        await page.getByRole('button', { name: 'Lấp lánh', exact: true }).click();
+        await expect(page.locator('.hourglass-stage')).toHaveAttribute('data-motion', 'lively');
+        assert.ok(
+          await page.evaluate(
+            () =>
+              (window as unknown as { qaClock: Element }).qaClock ===
+              document.querySelector('.hourglass-canvas canvas'),
+          ),
+          'changing appearance reuses its GPU canvas',
+        );
+        await page.getByRole('button', { name: 'Xoay đồng hồ sang phải', exact: true }).click();
+        await page.getByLabel('Tùy chỉnh đồng hồ cát', { exact: true }).click();
+        await page.screenshot({ path: 'test-results/hourglass-midnight.png' });
+        const rhythmPath = '**/api/together/' + an.id + '/rhythm';
+        await page.route(rhythmPath, async (route) => {
+          const response = await route.fetch();
+          const data = await response.json();
+          await route.fulfill({ response, json: { ...data, completedDays: 3 } });
+        });
+        await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+        await expect(page.locator('.rhythm-summary>strong')).toContainText('3/7');
+        assert.ok(
+          await page.evaluate(
+            () =>
+              (window as unknown as { qaClock: Element }).qaClock ===
+              document.querySelector('.hourglass-canvas canvas'),
+          ),
+          'progress updates reuse the original renderer',
+        );
+        await page.unroute(rhythmPath);
+        await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+        await expect(page.locator('.rhythm-summary>strong')).toContainText('1/7');
+        const count = () => page.evaluate(() => (window as unknown as { qaDraws: number }).qaDraws);
+        const before = await count();
+        await expect.poll(count).toBeGreaterThan(before);
+        await page.getByRole('button', { name: 'Tài khoản', exact: true }).click();
+        const account = page.getByRole('dialog', { name: 'Tài khoản của bạn', exact: true });
+        await expect(account).toBeVisible();
+        const paused = await count();
+        await page.waitForTimeout(250);
+        assert.equal(await count(), paused, 'GPU drawing stops behind account forms');
+        await account.getByRole('button', { name: 'Đóng', exact: true }).click();
+        await expect.poll(count).toBeGreaterThan(paused);
         await page.emulateMedia({ reducedMotion: 'reduce' });
         await page.waitForTimeout(250);
         const a = await clock.screenshot();
         await page.waitForTimeout(250);
         assert.deepEqual(await clock.screenshot(), a, 'reduced motion stops the 3D animation');
         await page.emulateMedia({ reducedMotion: 'no-preference' });
+        await page.getByLabel('Tùy chỉnh đồng hồ cát', { exact: true }).click();
+        await page.getByRole('button', { name: 'Nắng ấm', exact: true }).click();
+        await page.getByRole('button', { name: 'Êm dịu', exact: true }).click();
+        await page.getByRole('button', { name: 'Đặt lại góc nhìn đồng hồ', exact: true }).click();
+        await page.getByLabel('Tùy chỉnh đồng hồ cát', { exact: true }).click();
       }
       if (process.env.GENERATE_HOURGLASS_STILL === 'true' && width === 1440) {
         const png = await page.evaluate(async () => {
@@ -167,11 +264,35 @@ try {
       ).toBeVisible();
       await page.goto(origin + '/calendar');
       await expect(page.locator('.calendar-card')).toBeVisible();
+      if (width < 820) {
+        await page.getByRole('button', { name: 'Thêm dấu mốc', exact: true }).click();
+        const form = page.getByRole('dialog', { name: 'Thêm dấu mốc', exact: true });
+        await readableMobileForms(page, width);
+        const title = form.getByLabel('Tên dấu mốc', { exact: true });
+        const pageScale = await page.evaluate(() => visualViewport?.scale || 1);
+        await title.tap();
+        await title.fill('Một ngày đẹp');
+        await title.press('Home');
+        await page.keyboard.insertText('Thương ');
+        await expect(title).toHaveValue('Thương Một ngày đẹp');
+        await expect(title).toBeFocused();
+        assert.equal(
+          await page.evaluate(() => visualViewport?.scale || 1),
+          pageScale,
+          'focusing/typing does not scale the mobile page',
+        );
+        await form.getByRole('button', { name: 'Đóng dấu mốc', exact: true }).click();
+      }
       await expect(page.locator('.together-home')).toHaveCount(0);
       await expect(page.locator('.timeline-map-panel')).toHaveCount(0);
       await page.getByRole('button', { name: /^Album của mình/ }).click();
+      await expect(page.locator('.albums-section')).toHaveCSS('border-top-width', '0px');
       await page.getByRole('button', { name: 'Ảnh đã lưu', exact: true }).click();
       await expect(page).toHaveURL(/\/photos$/);
+      await readableMobileForms(page, width);
+      await page.getByRole('button', { name: 'Về Album', exact: true }).click();
+      await expect(page).toHaveURL(/\/albums$/);
+      await page.getByRole('button', { name: 'Ảnh đã lưu', exact: true }).click();
       await expect(page.locator('.sidebar nav>button')).toHaveCount(4);
       await expect(page.locator('.sidebar .nav-item.active')).toContainText('Album');
       if (width < 760) {
@@ -254,6 +375,8 @@ try {
         .click();
       await expect(page).toHaveURL(/\/together\?.*tab=jar/);
       await expect(page.locator('.jar-card.sealed')).toHaveCount(1);
+      await readableMobileForms(page, width);
+      await expect(page.getByRole('button', { name: 'Về Hôm nay', exact: true })).toBeVisible();
       await expect(page.getByText(secret, { exact: true })).toHaveCount(0);
       if (width === 320) {
         await page.addInitScript(() => {

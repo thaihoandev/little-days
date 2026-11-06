@@ -1,5 +1,12 @@
 # Upload phục hồi và thư viện lớn
 
+## Đồng hồ cát và form — bổ sung 06/11/2026
+
+- Cảnh đang chạy phát lệnh WebGL; mở popup tài khoản có **0 lệnh drawElements trong 250ms** và đóng popup thì vẽ tiếp, kiểm tra trực tiếp trên API WebGL của fixture. Đổi màu/chế độ/tiến độ giữ nguyên DOM canvas và renderer. Chưa ghép đôi chỉ tải ảnh kết xuất, có nút chủ động thử 3D; cảnh ghép đôi khởi tạo lúc idle, ưu tiên form và ảnh đầu trang.
+- Build cục bộ: chunk cảnh từ 136,00 lên **138,54 kB gzip** (+2,54 kB); JS chính từ 232,47 lên **233,81 kB gzip** (+1,34 kB). Đây là bytes build, không phải tốc độ mạng/GPU thực. Không thêm model/texture hoặc dịch vụ server.
+- Cỡ chữ form mobile tối thiểu 16px; animation chuyển trang chỉ chạy trên header, không remount input/editor để làm hiệu ứng. Kiểm tra IME, focus, cache thư viện và popup vẫn được giữ.
+- Chi tiết/giới hạn thiết bị: [chuyển động và mobile](INTERACTION_AND_MOBILE_REFINEMENT.md).
+
 ## Trang chính và cảnh 3D — 06/11/2026
 
 - Lịch tháng chỉ mount trong Lịch; bản đồ chỉ ở Dòng thời gian. Hôm nay giới hạn bốn thẻ đúng ngày; recap tuần chỉ mount và lấy dữ liệu sau khi người dùng mở phần nhìn lại. Các kiểm tra cache thư viện ảnh khi đổi trang/mở popup vẫn giữ nguyên.

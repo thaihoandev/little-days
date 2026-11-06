@@ -84,6 +84,7 @@ import { PwaInstallBanner, PwaHeaderButton, PwaSidebarButton } from './PwaInstal
 import JournalDashboard, { clearDashboardMemory } from './JournalDashboard.js';
 import { TogetherHome, clearRhythmMemory } from './TogetherHome.js';
 import { useAppRoute, sectionPaths, type AppSection } from './useAppRoute.js';
+import { usePageMotion } from './usePageMotion.js';
 import { UserAvatar } from './UserAvatar.js';
 import { DecorationPreview, CounterPresetPreview } from './DecorationPreview.js';
 const TogetherPage = lazy(() => import('./TogetherPage.js'));
@@ -185,6 +186,7 @@ export default function App() {
   const [toast, setToast] = useState('');
   const [modal, setModal] = useState<'create' | 'account' | 'help' | null>(null);
   const { route, pathname, search, navigate } = useAppRoute();
+  usePageMotion(pathname, loading || !!authLink || openingAlbum);
   const [notifications, setNotifications] = useState<{
     userId: string;
     items: NotificationView[];
@@ -209,7 +211,7 @@ export default function App() {
     try {
       if (token) {
         setShared(await api<Album>(`/shared/${encodeURIComponent(token)}`));
-        return;
+        return true;
       }
       const session = await api<User>('/session');
       configureUploads(session.libraryVersion === 1);
@@ -221,8 +223,10 @@ export default function App() {
       setAlbums(library);
       libraryActor.current = session.id;
       libraryLoadedAt.current = Date.now();
+      return true;
     } catch (e) {
       setError((e as Error).message);
+      return false;
     } finally {
       setLoading(false);
     }
@@ -270,12 +274,14 @@ export default function App() {
       <Suspense fallback={<div className="loading-screen">Đang mở tài khoản…</div>}>
         <AuthLinkPage
           link={authLink}
-          onContinue={() => {
-            setAuthLink(null);
-            navigate('/today', true);
+          onContinue={async () => {
+            // Keep the link screen until both account data and its lazy form are ready.
+            const [ready] = await Promise.all([load(), import('./AccountSettings.js')]);
+            if (!ready) throw new Error('Chưa mở được tài khoản. Hãy thử lại.');
             setAccountMode('login');
             setModal('account');
-            void load();
+            navigate('/today', true);
+            setAuthLink(null);
           }}
         />
       </Suspense>
@@ -513,6 +519,7 @@ export default function App() {
                     spaces={spaces}
                     enabled={user.coupleRhythmVersion === 1}
                     refreshKey={refreshKey}
+                    immersiveActive={!modal}
                     onNavigate={navigate}
                   />
                 ) : null
@@ -667,6 +674,7 @@ export default function App() {
               albums={albums}
               libraryReady={user?.libraryVersion === 1}
               onAlbums={() => setSection('albums')}
+              onBack={() => setSection('albums')}
               onOpenAlbum={openAlbum}
             />
           ) : null}

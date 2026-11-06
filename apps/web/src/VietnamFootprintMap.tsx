@@ -396,7 +396,7 @@ export function VietnamFootprintMap({
                 value={selectedRegion}
                 onChange={(e) => setSelectedRegion(e.target.value as VietnamRegion | 'all')}
               >
-                <option value="all">Tất cả (34)</option>
+                <option value="all">Tất cả</option>
                 {(Object.keys(regionNames) as VietnamRegion[]).map((region) => (
                   <option key={region} value={region}>
                     {regionNames[region]}

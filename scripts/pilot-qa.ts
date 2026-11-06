@@ -6,6 +6,7 @@ import path from 'node:path';
 import { ensureBrowser } from '@remotion/renderer';
 
 const suites = [
+  ['auth', 'scripts/smoke-auth-ui.ts'],
   ['main-pages', 'scripts/smoke-main-pages.ts'],
   ['priority-flows', 'scripts/smoke-priority-flows.ts'],
   ['mail-design', 'scripts/smoke-mail-design.ts'],
@@ -30,7 +31,6 @@ const suites = [
   ['editor', 'scripts/smoke-ui.ts'],
   ['save-recovery', 'scripts/smoke-save-recovery.ts'],
   ['gestures', 'scripts/smoke-gestures.ts'],
-  ['auth', 'scripts/smoke-auth-ui.ts'],
   ['history', 'scripts/smoke-history-ui.ts'],
   ['video', 'scripts/smoke-video-ui.ts'],
   ['deletion', 'scripts/smoke-deletion-ui.ts'],
