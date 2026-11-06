@@ -1,4 +1,5 @@
 import { WeeklyRecap } from './WeeklyRecap.js';
+import { ActionPopover } from './ActionPopover.js';
 import {
   Fragment,
   lazy,
@@ -125,6 +126,7 @@ export default function JournalDashboard({
   focusSpace,
   onClearFocus,
   onViewRecaps = () => {},
+  onOpenTogether,
 }: {
   albums: Album[];
   mode: 'home' | 'timeline' | 'calendar';
@@ -155,11 +157,19 @@ export default function JournalDashboard({
   weeklyReady?: boolean;
   sharingRequested?: boolean;
   onViewRecaps?: () => void;
+  onOpenTogether?: (space: string) => void;
 }) {
   const [today, setToday] = useState(() =>
     todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone),
   );
   const [newKind, setNewKind] = useState<JournalContent['kind']>('memory');
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
+  const [homeExpanded, setHomeExpanded] = useState(false);
+  useEffect(() => {
+    setExpandedDays(new Set());
+    setHomeExpanded(false);
+  }, [mode, userId]);
   const [reminderTarget, setReminderTarget] = useState<{
     source: ReminderSource;
     title: string;
@@ -497,9 +507,11 @@ export default function JournalDashboard({
     ],
   );
   const upcomingFrom = mode === 'calendar' ? selected : today;
+  const homeSpace = sharing.spaces?.find((space) => space.shared && space.members.length > 1);
   const upcoming = all
     .map((entry) => ({ entry, next: nextOccurrence(entry, upcomingFrom) }))
     .filter((i): i is { entry: Item; next: string } => !!i.next)
+    .filter((i) => mode !== 'calendar' || i.next > selected)
     .filter(
       (i) =>
         mode !== 'home' ||
@@ -508,6 +520,31 @@ export default function JournalDashboard({
     )
     .sort((a, b) => a.next.localeCompare(b.next))
     .slice(0, 4);
+  const homePlan = upcoming.find(
+    (item) => item.entry.kind === 'plan' && daysTogether(today, item.next) <= 7,
+  );
+  const agenda = [
+    ...upcoming.map(({ entry, next }) => ({
+      id: entry.id,
+      title: entry.title,
+      date: next,
+      entry,
+      holiday: undefined as Holiday | undefined,
+    })),
+    ...(remindersReady && showHolidays
+      ? holidayData.items
+          .filter((h) => h.date > selected)
+          .map((holiday) => ({
+            id: holiday.id,
+            title: holiday.title,
+            date: holiday.date,
+            entry: undefined as Item | undefined,
+            holiday,
+          }))
+      : []),
+  ]
+    .sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id))
+    .slice(0, 5);
   useEffect(() => {
     for (const id of chosen) {
       const current = all.find((entry) => entry.id === id);
@@ -548,7 +585,7 @@ export default function JournalDashboard({
     mode === 'calendar'
       ? dayItems
       : mode === 'home'
-        ? todayItems.slice(0, 4)
+        ? todayItems.slice(0, homeExpanded ? 4 : 2)
         : paged
           ? filtered
           : filtered.slice(0, limit);
@@ -659,10 +696,6 @@ export default function JournalDashboard({
                   ? 'Lịch của ' + (displayName || 'mình')
                   : 'Hôm nay của ' + (displayName || 'bạn')}
               </h1>
-              <p>
-                {paged ? (feed.stats?.milestones ?? 0) : all.filter((e) => !e.album).length} dấu mốc
-                · {albums.length} album
-              </p>
             </>
           )}
           <span className="journal-today">
@@ -698,13 +731,16 @@ export default function JournalDashboard({
           )}
           <button
             className="button primary"
+            aria-label="Thêm dấu mốc"
             onClick={() => {
               setNewKind('memory');
               setEditing(null);
             }}
           >
             <Plus size={17} />
-            Thêm dấu mốc
+            {mode === 'calendar'
+              ? `Thêm cho ngày ${Number(selected.slice(-2))}/${Number(selected.slice(5, 7))}`
+              : 'Thêm dấu mốc'}
           </button>
         </div>
       </div>
@@ -732,6 +768,40 @@ export default function JournalDashboard({
         />
       )}
 
+      {mode === 'home' && sharingReady && (
+        <button
+          className="home-next-step"
+          onClick={() => {
+            if (homePlan) setEditing(homePlan.entry);
+            else if (homeSpace && onOpenTogether) onOpenTogether(homeSpace.id);
+            else {
+              setNewKind('memory');
+              setEditing(null);
+            }
+          }}
+        >
+          <span className="next-step-seal">
+            <Heart size={19} />
+          </span>
+          <span>
+            <small>
+              {homePlan
+                ? dateLabel(homePlan.next)
+                : homeSpace && onOpenTogether
+                  ? homeSpace.title
+                  : 'MỘT CHÚT CHO HÔM NAY'}
+            </small>
+            <strong>
+              {homePlan
+                ? 'Chuẩn bị cho ' + homePlan.entry.title
+                : homeSpace && onOpenTogether
+                  ? 'Câu hỏi hôm nay của hai đứa'
+                  : 'Giữ lại một điều nhỏ hôm nay'}
+            </strong>
+          </span>
+          <ArrowUpRight size={18} />
+        </button>
+      )}
       {mode === 'home' &&
         homeActions?.(
           sharing.spaces || [],
@@ -968,41 +1038,6 @@ export default function JournalDashboard({
             )}
           </section>
           <aside className="upcoming-card">
-            {remindersReady && showHolidays && (
-              <section className="upcoming-holidays" aria-label="Dịp lễ sắp tới">
-                <span className="eyebrow">CHUẨN BỊ MỘT ĐIỀU ĐẸP</span>
-                <h3>Dịp lễ sắp tới</h3>
-                {holidayData.items
-                  .filter(
-                    (h) => h.date >= (selected.slice(0, 7) === month ? selected : month + '-01'),
-                  )
-                  .slice(0, 4)
-                  .map((h) => (
-                    <button
-                      key={h.id}
-                      className="upcoming-holiday"
-                      onClick={() => {
-                        setSelected(h.date);
-                        setMonth(h.date.slice(0, 7));
-                      }}
-                    >
-                      <span className={'holiday-icon ' + h.category}>
-                        <HolidayIcon name={h.icon} />
-                      </span>
-                      <span>
-                        <strong>{h.title}</strong>
-                        <small>
-                          {dateLabel(h.date, { day: 'numeric', month: 'short' })} ·{' '}
-                          {holidayCategoryNames[h.category]}
-                        </small>
-                      </span>
-                    </button>
-                  ))}
-                <p className="muted small">
-                  Ngày lễ và dịp kỷ niệm; lịch nghỉ, nghỉ bù theo công bố của cơ quan hoặc đơn vị.
-                </p>
-              </section>
-            )}
             <section className="selected-day-notes" aria-label="Ghi chú ngày đang chọn">
               <span className="eyebrow">NGÀY ĐANG CHỌN</span>
               <h3>{dateLabel(selected, { day: 'numeric', month: 'long' })}</h3>
@@ -1024,42 +1059,54 @@ export default function JournalDashboard({
                 <p className="muted small">Chưa có ghi chú cho ngày này.</p>
               )}
             </section>
-            <span className="eyebrow">MỘT CHÚT HÁO HỨC</span>
-            <h2>Sắp đến những ngày đẹp</h2>
-            {upcoming.length ? (
-              upcoming.map(({ entry, next }) => (
-                <button
-                  className="upcoming-item"
-                  key={entry.id}
-                  onClick={() => {
-                    setSelected(next);
-                    setMonth(next.slice(0, 7));
-                  }}
-                >
-                  <span className={'event-dot ' + entry.kind} />
-                  <span>
-                    <strong>{entry.title}</strong>
-                    <small>
-                      {dateLabel(next, { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </small>
-                  </span>
-                  <b>
-                    {next === today
-                      ? 'Hôm nay'
-                      : next === upcomingFrom
-                        ? 'Ngày chọn'
-                        : `${daysTogether(upcomingFrom, next)} ngày`}
-                  </b>
-                </button>
-              ))
-            ) : (
-              <div className="journal-empty-mini">
-                <FlowerMark />
-                <p>
-                  Một buổi hẹn, ngày sinh nhật hay chuyến đi sắp tới — thêm ngày để cùng chờ nhé.
-                </p>
-              </div>
-            )}
+            <section className="calendar-agenda" aria-label="Sắp tới">
+              <header>
+                <CalendarDays size={17} />
+                <h3>Sắp tới</h3>
+              </header>
+              {agenda.length ? (
+                agenda.map((item) => (
+                  <button
+                    className="agenda-item"
+                    key={(item.holiday ? 'holiday-' : 'entry-') + item.id}
+                    onClick={() => {
+                      setSelected(item.date);
+                      setMonth(item.date.slice(0, 7));
+                    }}
+                  >
+                    <span className="agenda-date">
+                      <b>{Number(item.date.slice(-2))}</b>
+                      <small>Th{Number(item.date.slice(5, 7))}</small>
+                    </span>
+                    <span>
+                      <strong>{item.title}</strong>
+                      <small>
+                        {item.holiday
+                          ? holidayCategoryNames[item.holiday.category]
+                          : item.entry?.annual
+                            ? 'Ngày kỉ niệm · Mỗi năm'
+                            : journalKindNames[item.entry!.kind]}
+                      </small>
+                    </span>
+                    {item.holiday ? (
+                      <HolidayIcon name={item.holiday.icon} size={17} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )}
+                  </button>
+                ))
+              ) : (
+                <p className="muted small">Chưa có lịch hẹn sau ngày đang chọn.</p>
+              )}
+              {remindersReady && showHolidays && (
+                <details className="holiday-info">
+                  <summary>Về ngày lễ & lịch nghỉ</summary>
+                  <p>
+                    Ngày lễ và dịp kỷ niệm; lịch nghỉ, nghỉ bù theo công bố của cơ quan hoặc đơn vị.
+                  </p>
+                </details>
+              )}
+            </section>
             <button
               className="button quiet full"
               onClick={() => {
@@ -1112,7 +1159,7 @@ export default function JournalDashboard({
           </div>
         </section>
       )}
-      {mode === 'timeline' && (chosen.length > 0 || all.some((entry) => !entry.timelineId)) && (
+      {mode === 'timeline' && selectionMode && (
         <section className="timeline-import-bar" aria-label="Tạo sổ từ dấu mốc">
           <div>
             <BookOpen size={20} />
@@ -1139,12 +1186,15 @@ export default function JournalDashboard({
             >
               <CheckCheck size={17} />
             </button>
-            {chosen.length > 0 && (
+            {selectionMode && (
               <button
                 className="icon-button"
                 aria-label="Bỏ chọn"
                 title="Bỏ chọn dấu mốc"
-                onClick={() => setChosen([])}
+                onClick={() => {
+                  setChosen([]);
+                  setSelectionMode(false);
+                }}
               >
                 <X size={17} />
               </button>
@@ -1174,7 +1224,9 @@ export default function JournalDashboard({
               <p>
                 {mode === 'calendar'
                   ? `${dayItems.length} nội dung · Những điều đã lưu cho ngày này`
-                  : `${visible.length} nội dung đang hiện · Album và dấu mốc được phân biệt riêng`}
+                  : mode === 'home'
+                    ? ''
+                    : `${visible.length} nội dung đang hiện`}
               </p>
             </div>
             {mode === 'timeline' && (
@@ -1212,6 +1264,19 @@ export default function JournalDashboard({
               >
                 <Trash2 size={17} />
                 <span>Thùng rác</span>
+              </button>
+            )}
+            {mode === 'timeline' && (
+              <button
+                className={'button quiet select-stories' + (selectionMode ? ' active' : '')}
+                aria-pressed={selectionMode}
+                onClick={() => {
+                  setChosen([]);
+                  setSelectionMode(!selectionMode);
+                }}
+              >
+                <BookOpen size={16} />
+                Chọn để tạo sổ
               </button>
             )}
           </header>
@@ -1263,220 +1328,214 @@ export default function JournalDashboard({
                     </span>
                   </header>
                   <div className="journal-day-stories">
-                    {group.items.map((entry, itemIndex) => (
-                      <Fragment key={entry.id}>
-                        {mode === 'timeline' &&
-                          (itemIndex === 0 ||
-                            storyCategory(group.items[itemIndex - 1]) !== storyCategory(entry)) && (
-                            <h4 className="story-category">{storyCategory(entry)}</h4>
-                          )}
-                        <article
-                          className={
-                            'journal-entry ' +
-                            entry.kind +
-                            (isBook(entry) ? ' album-story' : ' milestone-story')
-                          }
-                        >
-                          {entry.album && isBook(entry) && (
-                            <button
-                              className="story-album-cover"
-                              aria-label={'Mở album trong dòng thời gian ' + entry.album.title}
-                              onClick={() => onOpenAlbum(entry.album!)}
-                            >
-                              {entry.assets[0] || entry.album.assets[0] ? (
-                                <img
-                                  src={thumbnailUrl((entry.assets[0] || entry.album.assets[0]).url)}
-                                  alt=""
-                                  loading="lazy"
-                                />
-                              ) : (
-                                <BookOpen size={34} />
-                              )}
-                              <span>{entry.album.title}</span>
-                            </button>
-                          )}
-                          <div className="journal-entry-body">
-                            {mode !== 'timeline' && !isBook(entry) && (
-                              <JournalPhotoTiles
-                                entry={entry}
-                                onOpen={(index) => setPhotoPreview({ photos: entry.assets, index })}
-                              />
+                    {group.items
+                      .slice(
+                        0,
+                        mode === 'timeline' && !selectionMode && !expandedDays.has(group.date)
+                          ? 3
+                          : undefined,
+                      )
+                      .map((entry, itemIndex) => (
+                        <Fragment key={entry.id}>
+                          {mode === 'timeline' &&
+                            (itemIndex === 0 ||
+                              storyCategory(group.items[itemIndex - 1]) !==
+                                storyCategory(entry)) && (
+                              <h4 className="story-category">{storyCategory(entry)}</h4>
                             )}
-                            {mode === 'timeline' && !entry.timelineId && (
-                              <label className="import-pick" title="Chọn dấu mốc làm scrapbook">
-                                <input
-                                  type="checkbox"
-                                  aria-label={'Chọn dấu mốc ' + entry.title}
-                                  checked={chosen.includes(entry.id)}
-                                  disabled={chosen.length >= 20 && !chosen.includes(entry.id)}
-                                  onChange={(e) =>
-                                    setChosen((ids) =>
-                                      e.target.checked
-                                        ? [...ids, entry.id]
-                                        : ids.filter((id) => id !== entry.id),
-                                    )
-                                  }
-                                />
-                                <span>Chọn làm scrapbook</span>
-                              </label>
-                            )}
-                            <div className="journal-entry-meta">
-                              <span>
-                                {entry.album
-                                  ? isBook(entry)
-                                    ? `Album · ${entry.album.pages.length} trang`
-                                    : 'Kỉ niệm trong ' + entry.album.title
-                                  : journalKindNames[entry.kind]}
-                              </span>
-                              {entry.timelineLabel && !sharedPlansReady && (
-                                <small className="shared-timeline-label">
-                                  <UsersRound size={12} />
-                                  {entry.timelineAvatarUrl && (
-                                    <UserAvatar
-                                      name={entry.timelineLabel}
-                                      url={entry.timelineAvatarUrl}
-                                    />
-                                  )}
-                                  Cùng {entry.timelineLabel}
-                                </small>
-                              )}
-                              {entry.annual && (
-                                <small>
-                                  <Repeat2 size={12} />
-                                  Mỗi năm
-                                </small>
-                              )}
-                            </div>
-                            <h3>
-                              {mode !== 'timeline' && isBook(entry)
-                                ? entry.album!.title
-                                : entry.title}
-                            </h3>
-                            {!entry.album && sharedPlansReady && (
-                              <div className="entry-author">
-                                <UserAvatar name={entry.authorName} url={entry.authorAvatarUrl} />
-                                <span>
-                                  Đăng bởi <strong>{entry.authorName || 'Thành viên'}</strong>
-                                </span>
-                                {entry.spaceTitle && <small>{entry.spaceTitle}</small>}
-                              </div>
-                            )}
-                            {!entry.album &&
-                              sharedPlansReady &&
-                              (entry.kind === 'plan' || entry.plan) && (
-                                <section
-                                  className="plan-summary"
-                                  aria-label={'Chuẩn bị cho ' + entry.title}
-                                >
-                                  <header>
-                                    <span
-                                      className={'plan-status ' + (entry.plan?.status || 'planned')}
-                                    >
-                                      {entry.plan?.status === 'completed'
-                                        ? 'Đã hoàn thành'
-                                        : 'Dự định'}
-                                    </span>
-                                    <small>
-                                      {entry.plan?.checklist.filter((t) => t.done).length || 0}/
-                                      {entry.plan?.checklist.length || 0} việc
-                                    </small>
-                                  </header>
-                                  {entry.plan?.checklist.slice(0, 4).map((task) => (
-                                    <div
-                                      className={'plan-task-preview ' + (task.done ? 'done' : '')}
-                                      key={task.id}
-                                    >
-                                      <CheckCheck size={14} />
-                                      <span>{task.text}</span>
-                                      <small>
-                                        {sharing.spaces
-                                          ?.find(
-                                            (s) =>
-                                              s.id ===
-                                              (entry.spaceId || entry.timelineId || userId),
-                                          )
-                                          ?.members.find((m) => m.id === task.assigneeId)
-                                          ?.displayName ||
-                                          (task.assigneeId ? 'Thành viên trước đây' : 'Cùng nhau')}
-                                      </small>
-                                    </div>
-                                  ))}
-                                  <div className="plan-actions">
-                                    <button
-                                      className="button quiet"
-                                      onClick={() => setEditing(entry)}
-                                    >
-                                      Chuẩn bị
-                                    </button>
-                                    {entry.kind === 'plan' && (
-                                      <button
-                                        className="button quiet"
-                                        onClick={() => {
-                                          setConvertingPlan(true);
-                                          setEditing(entry);
-                                        }}
-                                      >
-                                        Thêm ảnh & lưu thành kỉ niệm
-                                      </button>
-                                    )}
-                                  </div>
-                                </section>
-                              )}
-                            {entry.location && (
+                          <article
+                            className={
+                              'journal-entry ' +
+                              entry.kind +
+                              (isBook(entry) ? ' album-story' : ' milestone-story')
+                            }
+                          >
+                            {entry.album && isBook(entry) && (
                               <button
-                                className="story-location"
-                                onClick={() => {
-                                  setMapPoint(entry.location!);
-                                  setMapOpen(true);
-                                }}
+                                className="story-album-cover"
+                                aria-label={'Mở album trong dòng thời gian ' + entry.album.title}
+                                onClick={() => onOpenAlbum(entry.album!)}
                               >
-                                <MapPin size={14} />
-                                {entry.location.label || 'Địa điểm đã ghim'}
+                                {entry.assets[0] || entry.album.assets[0] ? (
+                                  <img
+                                    src={thumbnailUrl(
+                                      (entry.assets[0] || entry.album.assets[0]).url,
+                                    )}
+                                    alt=""
+                                    loading="lazy"
+                                  />
+                                ) : (
+                                  <BookOpen size={34} />
+                                )}
+                                <span>{entry.album.title}</span>
                               </button>
                             )}
-                            {entry.note &&
-                              (mode !== 'timeline' && entry.note.length > 180 ? (
-                                <details className="today-note">
-                                  <summary>
-                                    {entry.note.slice(0, 160)}… <small>Xem thêm</small>
-                                  </summary>
-                                  <p>{entry.note}</p>
-                                </details>
-                              ) : (
-                                <p>{entry.note}</p>
-                              ))}
-                            {mode === 'timeline' && !isBook(entry) && (
-                              <JournalPhotoTiles
-                                entry={entry}
-                                onOpen={(index) => setPhotoPreview({ photos: entry.assets, index })}
-                              />
-                            )}
-                            <div className="journal-entry-actions">
-                              {remindersReady && (
-                                <button
-                                  className="icon-button"
-                                  aria-label={'Nhắc tôi về ' + entry.title}
-                                  title="Thiết lập lời nhắc"
-                                  onClick={() =>
-                                    setReminderTarget({
-                                      title: entry.title,
-                                      source: entry.album
-                                        ? entry.id.startsWith('start-')
-                                          ? { kind: 'album-start', id: entry.album.id }
-                                          : {
-                                              kind: 'album-memory',
-                                              id: entry.album.id,
-                                              memoryId: entry.id.split(':')[1],
-                                            }
-                                        : { kind: 'journal', id: entry.id },
-                                    })
+                            <div className="journal-entry-body">
+                              {mode !== 'timeline' && !isBook(entry) && (
+                                <JournalPhotoTiles
+                                  entry={entry}
+                                  onOpen={(index) =>
+                                    setPhotoPreview({ photos: entry.assets, index })
                                   }
+                                />
+                              )}
+                              {mode === 'timeline' && selectionMode && !entry.timelineId && (
+                                <label className="import-pick" title="Chọn dấu mốc làm scrapbook">
+                                  <input
+                                    type="checkbox"
+                                    aria-label={'Chọn dấu mốc ' + entry.title}
+                                    checked={chosen.includes(entry.id)}
+                                    disabled={chosen.length >= 20 && !chosen.includes(entry.id)}
+                                    onChange={(e) =>
+                                      setChosen((ids) =>
+                                        e.target.checked
+                                          ? [...ids, entry.id]
+                                          : ids.filter((id) => id !== entry.id),
+                                      )
+                                    }
+                                  />
+                                  <span>Chọn làm scrapbook</span>
+                                </label>
+                              )}
+                              <div className="journal-entry-meta">
+                                <span>
+                                  {entry.album
+                                    ? isBook(entry)
+                                      ? `Album · ${entry.album.pages.length} trang`
+                                      : 'Kỉ niệm trong ' + entry.album.title
+                                    : journalKindNames[entry.kind]}
+                                </span>
+                                {entry.timelineLabel && !sharedPlansReady && (
+                                  <small className="shared-timeline-label">
+                                    <UsersRound size={12} />
+                                    {entry.timelineAvatarUrl && (
+                                      <UserAvatar
+                                        name={entry.timelineLabel}
+                                        url={entry.timelineAvatarUrl}
+                                      />
+                                    )}
+                                    Cùng {entry.timelineLabel}
+                                  </small>
+                                )}
+                                {entry.annual && (
+                                  <small>
+                                    <Repeat2 size={12} />
+                                    Mỗi năm
+                                  </small>
+                                )}
+                              </div>
+                              <h3>
+                                {mode !== 'timeline' && isBook(entry)
+                                  ? entry.album!.title
+                                  : entry.title}
+                              </h3>
+                              {!entry.album && sharedPlansReady && (
+                                <div className="entry-author">
+                                  <UserAvatar name={entry.authorName} url={entry.authorAvatarUrl} />
+                                  <span>
+                                    Đăng bởi <strong>{entry.authorName || 'Thành viên'}</strong>
+                                  </span>
+                                  {entry.spaceTitle && <small>{entry.spaceTitle}</small>}
+                                </div>
+                              )}
+                              {!entry.album &&
+                                sharedPlansReady &&
+                                (entry.kind === 'plan' || entry.plan) && (
+                                  <section
+                                    className="plan-summary"
+                                    aria-label={'Chuẩn bị cho ' + entry.title}
+                                  >
+                                    <header>
+                                      <span
+                                        className={
+                                          'plan-status ' + (entry.plan?.status || 'planned')
+                                        }
+                                      >
+                                        {entry.plan?.status === 'completed'
+                                          ? 'Đã hoàn thành'
+                                          : 'Dự định'}
+                                      </span>
+                                      <small>
+                                        {entry.plan?.checklist.filter((t) => t.done).length || 0}/
+                                        {entry.plan?.checklist.length || 0} việc
+                                      </small>
+                                    </header>
+                                    {entry.plan?.checklist.slice(0, 4).map((task) => (
+                                      <div
+                                        className={'plan-task-preview ' + (task.done ? 'done' : '')}
+                                        key={task.id}
+                                      >
+                                        <CheckCheck size={14} />
+                                        <span>{task.text}</span>
+                                        <small>
+                                          {sharing.spaces
+                                            ?.find(
+                                              (s) =>
+                                                s.id ===
+                                                (entry.spaceId || entry.timelineId || userId),
+                                            )
+                                            ?.members.find((m) => m.id === task.assigneeId)
+                                            ?.displayName ||
+                                            (task.assigneeId
+                                              ? 'Thành viên trước đây'
+                                              : 'Cùng nhau')}
+                                        </small>
+                                      </div>
+                                    ))}
+                                    <div className="plan-actions">
+                                      <button
+                                        className="button quiet"
+                                        onClick={() => setEditing(entry)}
+                                      >
+                                        Chuẩn bị
+                                      </button>
+                                      {entry.kind === 'plan' && (
+                                        <button
+                                          className="button quiet"
+                                          onClick={() => {
+                                            setConvertingPlan(true);
+                                            setEditing(entry);
+                                          }}
+                                        >
+                                          Thêm ảnh & lưu thành kỉ niệm
+                                        </button>
+                                      )}
+                                    </div>
+                                  </section>
+                                )}
+                              {entry.location && (
+                                <button
+                                  className="story-location"
+                                  onClick={() => {
+                                    setMapPoint(entry.location!);
+                                    setMapOpen(true);
+                                  }}
                                 >
-                                  <Bell size={16} />
+                                  <MapPin size={14} />
+                                  {entry.location.label || 'Địa điểm đã ghim'}
                                 </button>
                               )}
-                              {!entry.album && communityReady && (
-                                <>
+                              {entry.note &&
+                                (mode !== 'timeline' && entry.note.length > 180 ? (
+                                  <details className="today-note">
+                                    <summary>
+                                      {entry.note.slice(0, 160)}… <small>Xem thêm</small>
+                                    </summary>
+                                    <p>{entry.note}</p>
+                                  </details>
+                                ) : (
+                                  <p>{entry.note}</p>
+                                ))}
+                              {mode === 'timeline' && !isBook(entry) && (
+                                <JournalPhotoTiles
+                                  entry={entry}
+                                  onOpen={(index) =>
+                                    setPhotoPreview({ photos: entry.assets, index })
+                                  }
+                                />
+                              )}
+                              <div className="journal-entry-actions">
+                                {!entry.album && communityReady && (
                                   <button
                                     className="icon-button"
                                     aria-label={'Lời nhắn và cảm xúc ' + entry.title}
@@ -1485,50 +1544,95 @@ export default function JournalDashboard({
                                   >
                                     <MessageCircle size={16} />
                                   </button>
-                                  <button
-                                    className="icon-button"
-                                    aria-label={'Lịch sử dấu mốc ' + entry.title}
-                                    title="Lịch sử dấu mốc"
-                                    onClick={() => setDetails({ entry, tab: 'history' })}
-                                  >
-                                    <History size={16} />
-                                  </button>
-                                </>
-                              )}
-                              {entry.album ? (
+                                )}
                                 <button
                                   className="icon-button"
-                                  aria-label={'Mở album ' + entry.album.title}
-                                  title={'Mở album ' + entry.album.title}
-                                  onClick={() => onOpenAlbum(entry.album!)}
+                                  aria-label={
+                                    entry.album
+                                      ? 'Mở album ' + entry.album.title
+                                      : 'Sửa dấu mốc ' + entry.title
+                                  }
+                                  title={entry.album ? 'Mở album' : 'Chỉnh sửa dấu mốc'}
+                                  onClick={() =>
+                                    entry.album ? onOpenAlbum(entry.album) : setEditing(entry)
+                                  }
                                 >
-                                  <ArrowUpRight size={17} />
+                                  {entry.album ? <ArrowUpRight size={17} /> : <Pencil size={16} />}
                                 </button>
-                              ) : (
-                                <>
-                                  <button
-                                    className="icon-button"
-                                    aria-label={'Sửa dấu mốc ' + entry.title}
-                                    title="Chỉnh sửa dấu mốc"
-                                    onClick={() => setEditing(entry)}
-                                  >
-                                    <Pencil size={16} />
-                                  </button>
-                                  <button
-                                    className="icon-button"
-                                    aria-label={'Xóa dấu mốc ' + entry.title}
-                                    title="Xóa dấu mốc"
-                                    onClick={() => setDeleting(entry)}
-                                  >
-                                    <Trash2 size={16} />
-                                  </button>
-                                </>
-                              )}
+                                {(!entry.album || remindersReady) && (
+                                  <ActionPopover label={'Tùy chọn ' + entry.title}>
+                                    {remindersReady && (
+                                      <button
+                                        className="icon-button"
+                                        aria-label={'Nhắc tôi về ' + entry.title}
+                                        title="Thiết lập lời nhắc"
+                                        onClick={() =>
+                                          setReminderTarget({
+                                            title: entry.title,
+                                            source: entry.album
+                                              ? entry.id.startsWith('start-')
+                                                ? { kind: 'album-start', id: entry.album.id }
+                                                : {
+                                                    kind: 'album-memory',
+                                                    id: entry.album.id,
+                                                    memoryId: entry.id.split(':')[1],
+                                                  }
+                                              : { kind: 'journal', id: entry.id },
+                                          })
+                                        }
+                                      >
+                                        <Bell size={16} />
+                                        <span>Nhắc ngày này</span>
+                                      </button>
+                                    )}
+
+                                    {!entry.album && communityReady && (
+                                      <button
+                                        className="icon-button"
+                                        aria-label={'Lịch sử dấu mốc ' + entry.title}
+                                        title="Lịch sử dấu mốc"
+                                        onClick={() => setDetails({ entry, tab: 'history' })}
+                                      >
+                                        <History size={16} />
+                                        <span>Lịch sử</span>
+                                      </button>
+                                    )}
+                                    {!entry.album && (
+                                      <button
+                                        className="danger-action"
+                                        aria-label={'Xóa dấu mốc ' + entry.title}
+                                        onClick={() => setDeleting(entry)}
+                                      >
+                                        <Trash2 size={16} />
+                                        <span>Xóa dấu mốc</span>
+                                      </button>
+                                    )}
+                                  </ActionPopover>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </article>
-                      </Fragment>
-                    ))}
+                          </article>
+                        </Fragment>
+                      ))}
+                    {mode === 'timeline' && !selectionMode && group.items.length > 3 && (
+                      <button
+                        className="day-expand"
+                        aria-expanded={expandedDays.has(group.date)}
+                        onClick={() =>
+                          setExpandedDays((previous) => {
+                            const next = new Set(previous);
+                            if (next.has(group.date)) next.delete(group.date);
+                            else next.add(group.date);
+                            return next;
+                          })
+                        }
+                      >
+                        {expandedDays.has(group.date)
+                          ? 'Thu gọn ngày này'
+                          : `Xem thêm ${group.items.length - 3} điều của ngày này`}
+                        <ChevronRight size={15} />
+                      </button>
+                    )}
                   </div>
                 </section>
               ))}
@@ -1558,7 +1662,12 @@ export default function JournalDashboard({
               Xem thêm dấu mốc
             </button>
           )}
-          {mode === 'home' && todayItems.length > 4 && (
+          {mode === 'home' && todayItems.length > 2 && !homeExpanded && (
+            <button className="button quiet home-more" onClick={() => setHomeExpanded(true)}>
+              Xem thêm hôm nay <ChevronRight size={15} />
+            </button>
+          )}
+          {mode === 'home' && homeExpanded && todayItems.length > 4 && (
             <button className="button quiet" onClick={() => onOpenDay?.(today)}>
               Xem đủ {todayItems.length} điều trong lịch <ArrowUpRight size={14} />
             </button>

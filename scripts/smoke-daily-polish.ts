@@ -141,6 +141,7 @@ try {
       await expect(p.locator('.journal-entry.album-story')).toHaveCount(1);
       await p.goto(origin + '/today');
       await expect(p.locator('.home-mode .journal-entry').first()).toBeVisible();
+      await p.getByRole('button', { name: 'Xem thêm hôm nay', exact: true }).click();
       const cardStyle = () =>
         p
           .locator('.journal-entry')
@@ -185,6 +186,15 @@ try {
         'same memory uses consistent card styles on Today and Calendar',
       );
       const albumCard = p.locator('.journal-entry.album-story');
+      await expect(p.locator('.upcoming-card > .selected-day-notes')).toHaveCount(1);
+      await expect(p.getByRole('region', { name: 'Sắp tới', exact: true })).toBeVisible();
+      if (width === 1920) {
+        const calendar = await p.locator('.calendar-card').boundingBox();
+        assert.ok(
+          calendar && calendar.height < 600,
+          'calendar does not stretch to the sidebar height',
+        );
+      }
       await expect(
         albumCard.getByRole('heading', { name: 'Sổ một lần', exact: true }),
       ).toBeVisible();

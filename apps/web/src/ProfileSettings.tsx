@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { Camera, Heart } from 'lucide-react';
 import { api } from './api.js';
 import { uploadImage } from './image-upload.js';
 import { UserAvatar } from './UserAvatar.js';
@@ -43,9 +44,12 @@ export function ProfileSettings({
       <div className="profile-identity">
         <UserAvatar name={value.displayName} url={value.avatarUrl} />
         <div>
+          <span className="profile-kicker">
+            <Heart size={12} /> Gương mặt trong câu chuyện
+          </span>
           <h3>{value.displayName}</h3>
           <label className="button quiet profile-avatar-upload">
-            Đổi ảnh đại diện
+            <Camera size={15} /> Đổi ảnh đại diện
             <input
               type="file"
               aria-label="Đổi ảnh đại diện"

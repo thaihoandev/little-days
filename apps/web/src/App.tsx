@@ -34,6 +34,8 @@ import {
   Minus,
   MoreHorizontal,
   Plus,
+  PanelLeftClose,
+  PanelRightClose,
   RotateCcw,
   RotateCw,
   Save,
@@ -501,6 +503,12 @@ export default function App() {
               libraryReady={user.libraryVersion === 1}
               weeklyReady={user.weeklyRecapVersion === 1}
               onViewRecaps={() => navigate('/albums?kind=recap')}
+              onOpenTogether={
+                user.coupleRitualsVersion === 1
+                  ? (space) =>
+                      navigate('/together?tab=questions&space=' + encodeURIComponent(space))
+                  : undefined
+              }
               remindersReady={user.remindersVersion === 1}
               homeActions={(spaces, refreshKey, ready) =>
                 user.coupleRitualsVersion === 1 ? (
@@ -832,6 +840,8 @@ function Editor({
   const [panel, setPanel] = useState<
     'pages' | 'photos' | 'decorations' | 'memories' | 'settings' | 'layers'
   >('pages');
+  const [libraryHidden, setLibraryHidden] = useState(false);
+  const [propertiesHidden, setPropertiesHidden] = useState(false);
   const [decorationSearch, setDecorationSearch] = useState('');
   const [styleClipboard, setStyleClipboard] = useState<ElementDesign | null>(null);
   const activeDecorations = (
@@ -1081,6 +1091,8 @@ function Editor({
     <>
       <div
         className="editor-shell"
+        data-library-hidden={libraryHidden}
+        data-properties-hidden={propertiesHidden}
         inert={uploading || historyOpen || viewer}
         aria-busy={uploading}
       >
@@ -1233,7 +1245,12 @@ function Editor({
               <button
                 key={id}
                 className={panel === id ? 'active' : ''}
-                onClick={() => setPanel(id)}
+                onClick={() => {
+                  setPanel(id);
+                  setLibraryHidden(false);
+                }}
+                aria-pressed={panel === id && !libraryHidden}
+                title={label}
               >
                 <Icon size={21} />
                 <span>{label}</span>
@@ -1774,6 +1791,15 @@ function Editor({
           <main className="editor-main">
             <div className="canvas-toolbar">
               <div className="row">
+                <button
+                  className="icon-button editor-dock-toggle"
+                  aria-label={libraryHidden ? 'Hiện thư viện thiết kế' : 'Ẩn thư viện thiết kế'}
+                  aria-pressed={!libraryHidden}
+                  title="Thu gọn / mở thư viện"
+                  onClick={() => setLibraryHidden(!libraryHidden)}
+                >
+                  <PanelLeftClose size={17} />
+                </button>
                 <span className="page-indicator">
                   TRANG {album.pages.findIndex((p) => p.id === page.id) + 1}
                 </span>
@@ -1818,6 +1844,15 @@ function Editor({
                   onClick={() => setZoom((z) => Math.min(1.5, z + 0.1))}
                 >
                   <Plus size={15} />
+                </button>
+                <button
+                  className="icon-button editor-dock-toggle"
+                  aria-label={propertiesHidden ? 'Hiện bảng thuộc tính' : 'Ẩn bảng thuộc tính'}
+                  aria-pressed={!propertiesHidden}
+                  title="Thu gọn / mở thuộc tính"
+                  onClick={() => setPropertiesHidden(!propertiesHidden)}
+                >
+                  <PanelRightClose size={17} />
                 </button>
               </div>
             </div>

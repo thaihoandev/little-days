@@ -300,6 +300,7 @@ try {
       await page.getByRole('button', { name: 'Đóng', exact: true }).click();
       await page.getByRole('button', { name: 'Về danh sách album', exact: true }).click();
       await page.getByRole('button', { name: 'Dòng thời gian', exact: true }).click();
+      await page.getByRole('button', { name: 'Tùy chọn ' + title, exact: true }).click();
       await page.getByRole('button', { name: 'Xóa dấu mốc ' + title, exact: true }).click();
       await page
         .getByRole('dialog', { name: 'Xóa dấu mốc?', exact: true })

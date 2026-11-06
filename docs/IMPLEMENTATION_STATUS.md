@@ -4,6 +4,8 @@ Ngày cập nhật: **06/11/2026**.
 
 ## Kết quả hiện tại
 
+Bố cục tiếp nối Photo Journal: timeline gộp điều khiển, chọn tạo sổ theo chế độ, nhóm ngày thu/mở và menu card; lịch độc lập chiều cao, ghi chú ưu tiên và agenda chung; Hôm nay rút gọn dải tuần/thẻ và thêm một gợi ý có ngữ cảnh. Thẻ cá nhân, trạng thái form và hai dock editor được đồng bộ bằng chi tiết dấu ngày/đường chỉ cherry. Xem [phạm vi và kiểm chứng](LAYOUT_REFINEMENT.md); không thay hợp đồng lưu nội dung sổ hoặc hạ tầng.
+
 Giao diện chuyển sang Photo Journal: Plus Jakarta Sans có tiếng Việt, nền trắng xám/cherry, logo hai khung ảnh và thành phần dùng chung trên các trang, popup, editor/viewer. Hôm nay mở sẵn dải ảnh tuần; nhịp chung nằm gọn ở cột phụ desktop. Font/màu/bố cục nội dung scrapbook đã lưu không bị chuyển đổi. Xem [quy chuẩn và phạm vi](DESIGN_SYSTEM.md); kết quả kiểm chứng/deploy đối chiếu commit phát hành.
 
 Đã bổ sung ba sắc màu/chế độ cho đồng hồ cát, cập nhật tiến độ không tạo lại GPU context và tạm dừng khi có popup. Thêm chuyển động giao diện, nút quay lại cho Ảnh/Câu hỏi/Lọ, bỏ đường kẻ thừa Album và cỡ chữ form mobile tối thiểu 16px để xử lý focus zoom toàn trang. Luồng xác minh email chờ session/form sẵn sàng trước khi chuyển tới tài khoản; test có lỗi/gate thay vì tăng timeout assertion. Xem [phạm vi và kiểm chứng](INTERACTION_AND_MOBILE_REFINEMENT.md).

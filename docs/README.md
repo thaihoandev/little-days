@@ -4,6 +4,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Sử dụng
 
+- [Tinh chỉnh ba trang chính, card và bàn thiết kế](LAYOUT_REFINEMENT.md)
 - [Ngôn ngữ thiết kế Photo Journal và ranh giới nội dung sổ](DESIGN_SYSTEM.md)
 - [Chuyển động, đồng hồ cát và nhập liệu mobile](INTERACTION_AND_MOBILE_REFINEMENT.md)
 - [Trang chính, thông báo cộng tác và nhịp yêu thương 3D](MAIN_PAGES_AND_SHARED_RHYTHM.md)

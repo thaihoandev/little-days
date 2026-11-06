@@ -1,5 +1,12 @@
 # Upload phục hồi và thư viện lớn
 
+## Tinh chỉnh bố cục — bổ sung 06/11/2026
+
+- Hôm nay dựng hai thẻ trước, mở thêm tối đa bốn; timeline thu/mở từng ngày trên tập dữ liệu đã tải. Đây là giảm số card DOM ban đầu, **không** thay payload hoặc phân trang API. Agenda gộp từ dữ liệu ngày lễ/dấu mốc hiện có, gợi ý hành động không tạo thêm request.
+- Menu card nằm ngoài vùng cắt ảnh, hai dock editor chỉ thay trạng thái xem. Kiểm tra API trước/sau thu/mở dock không có thay đổi tài liệu. Cache, quyền hiện tại và cơ chế CAS không thay đổi.
+- Build cục bộ JS chính **235,57 kB gzip**, CSS chính **47,95 kB gzip**; bản Photo Journal trước là 233,86/43,72 kB. Đây là bytes bundle sau khi thêm menu, điều khiển và style; không phải phép đo tốc độ mạng/cold start hoặc FPS thiết bị thật. Không thêm thư viện hoặc tài nguyên server.
+- Xem [bố cục, bàn phím và kiểm chứng](LAYOUT_REFINEMENT.md).
+
 ## Photo Journal — bổ sung 06/11/2026
 
 - Dải tuần trên Hôm nay hiện mở sẵn khi API có capability recap, thay cho phần thu gọn trước đây. Đổi này ưu tiên ảnh cá nhân và có thêm lượt đọc metadata tuần khi vào trang; giữ validated cache theo tài khoản/phạm vi/revision và tối đa bảy ảnh đại diện. Không đọc tài liệu album đầy đủ cho dải tuần.

@@ -144,6 +144,7 @@ try {
       await expect(details).toContainText('Mình cũng vậy!');
       await page.screenshot({ path: 'test-results/community-social-' + mobile + '.png' });
       await details.getByRole('button', { name: 'Đóng câu chuyện', exact: true }).click();
+      await page.getByRole('button', { name: 'Tùy chọn ' + title, exact: true }).click();
       await page.getByRole('button', { name: 'Lịch sử dấu mốc ' + title, exact: true }).click();
       await details.getByRole('button', { name: 'Xem phiên bản #1', exact: true }).click();
       await expect(
@@ -197,6 +198,7 @@ try {
       });
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
       await page.goto(origin + '/timeline');
+      await page.getByRole('button', { name: 'Tùy chọn ' + title, exact: true }).click();
       await page.getByRole('button', { name: 'Xóa dấu mốc ' + title, exact: true }).click();
       await page
         .getByRole('dialog', { name: 'Xóa dấu mốc?', exact: true })
@@ -212,6 +214,7 @@ try {
       await expect(trash).not.toContainText(title);
       await trash.getByRole('button', { name: 'Đóng thùng rác', exact: true }).click();
       await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
+      await page.getByRole('button', { name: 'Tùy chọn ' + title, exact: true }).click();
       await page.getByRole('button', { name: 'Xóa dấu mốc ' + title, exact: true }).click();
       await page
         .getByRole('dialog', { name: 'Xóa dấu mốc?', exact: true })

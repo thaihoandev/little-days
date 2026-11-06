@@ -29,6 +29,20 @@ try {
   await page.getByLabel('Tên cuốn sổ').fill('Nhật ký kiểm thử giao diện');
   await page.getByRole('button', { name: 'Tạo cuốn sổ của mình' }).click();
   await expect(page.getByRole('button', { name: 'Tạo video', exact: true })).toBeVisible();
+  const beforeDock = await (await context.request.get(origin + '/api/albums')).json();
+  const canvasBefore = await page.locator('.editor-main').boundingBox();
+  await page.getByRole('button', { name: 'Ẩn thư viện thiết kế', exact: true }).click();
+  await expect(page.locator('.library-panel')).not.toBeVisible();
+  assert.ok((await page.locator('.editor-main').boundingBox())!.width > canvasBefore!.width);
+  await page.getByRole('button', { name: 'Ẩn bảng thuộc tính', exact: true }).click();
+  await expect(page.locator('.properties-panel')).not.toBeVisible();
+  await page.getByRole('button', { name: 'Hiện bảng thuộc tính', exact: true }).click();
+  await page.getByRole('button', { name: 'Hiện thư viện thiết kế', exact: true }).click();
+  assert.deepEqual(
+    await (await context.request.get(origin + '/api/albums')).json(),
+    beforeDock,
+    'dock controls never persist design edits',
+  );
   await page.getByRole('button', { name: 'Trang trí', exact: true }).click();
   await page.getByRole('button', { name: 'Thêm tiêu đề', exact: true }).click();
   await page.getByLabel('Nội dung', { exact: true }).fill('Chúng mình — một ngày thật đẹp!');

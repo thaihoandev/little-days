@@ -16,11 +16,19 @@ export function useBodyScrollLock() {
 }
 function useDialog() {
   const ref = useRef<HTMLDialogElement>(null);
+  // Capture before React mounts an autoFocus child; showModal() alone can remember
+  // that child instead of the real trigger, especially when it came from a menu.
+  const returnFocus = useRef(
+    document.activeElement instanceof HTMLElement ? document.activeElement : null,
+  );
   useBodyScrollLock();
   useEffect(() => {
     const node = ref.current!;
     node.showModal();
-    return () => node.close();
+    return () => {
+      node.close();
+      if (returnFocus.current?.isConnected) returnFocus.current.focus({ preventScroll: true });
+    };
   }, []);
   return ref;
 }

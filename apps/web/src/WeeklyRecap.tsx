@@ -45,6 +45,31 @@ export function WeeklyRecap({
     [error, setError] = useState(''),
     [composer, setComposer] = useState<WeeklyView | null>(null),
     [retry, setRetry] = useState(0);
+  const tape = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!data || !tape.current) return;
+    const host = tape.current;
+    const day = data.days.reduce(
+      (index, d, i) => (d.date <= today && d.photos > 0 ? i : index),
+      -1,
+    );
+    const index =
+      day >= 0
+        ? day
+        : Math.max(
+            0,
+            data.days.findIndex((d) => d.date === today),
+          );
+    const frame = requestAnimationFrame(() => {
+      const item = host.children[index] as HTMLElement | undefined;
+      if (item && host.scrollWidth > host.clientWidth)
+        host.scrollLeft +=
+          item.getBoundingClientRect().left -
+          host.getBoundingClientRect().left -
+          (host.clientWidth - item.offsetWidth) / 2;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [data, today]);
   const membership = shared
     .map(
       (s) =>
@@ -152,7 +177,7 @@ export function WeeklyRecap({
       ) : (
         data && (
           <>
-            <div className="week-tape">
+            <div className="week-tape" ref={tape}>
               {data.days.map((day) => (
                 <button
                   key={day.date}

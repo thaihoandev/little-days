@@ -186,7 +186,29 @@ try {
         '3D canvas contains an actual shaded object',
       );
       await expect(page.locator('.rhythm-summary>strong')).toContainText('1');
+      await expect(page.locator('.home-mode .journal-entry')).toHaveCount(2);
+      await page.screenshot({
+        path: 'test-results/focused-today-' + width + '.png',
+        fullPage: true,
+      });
+      await page.getByRole('button', { name: 'Xem thêm hôm nay', exact: true }).click();
       await expect(page.locator('.home-mode .journal-entry')).toHaveCount(4);
+      const more = page.locator('.home-mode .card-more').first();
+      await more.click();
+      const actions = page.locator('.action-popover');
+      await expect(actions).toBeVisible();
+      const actionBox = await actions.boundingBox();
+      assert.ok(actionBox && actionBox.x >= 0 && actionBox.x + actionBox.width <= width);
+      await page.keyboard.press('Escape');
+      await expect(actions).toHaveCount(0);
+      await expect(more).toBeFocused();
+      await more.click();
+      await actions.getByRole('button', { name: /^Xóa dấu mốc / }).click();
+      const confirmation = page.getByRole('dialog', { name: 'Xóa dấu mốc?', exact: true });
+      await expect(confirmation).toBeVisible();
+      await confirmation.getByRole('button', { name: 'Giữ lại', exact: true }).click();
+      await expect(confirmation).toHaveCount(0);
+      await expect(more).toBeFocused();
       if (width === 1440) {
         await page.evaluate(() => {
           (window as unknown as { qaClock: Element | null }).qaClock = document.querySelector(
@@ -324,6 +346,18 @@ try {
         assert.match(await active.evaluate((el) => getComputedStyle(el).boxShadow), /0px -3px/);
       }
       await page.goto(origin + '/timeline');
+      await expect(page.locator('.import-pick')).toHaveCount(0);
+      await expect(
+        page.locator('.journal-day-group').first().locator('.journal-entry'),
+      ).toHaveCount(3);
+      await page.getByRole('button', { name: /Xem thêm 13 điều của ngày này/ }).click();
+      await expect(
+        page.locator('.journal-day-group').first().locator('.journal-entry'),
+      ).toHaveCount(16);
+      await page.getByRole('button', { name: 'Thu gọn ngày này', exact: true }).click();
+      await expect(
+        page.locator('.journal-day-group').first().locator('.journal-entry'),
+      ).toHaveCount(3);
       await expect(page.locator('.timeline-map-panel')).toHaveCount(1);
       await page.getByRole('button', { name: 'Mở rộng bản đồ', exact: true }).click();
       const dialog = page.getByRole('dialog', { name: 'Bản đồ kỉ niệm', exact: true });

@@ -88,6 +88,7 @@ try {
       });
       assert.equal(response.status(), 201);
       await page.goto(origin + '/calendar?date=' + today);
+      await page.getByRole('button', { name: 'Tùy chọn ' + title, exact: true }).click();
       await page.getByRole('button', { name: 'Nhắc tôi về ' + title, exact: true }).click();
       const edit = page.getByRole('dialog', { name: 'Nhắc tôi về ngày này', exact: true });
       await edit.getByLabel('Trước 1 ngày', { exact: true }).uncheck();

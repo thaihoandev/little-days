@@ -129,6 +129,7 @@ try {
       await expect(
         page.getByRole('heading', { name: 'Trong ngày hôm nay', exact: true }),
       ).toBeVisible();
+      await page.getByRole('button', { name: 'Xem thêm hôm nay', exact: true }).click();
       const day = page.getByRole('region', { name: 'Kỉ niệm ngày ' + today, exact: true });
       await expect(day.locator('.journal-day-heading time')).toHaveCount(1);
       await expect(day.locator('.album-story')).toHaveCount(1);

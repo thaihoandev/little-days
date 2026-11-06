@@ -2,6 +2,8 @@
 
 Cập nhật 06/11/2026. Hướng thiết kế được chủ dự án duyệt: nhật ký ảnh hiện đại, ít chữ trang trí, nội dung của người dùng làm điểm nhấn.
 
+Bố cục được tinh chỉnh tiếp theo [hướng dẫn ba trang và bàn thiết kế](LAYOUT_REFINEMENT.md): dải tuần thấp hơn, gợi ý hành động, nhóm ngày thu/mở, agenda chung và dock editor. Nội dung bên dưới mô tả nền tảng phong cách; hành vi mới theo hướng dẫn bổ sung.
+
 ## Ngôn ngữ giao diện
 
 | Thành phần | Quy ước |

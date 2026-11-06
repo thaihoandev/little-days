@@ -58,6 +58,7 @@ import './daily-polish.css';
 import './main-pages.css';
 import './interaction-polish.css';
 import './photo-journal.css';
+import './little-days-layout.css';
 
 if (
   'serviceWorker' in navigator &&

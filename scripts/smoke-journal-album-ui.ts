@@ -48,6 +48,8 @@ try {
       await page.keyboard.press('Escape');
       await expect(legal).not.toBeVisible();
       await page.getByRole('button', { name: 'Dòng thời gian', exact: true }).click();
+      await expect(page.locator('.import-pick')).toHaveCount(0);
+      await page.getByRole('button', { name: 'Chọn để tạo sổ', exact: true }).click();
       await page.getByLabel('Chọn dấu mốc ' + entry.title, { exact: true }).check();
       await page.getByRole('button', { name: 'Tạo scrapbook', exact: true }).click();
       const dialog = page.getByRole('dialog', { name: 'Tạo scrapbook từ dấu mốc', exact: true });
