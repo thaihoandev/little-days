@@ -185,6 +185,10 @@ try {
       await expect(page.locator('.memory-photo-tile')).toHaveCount(0);
       await expect(page.locator('.data-loading')).toHaveCount(0);
       await page.goto(origin + '/timeline');
+      await expect(page.locator('.journal-entry')).toHaveCount(3);
+      await page
+        .getByRole('button', { name: 'Xem thêm 17 điều của ngày này', exact: true })
+        .click();
       await expect(page.locator('.journal-entry')).toHaveCount(20);
       await page.getByRole('button', { name: 'Xem thêm dấu mốc', exact: true }).click();
       await expect(page.locator('.journal-entry')).toHaveCount(40);
