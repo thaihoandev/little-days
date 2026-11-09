@@ -60,6 +60,7 @@ Một lượt cát là **một thành viên có đóng góp trong một ngày Vi
 - Có số lượt, số ngày hoạt động và thời điểm API đối chiếu. Loading/lỗi không được diễn giải như tuần có 0 đóng góp. Khi đổi phạm vi thành viên phải bỏ số liệu cũ.
 - Bình dưới trống khi 0, bình trên giảm khi tổng tăng; hình khối cát nằm trong lòng kính và chuyển thể tích giữa hai bình. Cát chảy ngắn khi tổng tăng rồi dừng; chuyển động trang trí không tự tăng số liệu.
 - WebGL không dùng được thì SVG biểu diễn mức cát theo dữ liệu; chưa có dữ liệu dùng ảnh chờ. Vẫn giới hạn DPR/fps, tạm dừng khi ẩn tab/khuất viewport/có popup và tôn trọng reduced motion. Đổi màu/số liệu không tạo lại GPU context.
+- Chế độ tĩnh giữ drawing buffer, dùng thời gian pose cố định và không đặt lại canvas khi kích thước nguyên không đổi. Cả dialog native đang mở cũng tạm dừng GPU. Đã kiểm tra lại bằng SwiftShader software sau lỗi so sánh ảnh reduced motion trên CI; phép so ảnh vẫn giữ nguyên và bổ sung kiểm tra không phát sinh lệnh vẽ GPU.
 - Sang tuần mới tổng tuần tính lại. Xóa nội dung hoặc đổi quyền/thành viên có thể làm số liệu giảm: đây là thống kê nội dung còn hợp lệ, không phải sổ điểm vĩnh viễn hay thước đo tình cảm.
 
 ## Lần đầu sử dụng, cảm ứng và lịch điện thoại

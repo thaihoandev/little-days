@@ -26,10 +26,14 @@ export function createHourglass(
   const renderer = new T.WebGLRenderer({
     alpha: true,
     antialias: true,
+    // Reduced motion renders on demand; retain that frame across compositor captures.
+    preserveDrawingBuffer: true,
     powerPreference: 'low-power',
   });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
-  renderer.setSize(Math.max(1, host.clientWidth), Math.max(1, host.clientHeight));
+  let renderWidth = Math.max(1, host.clientWidth),
+    renderHeight = Math.max(1, host.clientHeight);
+  renderer.setSize(renderWidth, renderHeight);
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -212,7 +216,9 @@ export function createHourglass(
     amount = target;
   let geometryAmount = -1,
     flowingUntil = 0;
-  let blocked = !!document.querySelector('[role="dialog"][aria-modal="true"]');
+  const hasOverlay = () =>
+    !!document.querySelector('[role="dialog"][aria-modal="true"], dialog[open]');
+  let blocked = hasOverlay();
   const still = () => reduced.matches || settings.motion === 'still';
   const applyPalette = () => {
     const p = palettes[settings.theme];
@@ -265,14 +271,18 @@ export function createHourglass(
       grainPositions.needsUpdate = true;
     }
   };
+  const renderFrame = (now: number) => {
+    pose(still() ? 0 : now);
+    renderer.render(scene, camera);
+    renderer.domElement.dataset.motionState = still() ? 'still' : 'animated';
+  };
   const draw = (now = 0) => {
     frame = 0;
     if (disposed || !visible || document.hidden || blocked || !settings.active) return;
     if (!still()) frame = requestAnimationFrame(draw);
     if (!still() && now - last < 1000 / 24) return;
     last = now;
-    pose(now);
-    renderer.render(scene, camera);
+    renderFrame(now);
   };
   const resume = () => {
     cancelAnimationFrame(frame);
@@ -289,12 +299,14 @@ export function createHourglass(
   host.addEventListener('pointermove', move);
   const resize = new ResizeObserver(() => {
     if (!host.clientWidth || !host.clientHeight) return;
-    camera.aspect = host.clientWidth / host.clientHeight;
+    if (renderWidth === host.clientWidth && renderHeight === host.clientHeight) return;
+    renderWidth = host.clientWidth;
+    renderHeight = host.clientHeight;
+    camera.aspect = renderWidth / renderHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(host.clientWidth, host.clientHeight);
+    renderer.setSize(renderWidth, renderHeight);
     if (settings.active && !blocked && !document.hidden) {
-      pose(performance.now());
-      renderer.render(scene, camera);
+      renderFrame(performance.now());
     }
   });
   resize.observe(host);
@@ -304,18 +316,22 @@ export function createHourglass(
   });
   intersection.observe(host);
   const overlay = new MutationObserver(() => {
-    const next = !!document.querySelector('[role="dialog"][aria-modal="true"]');
+    const next = hasOverlay();
     if (next !== blocked) {
       blocked = next;
       resume();
     }
   });
-  overlay.observe(document.body, { childList: true, subtree: true });
+  overlay.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['open'],
+  });
   reduced.addEventListener('change', resume);
   document.addEventListener('visibilitychange', resume);
   applyPalette();
-  pose(0);
-  renderer.render(scene, camera);
+  renderFrame(0);
   frame = requestAnimationFrame(draw);
   const dispose = () => {
     disposed = true;

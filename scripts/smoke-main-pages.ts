@@ -14,7 +14,10 @@ if (
 const browser = await chromium.launch({
   executablePath: process.env.BROWSER_EXECUTABLE,
   headless: true,
-  args: ['--enable-unsafe-swiftshader'],
+  args: [
+    '--enable-unsafe-swiftshader',
+    ...(process.env.QA_SOFTWARE_WEBGL === 'true' ? ['--use-angle=swiftshader'] : []),
+  ],
 });
 async function register(context: BrowserContext, name: string) {
   const email = crypto.randomUUID() + '@fixture.test';
@@ -268,10 +271,37 @@ try {
         await account.getByRole('button', { name: 'Đóng', exact: true }).click();
         await expect.poll(count).toBeGreaterThan(paused);
         await page.emulateMedia({ reducedMotion: 'reduce' });
+        await expect(clock).toHaveAttribute('data-motion-state', 'still');
         await page.waitForTimeout(250);
+        const stillDraws = await count();
         const a = await clock.screenshot();
         await page.waitForTimeout(250);
-        assert.deepEqual(await clock.screenshot(), a, 'reduced motion stops the 3D animation');
+        const b = await clock.screenshot();
+        assert.equal(await count(), stillDraws, 'reduced motion does not schedule GPU draws');
+        await writeFile('test-results/hourglass-reduced-before.png', a);
+        await writeFile('test-results/hourglass-reduced-after.png', b);
+        if (!a.equals(b)) {
+          const first = await sharp(a).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+          const second = await sharp(b).ensureAlpha().raw().toBuffer();
+          const differences = [];
+          for (
+            let i = 0;
+            i < Math.min(first.data.length, second.length) && differences.length < 8;
+            i += 4
+          )
+            if (!first.data.subarray(i, i + 4).equals(second.subarray(i, i + 4)))
+              differences.push({
+                x: (i / 4) % first.info.width,
+                y: Math.floor(i / 4 / first.info.width),
+                before: [...first.data.subarray(i, i + 4)],
+                after: [...second.subarray(i, i + 4)],
+              });
+          console.log(
+            'Reduced-motion pixel diagnostics: ' +
+              JSON.stringify({ draws: (await count()) - stillDraws, differences }),
+          );
+        }
+        assert.deepEqual(b, a, 'reduced motion stops the 3D animation');
         await page.emulateMedia({ reducedMotion: 'no-preference' });
         await page.getByLabel('Tùy chỉnh đồng hồ cát', { exact: true }).click();
         await page.getByRole('button', { name: 'Nắng ấm', exact: true }).click();
