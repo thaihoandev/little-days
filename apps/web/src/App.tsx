@@ -232,7 +232,7 @@ export default function App() {
   } | null>(null);
   const token = new URLSearchParams(location.search).get('share');
   const notify = (message: string) => setToast(message);
-  const load = async () => {
+  const load = async (useBootstrap = false) => {
     setError('');
     try {
       if (token) {
@@ -242,7 +242,9 @@ export default function App() {
       const first = initialSession.current;
       initialSession.current = null;
       const session =
-        first && Date.now() - first.at < 5000 ? first.session : await api<User>('/session');
+        useBootstrap && first && Date.now() - first.at < 5000
+          ? first.session
+          : await api<User>('/session');
       window.dispatchEvent(new CustomEvent('little-days:actor', { detail: session.id }));
       configureSignatureFeatures(session.signatureFeaturesVersion === 1);
       if (libraryActor.current && libraryActor.current !== session.id) clearReadingMemory();
@@ -277,7 +279,7 @@ export default function App() {
     return () => window.removeEventListener('pageshow', restore);
   }, []);
   useEffect(() => {
-    if (!authLink) void load();
+    if (!authLink) void load(true);
   }, []);
   useEffect(() => {
     const imported = (event: Event) => {

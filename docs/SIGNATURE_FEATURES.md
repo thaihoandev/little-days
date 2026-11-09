@@ -53,4 +53,6 @@ Kiểm chứng cục bộ ngày 09/11/2026: `npm test` đạt 186/186; `npm run 
 
 Frontend dùng capability `signatureFeaturesVersion` để tránh gửi hợp đồng mới tới backend cũ. Worker công bố music/photo catalog version 2; API từ chối xuất nội dung/nhạc mới nếu worker cũ còn hoạt động. Không thêm biến môi trường hoặc provision worker cloud. Video preview và PNG vẫn hoạt động độc lập với worker cloud; xuất MP4 production cần worker phù hợp như trước.
 
+Session ban đầu của màn khóa chỉ được dùng lại ở lần mở giao diện đầu tiên. Sau xác minh email, đổi tài khoản hoặc refresh chủ động, frontend lấy session mới và giữ màn xác minh nếu máy chủ đang lỗi. Luồng `auth` đã được chạy lại sau sửa này, gồm lỗi 503, chờ phản hồi, đổi/reset mật khẩu và thu hồi session cũ.
+
 Dependency mới: JSZip (MIT hoặc GPL-3.0), qrcode (MIT), type QR và fontkit (MIT, chỉ công cụ build). Nhạc/vector gốc nằm trong nguồn dự án, chữ Patrick Hand giữ thông báo OFL. Inventory/notices được tạo bằng công cụ hiện có; không thay AGPL-3.0-only và ngoại lệ Remotion.
