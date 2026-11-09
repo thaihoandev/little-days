@@ -15,7 +15,11 @@ import {
 } from '../../../packages/domain/layout.js';
 import { api } from './api.js';
 import { PagePreview } from './Viewer.js';
-import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
+import {
+  featuredTemplates,
+  isFeaturedTemplate,
+  templatePage,
+} from '../../../packages/domain/templates.js';
 
 export function SelectionTools({
   page,
@@ -281,7 +285,7 @@ export function TemplateLibrary({
     <section className="personal-templates">
       <h4>Mẫu có sẵn</h4>
       <div className="builtin-template-library">
-        {builtInTemplates.map((template) => (
+        {featuredTemplates.map((template) => (
           <button
             key={template.id}
             className="builtin-template-card"
@@ -299,6 +303,9 @@ export function TemplateLibrary({
             <PagePreview album={{ ...album, pages: [templatePage(template.id)] }} width={85} />
             <span>
               <strong>{template.name}</strong>
+              {isFeaturedTemplate(template.id) && (
+                <small className="featured-template-badge">Nổi bật</small>
+              )}
               <small>{template.description}</small>
             </span>
           </button>

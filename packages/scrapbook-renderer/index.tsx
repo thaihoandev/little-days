@@ -3,7 +3,7 @@ import { decoration } from '../domain/decorations.js';
 import { counterAppearance, counterMotif } from '../domain/counter.js';
 import { visualMotion } from '../domain/visual-effects.js';
 import { photoGeometry } from '../domain/photo-edit.js';
-import { photoFrame, photoFramePath, filmHoles } from '../domain/photo-frames.js';
+import { photoFrame, photoFramePath, filmHoles, film35Holes } from '../domain/photo-frames.js';
 import {
   type Album,
   type Page,
@@ -323,6 +323,38 @@ export function PhotoArtwork({
             }}
           />
         ))}
+      {f.style === 'film-35' && (
+        <>
+          {film35Holes(e.width, e.height).map((h, i) => (
+            <span
+              key={'35-' + i}
+              style={{
+                position: 'absolute',
+                left: h.x,
+                top: h.y,
+                width: h.width,
+                height: h.height,
+                borderRadius: 2,
+                background: '#f7f0dc',
+              }}
+            />
+          ))}
+          <span
+            style={{
+              position: 'absolute',
+              left: 30,
+              bottom: 2,
+              width: Math.max(1, e.width - 60),
+              height: 12,
+              font: '9px "Be Vietnam Pro"',
+              lineHeight: '12px',
+              color: '#e3c98e',
+            }}
+          >
+            35mm · 01 ▷
+          </span>
+        </>
+      )}
     </div>
   );
 }

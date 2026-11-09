@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID, createHash } from 'node:crypto';
+import type { Asset } from '../../../packages/domain/index.js';
 import { normalizePhoto } from './images.js';
 import { z } from 'zod';
 import { sharedJournalSql } from './journal-privacy.js';
@@ -137,6 +138,7 @@ export class JournalService {
     content: z.infer<typeof journalContentSchema>,
     current?: JournalEntry,
     personal = false,
+    restoringPlan = false,
   ) {
     if (!content.plan) return;
     const members = new Set(
@@ -150,7 +152,12 @@ export class JournalService {
       if (old?.assigneeId !== task.assigneeId)
         throw new BadRequestException('Chỉ phân công cho thành viên đang tham gia không gian.');
     }
-    if (content.kind !== 'plan' && current?.kind !== 'plan' && !current?.plan)
+    if (
+      content.kind !== 'plan' &&
+      current?.kind !== 'plan' &&
+      !current?.plan &&
+      !(restoringPlan && personal)
+    )
       throw new BadRequestException('Checklist chỉ dành cho kế hoạch.');
   }
   private async withTimeline<T>(actor: string, owner: string, action: () => Promise<T>) {
@@ -248,7 +255,11 @@ export class JournalService {
     const owner = await this.ownerOf(actor, id);
     return this.present(actor, owner, await this.owned(actor, id));
   }
-  async create(actor: string, body: unknown) {
+  async create(
+    actor: string,
+    body: unknown,
+    initial?: { id: string; assets: Asset[]; restoredPlan?: true },
+  ) {
     const content = journalContentSchema.parse(body);
     const { timelineId } = z.object({ timelineId: z.uuid().optional() }).parse(body);
     const personal = timelineId === privateSpaceId(actor);
@@ -268,13 +279,20 @@ export class JournalService {
                 : 'shared',
             createdBy: actor,
             updatedBy: actor,
-            id: randomUUID(),
+            id: initial?.id ?? randomUUID(),
             revision: 0,
-            assets: [],
+            assets: initial?.assets ?? [],
             createdAt: now,
             updatedAt: now,
           };
-        await this.validatePlan(actor, owner, content, undefined, entry.visibility === 'private');
+        await this.validatePlan(
+          actor,
+          owner,
+          content,
+          undefined,
+          entry.visibility === 'private',
+          initial?.restoredPlan === true,
+        );
         if (entry.visibility === 'shared') {
           await freezeLegacyPrivate(this.db, owner);
           await this.db.insert('timeline-space', owner, owner, {

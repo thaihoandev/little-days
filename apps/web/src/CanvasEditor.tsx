@@ -14,6 +14,7 @@ import {
   photoFramePath,
   tracePhotoFrame,
   filmHoles,
+  film35Holes,
 } from '../../../packages/domain/photo-frames.js';
 import {
   type Album,
@@ -148,6 +149,23 @@ function Photo({ e, album }: { e: ScrapElement; album: Album }) {
         filmHoles(e.width, e.height).map((h, i) => (
           <Rect key={i} {...h} cornerRadius={2} fill="#f7f0dc" />
         ))}
+      {f.style === 'film-35' && (
+        <>
+          {film35Holes(e.width, e.height).map((h, i) => (
+            <Rect key={'35-' + i} {...h} cornerRadius={2} fill="#f7f0dc" />
+          ))}
+          <Text
+            x={30}
+            y={e.height - 14}
+            width={Math.max(1, e.width - 60)}
+            height={12}
+            text="35mm · 01 ▷"
+            fontSize={9}
+            fontFamily="Be Vietnam Pro"
+            fill="#e3c98e"
+          />
+        </>
+      )}
     </>
   );
 }

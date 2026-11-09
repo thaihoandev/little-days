@@ -76,7 +76,7 @@ export class WeeklyRecaps {
     const where = `r.kind='journal' AND r.owner=? AND ${sharedJournalSql(this.db.driver)} AND ${field('deletedAt')} IS NULL AND ${field('date')}>=? AND ${field('date')}<=? AND (${field('kind')}!='plan' OR ${completed}='completed')`;
     const params = [space.id, start, maxDate];
     const days = await this.db.query(
-      `SELECT day,total,cover FROM (SELECT ${field('date')} AS day,SUM(${count}) OVER(PARTITION BY ${field('date')}) AS total,${cover} AS cover,ROW_NUMBER() OVER(PARTITION BY ${field('date')} ORDER BY ${count} DESC,r.id) AS rn FROM records r WHERE ${where}) summary WHERE rn=1`,
+      `SELECT day,total,entries,cover FROM (SELECT ${field('date')} AS day,COUNT(*) OVER(PARTITION BY ${field('date')}) AS entries,SUM(${count}) OVER(PARTITION BY ${field('date')}) AS total,${cover} AS cover,ROW_NUMBER() OVER(PARTITION BY ${field('date')} ORDER BY ${count} DESC,r.id) AS rn FROM records r WHERE ${where}) summary WHERE rn=1`,
       params,
     );
     const rows = await this.db.query(
@@ -91,6 +91,7 @@ export class WeeklyRecaps {
     const last = entries.at(-1);
     return {
       weekStart: start,
+      entryCount: days.reduce((total, day) => total + Number(day.entries), 0),
       weekEnd: end,
       space,
       days: Array.from({ length: 7 }, (_, i) => {

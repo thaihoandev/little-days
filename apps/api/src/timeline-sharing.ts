@@ -4,7 +4,7 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import type {
   TimelineGrant,
@@ -27,6 +27,111 @@ export class TimelineSharing {
       for (const id of [...new Set([owner, actor])].sort())
         await this.db.query('SELECT pg_advisory_xact_lock(hashtext(?))', ['owner-operation:' + id]);
       await this.db.query('SELECT pg_advisory_xact_lock(hashtext(?))', ['timeline:' + owner]);
+    }
+  }
+  async createPair(actor: string) {
+    await this.verified(actor);
+    const operation = await this.deletion.begin(actor);
+    try {
+      return await this.db.transaction(async () => {
+        await this.lock(actor);
+        await this.verified(actor);
+        for (const row of await this.db.query(
+          "SELECT id FROM records WHERE kind='timeline-pair' AND owner=?",
+          [actor],
+        ))
+          await this.db.remove('timeline-pair', String(row.id));
+        const token = randomBytes(32).toString('hex'),
+          expiresAt = (await this.db.now()) + 15 * 60000;
+        await this.db.insert('timeline-pair', authHash(token), actor, {
+          owner: actor,
+          expiresAt,
+          revision: 0,
+        });
+        return { token, expiresAt: new Date(expiresAt).toISOString() };
+      });
+    } finally {
+      await this.deletion.end(operation);
+    }
+  }
+  async revokePair(actor: string) {
+    const operation = await this.deletion.begin(actor);
+    try {
+      return await this.db.transaction(async () => {
+        await this.lock(actor);
+        await this.db.query(
+          "DELETE FROM records WHERE kind='timeline-pair' AND owner=? RETURNING id",
+          [actor],
+        );
+        return { ok: true };
+      });
+    } finally {
+      await this.deletion.end(operation);
+    }
+  }
+  async pairing(actor: string, body: unknown, accept = false) {
+    const { token } = z.object({ token: z.string().regex(/^[a-f0-9]{64}$/) }).parse(body),
+      key = authHash(token);
+    type Pair = {
+      owner: string;
+      expiresAt: number;
+      revision: number;
+      acceptedBy?: string;
+      grantId?: string;
+    };
+    const initial = await this.db.get<Pair>('timeline-pair', key);
+    if (!initial || initial.expiresAt <= (await this.db.now()))
+      throw new NotFoundException('Mã kết đôi đã hết hạn hoặc đã được thu hồi.');
+    await this.verified(initial.owner);
+    if (!accept) {
+      if (initial.acceptedBy) throw new NotFoundException('Mã kết đôi đã được sử dụng.');
+      return {
+        displayName: (await profileView(this.db, initial.owner, 'Người thương')).displayName,
+        expiresAt: new Date(initial.expiresAt).toISOString(),
+        own: actor === initial.owner,
+      };
+    }
+    const member = await this.verified(actor);
+    if (actor === initial.owner)
+      throw new BadRequestException('Hãy gửi mã này cho người thương của bạn.');
+    const operations: string[] = [];
+    try {
+      for (const id of [actor, initial.owner].sort())
+        operations.push(await this.deletion.begin(id));
+      return await this.db.transaction(async () => {
+        await this.lock(initial.owner, actor);
+        const pair = await this.db.get<Pair>('timeline-pair', key);
+        if (
+          !pair ||
+          pair.expiresAt <= (await this.db.now()) ||
+          (pair.acceptedBy && pair.acceptedBy !== actor)
+        )
+          throw new NotFoundException('Mã kết đôi đã hết hạn hoặc đã được sử dụng.');
+        if (pair.acceptedBy === actor) {
+          const grant = await this.db.get<TimelineGrant>('timeline-grant', pair.grantId!);
+          if (!grant || grant.memberId !== actor || grant.state !== 'active')
+            throw new NotFoundException('Lời mời này không còn hiệu lực.');
+          return { spaceId: grant.timelineOwner };
+        }
+        const grant = await this.invite(pair.owner, { email: member.email });
+        if (grant.state !== 'active')
+          await this.change(actor, grant.id, {
+            expectedRevision: grant.revision,
+            action: 'accept',
+          });
+        if (
+          !(await this.db.compareAndSwap('timeline-pair', key, pair.owner, pair.revision, {
+            ...pair,
+            revision: pair.revision + 1,
+            acceptedBy: actor,
+            grantId: grant.id,
+          }))
+        )
+          throw new ConflictException('Mã kết đôi vừa thay đổi.');
+        return { spaceId: pair.owner };
+      });
+    } finally {
+      for (const op of operations.reverse()) await this.deletion.end(op);
     }
   }
   private async account(owner: string) {

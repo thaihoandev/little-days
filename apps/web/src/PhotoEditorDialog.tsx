@@ -24,6 +24,7 @@ export function PhotoEditorDialog({
   onApply,
   onUpload,
   uploadStatus,
+  autoCutout = false,
 }: {
   element: ScrapElement;
   album: Album;
@@ -31,6 +32,7 @@ export function PhotoEditorDialog({
   onApply: (patch: Partial<ScrapElement>) => void;
   onUpload: (file: File) => Promise<Asset>;
   uploadStatus?: string;
+  autoCutout?: boolean;
 }) {
   useBodyScrollLock();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -281,6 +283,7 @@ export function PhotoEditorDialog({
           <div inert={busy}>
             <BackgroundRemovalPanel
               key={draft.assetId}
+              autoStart={autoCutout}
               asset={asset}
               onResult={setCutout}
               onProcessing={setRemoving}

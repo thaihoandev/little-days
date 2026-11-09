@@ -3,6 +3,7 @@ import { type AudioAsset, type VideoConfig } from '../../../packages/domain/inde
 import { api } from './api.js';
 import { AudioWaveform } from './AudioWaveform.js';
 import { musicCatalog, builtInMusic } from '../../../packages/domain/music.js';
+import { signatureFeaturesAvailable } from './signature-features.js';
 
 export function AudioControls({
   albumId,
@@ -80,11 +81,17 @@ export function AudioControls({
             else onChange({ ...config, musicId });
           }}
         >
-          {musicCatalog.map((track) => (
-            <option key={track.id} value={track.id}>
-              {track.name} · {track.mood}
-            </option>
-          ))}
+          {musicCatalog
+            .filter(
+              (track) =>
+                signatureFeaturesAvailable() ||
+                !['piano-postcard', 'acoustic-sunday'].includes(track.id),
+            )
+            .map((track) => (
+              <option key={track.id} value={track.id}>
+                {track.name} · {track.mood}
+              </option>
+            ))}
           <option value="none">Không nhạc</option>
           <option value="custom">Nhạc của mình</option>
         </select>

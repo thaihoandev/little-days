@@ -1,3 +1,5 @@
+import { footprintImage } from './footprint-export.js';
+import { downloadFile } from './portable-files.js';
 import { provincePath } from '../../../packages/domain/vietnam-geometry.js';
 import { useId, useMemo, useState, useRef, useEffect } from 'react';
 import {
@@ -34,7 +36,8 @@ export function VietnamFootprintMap({
   const [selectedRegion, setSelectedRegion] = useState<VietnamRegion | 'all'>('all');
   const [selectedProvinceId, setSelectedProvinceId] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [exporting, setExporting] = useState(false);
+  const [exporting, setExporting] = useState(false),
+    [exportError, setExportError] = useState('');
   const svgId = useId();
   const inspector = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -79,80 +82,21 @@ export function VietnamFootprintMap({
     });
   }, [selectedRegion, search]);
 
-  // Export the SVG map as a downloadable PNG
-  const handleExportMap = async () => {
+  const handleExportMap = async (story = false) => {
+    setExporting(true);
+    setExportError('');
     try {
-      setExporting(true);
-      const svgElement = document.getElementById(svgId);
-      if (!svgElement) return;
-
-      const snapshot = svgElement.cloneNode(true) as SVGSVGElement;
-      snapshot.setAttribute('width', '420');
-      snapshot.setAttribute('height', '930');
-      const xml = new XMLSerializer().serializeToString(snapshot);
-      const svgBlob = new Blob([xml], { type: 'image/svg+xml;charset=utf-8' });
-      const URL = window.URL || window.webkitURL || window;
-      const blobURL = URL.createObjectURL(svgBlob);
-
-      const image = new Image();
-      image.onerror = () => {
-        URL.revokeObjectURL(blobURL);
-        setExporting(false);
-      };
-      image.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = 800;
-        canvas.height = 1100;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) {
-          URL.revokeObjectURL(blobURL);
-          setExporting(false);
-          return;
-        }
-
-        // Draw background
-        ctx.fillStyle = '#f9f6f0';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Header Title
-        ctx.fillStyle = '#403b32';
-        ctx.font = 'bold 28px serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Bản đồ dấu chân đôi mình', 400, 50);
-
-        ctx.font = '16px sans-serif';
-        ctx.fillStyle = '#6e695d';
-        ctx.fillText(`Đã đi qua ${visitedCount}/34 tỉnh thành Việt Nam (${percentage}%)`, 400, 80);
-
-        // Draw Map SVG
-        const scale = Math.min(700 / image.width, 920 / image.height);
-        ctx.drawImage(
-          image,
-          (800 - image.width * scale) / 2,
-          100,
-          image.width * scale,
-          image.height * scale,
-        );
-
-        // Watermark Footer
-        ctx.font = '13px sans-serif';
-        ctx.fillStyle = '#9c9586';
-        ctx.fillText('Little Days ♡ Giữ lại một chút thương', 400, 1060);
-        ctx.font = '10px sans-serif';
-        ctx.fillText('geoBoundaries • nhóm tỉnh 2025 • ranh giới và đảo minh họa', 400, 1083);
-
-        const pngUrl = canvas.toDataURL('image/png');
-        const link = document.createElement('a');
-        link.download = `dau-chan-viet-nam-${visitedCount}-tinh.png`;
-        link.href = pngUrl;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(blobURL);
-        setExporting(false);
-      };
-      image.src = blobURL;
-    } catch {
+      const source = document.getElementById(svgId) as unknown as SVGSVGElement | null;
+      if (!source) throw Error('Chưa tải được bản đồ.');
+      downloadFile(
+        await footprintImage(source, entries, story),
+        story
+          ? 'little-days-hanh-trinh-story.png'
+          : 'dau-chan-viet-nam-' + visitedCount + '-tinh.png',
+      );
+    } catch (e) {
+      setExportError((e as Error).message);
+    } finally {
       setExporting(false);
     }
   };
@@ -185,6 +129,19 @@ export function VietnamFootprintMap({
           </button>
         </div>
 
+        <button
+          className="button quiet tiny-action"
+          disabled={exporting}
+          onClick={() => void handleExportMap(true)}
+        >
+          <Download size={15} />
+          {exporting ? 'Đang xuất…' : 'Xuất ảnh Story (1080×1920)'}
+        </button>
+        {exportError && (
+          <p className="error" role="alert">
+            {exportError}
+          </p>
+        )}
         {/* Pastel Progress Bar */}
         <div
           className="footprint-progress-bar"

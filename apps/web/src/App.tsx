@@ -1,11 +1,23 @@
 import { FramePicker } from './FramePicker.js';
+import { configureSignatureFeatures, signatureFeaturesAvailable } from './signature-features.js';
+import { PairingAccept } from './Pairing.js';
+import { SessionBootstrapContext } from './DeviceLock.js';
 import {
   photoStyleIds,
   photoStyleNames,
   photoFrame,
 } from '../../../packages/domain/photo-frames.js';
 import { LongCardEditor } from './LongCardEditor.js';
-import { lazy, Suspense, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import {
+  lazy,
+  Suspense,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
 import {
   Album as AlbumIcon,
   ArrowDown,
@@ -175,6 +187,16 @@ function TextAlignment({
 }
 
 export default function App() {
+  const bootstrap = useContext(SessionBootstrapContext),
+    initialSession = useRef(bootstrap);
+  const [pairToken, setPairToken] = useState(() =>
+    new URLSearchParams(location.hash.slice(1)).get('pair'),
+  );
+  useEffect(() => {
+    const change = () => setPairToken(new URLSearchParams(location.hash.slice(1)).get('pair'));
+    window.addEventListener('hashchange', change);
+    return () => window.removeEventListener('hashchange', change);
+  }, []);
   const [deletionReceipt, setDeletionReceipt] = useState(readDeletionReceipt);
   const [authLink, setAuthLink] = useState(readAuthLink);
   const [accountMode, setAccountMode] = useState<'register' | 'login'>('register');
@@ -217,7 +239,12 @@ export default function App() {
         setShared(await api<Album>(`/shared/${encodeURIComponent(token)}`));
         return true;
       }
-      const session = await api<User>('/session');
+      const first = initialSession.current;
+      initialSession.current = null;
+      const session =
+        first && Date.now() - first.at < 5000 ? first.session : await api<User>('/session');
+      window.dispatchEvent(new CustomEvent('little-days:actor', { detail: session.id }));
+      configureSignatureFeatures(session.signatureFeaturesVersion === 1);
       if (libraryActor.current && libraryActor.current !== session.id) clearReadingMemory();
       configureUploads(session.libraryVersion === 1);
       configureThumbnails(session.libraryVersion === 1);
@@ -253,9 +280,19 @@ export default function App() {
     if (!authLink) void load();
   }, []);
   useEffect(() => {
+    const imported = (event: Event) => {
+      if ((event as CustomEvent<string>).detail !== libraryActor.current) return;
+      clearDashboardMemory();
+      libraryLoadedAt.current = 0;
+      void load();
+    };
+    window.addEventListener('little-days:archive-imported', imported);
+    return () => window.removeEventListener('little-days:archive-imported', imported);
+  }, [token]);
+  useEffect(() => {
     if (token || authLink || loading) return;
     let current = true;
-    if (pathname === '/') navigate('/today', true);
+    if (pathname === '/' && !pairToken) navigate('/today', true);
     if (route.albumId) {
       setActive(null);
       setOpeningAlbum(true);
@@ -359,346 +396,363 @@ export default function App() {
     );
   return (
     <MotionConfig reducedMotion="user">
-      <div className="app-shell">
-        <aside className="sidebar">
-          <a href="/" className="wordmark">
-            little days<span>♡</span>
-          </a>
-          <div className="workspace-label">Không gian của bạn</div>
-          <nav>
-            <button
-              className={
-                section === 'home' || section === 'together' ? 'nav-item active' : 'nav-item'
-              }
-              onClick={() => setSection('home')}
-            >
-              <Heart size={19} />
-              <span className="nav-label">Hôm nay</span>
-            </button>
-            <button
-              className={section === 'timeline' ? 'nav-item active' : 'nav-item'}
-              onClick={() => setSection('timeline')}
-            >
-              <History size={19} />
-              <span className="nav-label">Dòng thời gian</span>
-            </button>
-            <button
-              className={section === 'calendar' ? 'nav-item active' : 'nav-item'}
-              onClick={() => setSection('calendar')}
-            >
-              <CalendarDays size={19} />
-              <span className="nav-label">Lịch của mình</span>
-            </button>
-            <button
-              className={
-                section === 'albums' || section === 'photos' ? 'nav-item active' : 'nav-item'
-              }
-              onClick={() => setSection('albums')}
-            >
-              <AlbumIcon size={19} />
-              <span className="nav-label">Album của mình</span>
-              <span className="nav-count">{albums.length}</span>
-            </button>
-          </nav>
-          <div className="sidebar-bottom">
-            <PwaSidebarButton />
-            <button className="nav-item" onClick={() => setModal('help')}>
-              <HelpCircle size={18} />
-              Một chút hướng dẫn
-            </button>
-            <button
-              className="account-button"
-              aria-label="Tài khoản cá nhân"
-              onClick={() => setModal('account')}
-            >
-              <UserAvatar name={user?.displayName} url={user?.avatarUrl} />
-              <span>
-                <strong>
-                  {user?.displayName || user?.email?.split('@')[0] || 'Góc riêng của bạn'}
-                </strong>
-                <small>{user?.email ? 'Tài khoản cá nhân' : 'Đăng ký để giữ tài khoản'}</small>
-              </span>
-              <ChevronDown size={15} />
-            </button>
-          </div>
-        </aside>
-        <main className="dashboard">
-          {route.unknown && (
-            <div className="error-banner">
-              Trang này không tồn tại.{' '}
-              <button onClick={() => setSection('home')}>Về Hôm nay</button>
-            </div>
-          )}
-          {route.albumId && error && (
-            <div className="error-banner">
-              {error}
-              <button onClick={() => setSection('albums')}>Về album của mình</button>
-            </div>
-          )}
-          {deletionReceipt && (
-            <AccountDeletionStatus
-              receipt={deletionReceipt}
-              onDismiss={() => {
-                setDeletionReceipt(null);
-                try {
-                  sessionStorage.removeItem('scrapbook-deletion-receipt');
-                } catch {}
-              }}
-            />
-          )}
-          <header className="dashboard-top">
-            <span>
-              {
-                {
-                  home: 'Hôm nay',
-                  timeline: 'Dòng thời gian',
-                  calendar: 'Lịch',
-                  albums: 'Thư viện album',
-                  photos: 'Ảnh đã lưu',
-                  together: 'Câu hỏi & Lọ điều thương',
-                }[section]
-              }
-            </span>
-            <div className="dashboard-account-tools">
-              {user?.remindersVersion === 1 && (
-                <NotificationCenter
-                  key={user.id}
-                  userId={user.id}
-                  onNavigate={navigate}
-                  onOpenDay={(date) => navigate('/calendar?date=' + date)}
-                  onItems={(items) => setNotifications({ userId: user.id, items })}
-                  onPreferences={(prefs) =>
-                    setUser((current) =>
-                      current?.id === user.id
-                        ? { ...current, showHolidays: prefs.showHolidays }
-                        : current,
-                    )
-                  }
-                />
-              )}
-              <PwaHeaderButton />
+      {pairToken ? (
+        <PairingAccept
+          onRefresh={() => load()}
+          token={pairToken}
+          user={user}
+          onLogin={() => {
+            setAccountMode('login');
+            setModal('account');
+          }}
+          onDone={() => {
+            setPairToken(null);
+            setSection('timeline');
+            void load();
+          }}
+        />
+      ) : (
+        <div className="app-shell">
+          <aside className="sidebar">
+            <a href="/" className="wordmark">
+              little days<span>♡</span>
+            </a>
+            <div className="workspace-label">Không gian của bạn</div>
+            <nav>
               <button
-                className="icon-button help-top-button"
-                aria-label="Một chút hướng dẫn"
-                title="Một chút hướng dẫn"
-                onClick={() => setModal('help')}
+                className={
+                  section === 'home' || section === 'together' ? 'nav-item active' : 'nav-item'
+                }
+                onClick={() => setSection('home')}
               >
-                <HelpCircle size={18} />
+                <Heart size={19} />
+                <span className="nav-label">Hôm nay</span>
               </button>
               <button
-                className="icon-button"
-                aria-label="Tài khoản"
+                className={section === 'timeline' ? 'nav-item active' : 'nav-item'}
+                onClick={() => setSection('timeline')}
+              >
+                <History size={19} />
+                <span className="nav-label">Dòng thời gian</span>
+              </button>
+              <button
+                className={section === 'calendar' ? 'nav-item active' : 'nav-item'}
+                onClick={() => setSection('calendar')}
+              >
+                <CalendarDays size={19} />
+                <span className="nav-label">Lịch của mình</span>
+              </button>
+              <button
+                className={
+                  section === 'albums' || section === 'photos' ? 'nav-item active' : 'nav-item'
+                }
+                onClick={() => setSection('albums')}
+              >
+                <AlbumIcon size={19} />
+                <span className="nav-label">Album của mình</span>
+                <span className="nav-count">{albums.length}</span>
+              </button>
+            </nav>
+            <div className="sidebar-bottom">
+              <PwaSidebarButton />
+              <button className="nav-item" onClick={() => setModal('help')}>
+                <HelpCircle size={18} />
+                Một chút hướng dẫn
+              </button>
+              <button
+                className="account-button"
+                aria-label="Tài khoản cá nhân"
                 onClick={() => setModal('account')}
               >
                 <UserAvatar name={user?.displayName} url={user?.avatarUrl} />
+                <span>
+                  <strong>
+                    {user?.displayName || user?.email?.split('@')[0] || 'Góc riêng của bạn'}
+                  </strong>
+                  <small>{user?.email ? 'Tài khoản cá nhân' : 'Đăng ký để giữ tài khoản'}</small>
+                </span>
+                <ChevronDown size={15} />
               </button>
             </div>
-          </header>
-          <PwaInstallBanner />
-          {user && section === 'together' && (
-            <Suspense fallback={<p role="status">Đang mở Câu hỏi & Lọ điều thương…</p>}>
-              <TogetherPage
-                key={user.id}
-                userId={user.id}
-                ready={user.coupleRitualsVersion === 1}
-                photoEnabled={user.jarPhotoVersion === 1}
-                topicsEnabled={user.questionCatalogVersion === 1}
-                search={search}
-                onNavigate={navigate}
-                onAccount={() => setModal('account')}
+          </aside>
+          <main className="dashboard">
+            {route.unknown && (
+              <div className="error-banner">
+                Trang này không tồn tại.{' '}
+                <button onClick={() => setSection('home')}>Về Hôm nay</button>
+              </div>
+            )}
+            {route.albumId && error && (
+              <div className="error-banner">
+                {error}
+                <button onClick={() => setSection('albums')}>Về album của mình</button>
+              </div>
+            )}
+            {deletionReceipt && (
+              <AccountDeletionStatus
+                receipt={deletionReceipt}
+                onDismiss={() => {
+                  setDeletionReceipt(null);
+                  try {
+                    sessionStorage.removeItem('scrapbook-deletion-receipt');
+                  } catch {}
+                }}
               />
-            </Suspense>
-          )}
-          {user && ['home', 'timeline', 'calendar'].includes(section) && (
-            <JournalDashboard
-              key={user.id + ':' + entryKey}
-              userId={user.id}
-              verified={!!user.emailVerified}
-              displayName={user.email ? user.displayName : undefined}
-              enhancedReady={typeof user.profileRevision === 'number'}
-              communityReady={user.journalFeatures === 1}
-              libraryReady={user.libraryVersion === 1}
-              weeklyReady={user.weeklyRecapVersion === 1}
-              onViewRecaps={() => navigate('/albums?kind=recap')}
-              onOpenTogether={
-                user.coupleRitualsVersion === 1
-                  ? (space) =>
-                      navigate('/together?tab=questions&space=' + encodeURIComponent(space))
-                  : undefined
-              }
-              remindersReady={user.remindersVersion === 1}
-              homeActions={(spaces, refreshKey, ready) =>
-                user.coupleRitualsVersion === 1 ? (
-                  <TogetherHome
-                    ready={ready}
-                    userId={user.id}
-                    spaces={spaces}
-                    enabled={user.coupleRhythmVersion === 1}
-                    refreshKey={refreshKey}
-                    immersiveActive={!modal}
-                    onNavigate={navigate}
-                  />
-                ) : null
-              }
-              sharedPlansReady={user.sharedPlansVersion === 1}
-              separateSpaces={user.spacesVersion === 2}
-              onRefreshAlbums={async (force = false) => {
-                if (!force && Date.now() - libraryLoadedAt.current < 15000) return;
-                const actor = user.id;
-                const items = await api<Album[]>(
-                  '/albums' + (user.libraryVersion === 1 ? '?summary=1' : ''),
-                );
-                if (libraryActor.current === actor) {
-                  setAlbums(items);
-                  libraryLoadedAt.current = Date.now();
+            )}
+            <header className="dashboard-top">
+              <span>
+                {
+                  {
+                    home: 'Hôm nay',
+                    timeline: 'Dòng thời gian',
+                    calendar: 'Lịch',
+                    albums: 'Thư viện album',
+                    photos: 'Ảnh đã lưu',
+                    together: 'Câu hỏi & Lọ điều thương',
+                  }[section]
                 }
-              }}
-              showHolidays={user.showHolidays !== false}
-              focusDate={new URLSearchParams(search).get('date') || undefined}
-              focusEntry={new URLSearchParams(search).get('entry') || undefined}
-              focusSpace={new URLSearchParams(search).get('space') || undefined}
-              onClearFocus={() => navigate('/timeline', true)}
-              sharingRequested={new URLSearchParams(search).get('sharing') === '1'}
-              notifications={notifications?.userId === user.id ? notifications.items : []}
-              onOpenDay={(date) => navigate('/calendar?date=' + date)}
-              albums={albums}
-              mode={section as 'home' | 'timeline' | 'calendar'}
-              onOpenAlbum={openAlbum}
-              onCreatedAlbum={(album) => {
-                setAlbums((items) => [album, ...items]);
-                openAlbum(album);
-              }}
-            />
-          )}
-          {section === 'albums' ? (
-            <>
-              <section className="albums-section">
-                <div className="section-heading">
-                  <div>
-                    <h2>
-                      Cuốn sổ của mình <span>{albums.length.toString().padStart(2, '0')}</span>
-                    </h2>
-                    <p>Mở một trang cũ, hay bắt đầu một câu chuyện mới.</p>
-                  </div>
-                  <div className="album-library-actions">
-                    <button className="button quiet" onClick={() => setSection('photos')}>
-                      <Images size={16} />
-                      Ảnh đã lưu
-                    </button>
-                    <button className="button quiet" onClick={() => setModal('create')}>
-                      <Plus size={16} />
-                      Tạo album
-                    </button>
-                  </div>
-                </div>
-                {error && (
-                  <div className="error-banner">
-                    {error}
-                    <button onClick={() => void load()}>Thử lại</button>
-                  </div>
+              </span>
+              <div className="dashboard-account-tools">
+                {user?.remindersVersion === 1 && (
+                  <NotificationCenter
+                    key={user.id}
+                    userId={user.id}
+                    onNavigate={navigate}
+                    onOpenDay={(date) => navigate('/calendar?date=' + date)}
+                    onItems={(items) => setNotifications({ userId: user.id, items })}
+                    onPreferences={(prefs) =>
+                      setUser((current) =>
+                        current?.id === user.id
+                          ? { ...current, showHolidays: prefs.showHolidays }
+                          : current,
+                      )
+                    }
+                  />
                 )}
-                <nav className="library-tabs" aria-label="Loại cuốn sổ">
-                  {[
-                    ['all', 'Tất cả'],
-                    ['book', 'Sổ kỉ niệm'],
-                    ['invitation', 'Thiệp mời'],
-                    ['recap', 'Recap tuần'],
-                  ].map(([id, label]) => (
-                    <button
-                      key={id}
-                      className="button quiet"
-                      aria-pressed={(new URLSearchParams(search).get('kind') || 'all') === id}
-                      onClick={() => navigate('/albums' + (id === 'all' ? '' : '?kind=' + id))}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </nav>
-                <div className="album-grid">
-                  {albums
-                    .filter((album) => {
-                      const filter = new URLSearchParams(search).get('kind');
-                      return filter === 'recap'
-                        ? !!album.weeklyRecap
-                        : filter === 'invitation'
-                          ? album.documentKind === 'invitation'
-                          : filter === 'book'
-                            ? !album.weeklyRecap && album.documentKind !== 'invitation'
-                            : true;
-                    })
-                    .map((album) => (
-                      <article className="album-card" key={album.id}>
-                        <button
-                          className="album-cover"
-                          onClick={() => openAlbum(album)}
-                          aria-label={`Mở ${album.title}`}
-                        >
-                          <div className="cover-preview">
-                            <PagePreview album={album} width={246} thumbnails />
-                          </div>
-                          <span className="cover-tag">
-                            {album.weeklyRecap
-                              ? 'Recap · ' +
-                                album.weeklyRecap.weekStart.split('-').reverse().join('/')
-                              : album.documentKind === 'invitation'
-                                ? 'Thiệp mời'
-                                : themeNames[album.theme]}
-                          </span>
-                        </button>
-                        <div className="album-info">
-                          <button onClick={() => openAlbum(album)}>
-                            <h3>{album.title}</h3>
-                            <p>
-                              {album.names.join(' & ')} <span>·</span>{' '}
-                              {(album as Album & { pageCount?: number }).pageCount ??
-                                album.pages.length}{' '}
-                              trang
-                            </p>
-                          </button>
-                          <button
-                            className="icon-button"
-                            onClick={() => openAlbum(album)}
-                            aria-label="Mở album"
-                          >
-                            <ArrowRight size={18} />
-                          </button>
-                        </div>
-                      </article>
+                <PwaHeaderButton />
+                <button
+                  className="icon-button help-top-button"
+                  aria-label="Một chút hướng dẫn"
+                  title="Một chút hướng dẫn"
+                  onClick={() => setModal('help')}
+                >
+                  <HelpCircle size={18} />
+                </button>
+                <button
+                  className="icon-button"
+                  aria-label="Tài khoản"
+                  onClick={() => setModal('account')}
+                >
+                  <UserAvatar name={user?.displayName} url={user?.avatarUrl} />
+                </button>
+              </div>
+            </header>
+            <PwaInstallBanner />
+            {user && section === 'together' && (
+              <Suspense fallback={<p role="status">Đang mở Câu hỏi & Lọ điều thương…</p>}>
+                <TogetherPage
+                  key={user.id}
+                  userId={user.id}
+                  ready={user.coupleRitualsVersion === 1}
+                  photoEnabled={user.jarPhotoVersion === 1}
+                  topicsEnabled={user.questionCatalogVersion === 1}
+                  search={search}
+                  onNavigate={navigate}
+                  onAccount={() => setModal('account')}
+                />
+              </Suspense>
+            )}
+            {user && ['home', 'timeline', 'calendar'].includes(section) && (
+              <JournalDashboard
+                key={user.id + ':' + entryKey}
+                userId={user.id}
+                verified={!!user.emailVerified}
+                displayName={user.email ? user.displayName : undefined}
+                enhancedReady={typeof user.profileRevision === 'number'}
+                communityReady={user.journalFeatures === 1}
+                libraryReady={user.libraryVersion === 1}
+                weeklyReady={user.weeklyRecapVersion === 1}
+                onViewRecaps={() => navigate('/albums?kind=recap')}
+                onOpenTogether={
+                  user.coupleRitualsVersion === 1
+                    ? (space) =>
+                        navigate('/together?tab=questions&space=' + encodeURIComponent(space))
+                    : undefined
+                }
+                remindersReady={user.remindersVersion === 1}
+                homeActions={(spaces, refreshKey, ready) =>
+                  user.coupleRitualsVersion === 1 ? (
+                    <TogetherHome
+                      ready={ready}
+                      userId={user.id}
+                      spaces={spaces}
+                      enabled={user.coupleRhythmVersion === 1}
+                      refreshKey={refreshKey}
+                      immersiveActive={!modal}
+                      onNavigate={navigate}
+                    />
+                  ) : null
+                }
+                sharedPlansReady={user.sharedPlansVersion === 1}
+                separateSpaces={user.spacesVersion === 2}
+                onRefreshAlbums={async (force = false) => {
+                  if (!force && Date.now() - libraryLoadedAt.current < 15000) return;
+                  const actor = user.id;
+                  const items = await api<Album[]>(
+                    '/albums' + (user.libraryVersion === 1 ? '?summary=1' : ''),
+                  );
+                  if (libraryActor.current === actor) {
+                    setAlbums(items);
+                    libraryLoadedAt.current = Date.now();
+                  }
+                }}
+                showHolidays={user.showHolidays !== false}
+                focusDate={new URLSearchParams(search).get('date') || undefined}
+                focusEntry={new URLSearchParams(search).get('entry') || undefined}
+                focusSpace={new URLSearchParams(search).get('space') || undefined}
+                onClearFocus={() => navigate('/timeline', true)}
+                sharingRequested={new URLSearchParams(search).get('sharing') === '1'}
+                notifications={notifications?.userId === user.id ? notifications.items : []}
+                onOpenDay={(date) => navigate('/calendar?date=' + date)}
+                albums={albums}
+                mode={section as 'home' | 'timeline' | 'calendar'}
+                onOpenAlbum={openAlbum}
+                onCreatedAlbum={(album) => {
+                  setAlbums((items) => [album, ...items]);
+                  openAlbum(album);
+                }}
+              />
+            )}
+            {section === 'albums' ? (
+              <>
+                <section className="albums-section">
+                  <div className="section-heading">
+                    <div>
+                      <h2>
+                        Cuốn sổ của mình <span>{albums.length.toString().padStart(2, '0')}</span>
+                      </h2>
+                      <p>Mở một trang cũ, hay bắt đầu một câu chuyện mới.</p>
+                    </div>
+                    <div className="album-library-actions">
+                      <button className="button quiet" onClick={() => setSection('photos')}>
+                        <Images size={16} />
+                        Ảnh đã lưu
+                      </button>
+                      <button className="button quiet" onClick={() => setModal('create')}>
+                        <Plus size={16} />
+                        Tạo album
+                      </button>
+                    </div>
+                  </div>
+                  {error && (
+                    <div className="error-banner">
+                      {error}
+                      <button onClick={() => void load()}>Thử lại</button>
+                    </div>
+                  )}
+                  <nav className="library-tabs" aria-label="Loại cuốn sổ">
+                    {[
+                      ['all', 'Tất cả'],
+                      ['book', 'Sổ kỉ niệm'],
+                      ['invitation', 'Thiệp mời'],
+                      ['recap', 'Recap tuần'],
+                    ].map(([id, label]) => (
+                      <button
+                        key={id}
+                        className="button quiet"
+                        aria-pressed={(new URLSearchParams(search).get('kind') || 'all') === id}
+                        onClick={() => navigate('/albums' + (id === 'all' ? '' : '?kind=' + id))}
+                      >
+                        {label}
+                      </button>
                     ))}
-                  <button className="new-album-card" onClick={() => setModal('create')}>
-                    <span>
-                      <Plus size={25} />
-                    </span>
-                    <h3>Một câu chuyện mới</h3>
-                    <p>Chừa một chỗ cho những ngày đẹp.</p>
-                    <small>
-                      Tạo cuốn sổ đầu tiên <ArrowRight size={14} />
-                    </small>
-                  </button>
-                </div>
-              </section>
-              <footer className="dashboard-footer">
-                <span>Made for the little things.</span>
-                <span>
-                  Gom một chút thương, giữ một chút nhớ. <Heart size={13} />
-                </span>
-              </footer>
-            </>
-          ) : section === 'photos' ? (
-            <PhotosLibrary
-              key={user?.id}
-              albums={albums}
-              libraryReady={user?.libraryVersion === 1}
-              onAlbums={() => setSection('albums')}
-              onBack={() => setSection('albums')}
-              onOpenAlbum={openAlbum}
-            />
-          ) : null}
-          <div className="dashboard-legal">
-            <LegalLinks />
-          </div>
-        </main>
-      </div>
+                  </nav>
+                  <div className="album-grid">
+                    {albums
+                      .filter((album) => {
+                        const filter = new URLSearchParams(search).get('kind');
+                        return filter === 'recap'
+                          ? !!album.weeklyRecap
+                          : filter === 'invitation'
+                            ? album.documentKind === 'invitation'
+                            : filter === 'book'
+                              ? !album.weeklyRecap && album.documentKind !== 'invitation'
+                              : true;
+                      })
+                      .map((album) => (
+                        <article className="album-card" key={album.id}>
+                          <button
+                            className="album-cover"
+                            onClick={() => openAlbum(album)}
+                            aria-label={`Mở ${album.title}`}
+                          >
+                            <div className="cover-preview">
+                              <PagePreview album={album} width={246} thumbnails />
+                            </div>
+                            <span className="cover-tag">
+                              {album.weeklyRecap
+                                ? 'Recap · ' +
+                                  album.weeklyRecap.weekStart.split('-').reverse().join('/')
+                                : album.documentKind === 'invitation'
+                                  ? 'Thiệp mời'
+                                  : themeNames[album.theme]}
+                            </span>
+                          </button>
+                          <div className="album-info">
+                            <button onClick={() => openAlbum(album)}>
+                              <h3>{album.title}</h3>
+                              <p>
+                                {album.names.join(' & ')} <span>·</span>{' '}
+                                {(album as Album & { pageCount?: number }).pageCount ??
+                                  album.pages.length}{' '}
+                                trang
+                              </p>
+                            </button>
+                            <button
+                              className="icon-button"
+                              onClick={() => openAlbum(album)}
+                              aria-label="Mở album"
+                            >
+                              <ArrowRight size={18} />
+                            </button>
+                          </div>
+                        </article>
+                      ))}
+                    <button className="new-album-card" onClick={() => setModal('create')}>
+                      <span>
+                        <Plus size={25} />
+                      </span>
+                      <h3>Một câu chuyện mới</h3>
+                      <p>Chừa một chỗ cho những ngày đẹp.</p>
+                      <small>
+                        Tạo cuốn sổ đầu tiên <ArrowRight size={14} />
+                      </small>
+                    </button>
+                  </div>
+                </section>
+                <footer className="dashboard-footer">
+                  <span>Made for the little things.</span>
+                  <span>
+                    Gom một chút thương, giữ một chút nhớ. <Heart size={13} />
+                  </span>
+                </footer>
+              </>
+            ) : section === 'photos' ? (
+              <PhotosLibrary
+                key={user?.id}
+                albums={albums}
+                libraryReady={user?.libraryVersion === 1}
+                onAlbums={() => setSection('albums')}
+                onBack={() => setSection('albums')}
+                onOpenAlbum={openAlbum}
+              />
+            ) : null}
+            <div className="dashboard-legal">
+              <LegalLinks />
+            </div>
+          </main>
+        </div>
+      )}
       {photoPreview && (
         <PhotoLightbox
           {...photoPreview}
@@ -739,7 +793,7 @@ export default function App() {
             }
             setUser(null);
             setActive(null);
-            navigate('/today');
+            if (!pairToken) navigate('/today');
             setAlbums([]);
             setLoading(true);
             setModal(null);
@@ -866,10 +920,15 @@ function Editor({
   const [styleClipboard, setStyleClipboard] = useState<ElementDesign | null>(null);
   const activeDecorations = (
     advancedDesign ? decorationCatalog : decorationCatalog.slice(0, 18)
-  ).filter((d) => !d.collection.startsWith('Ký hiệu'));
+  ).filter(
+    (d) =>
+      !d.collection.startsWith('Ký hiệu') &&
+      (signatureFeaturesAvailable() || !d.id.startsWith('vn-')),
+  );
   const [zoom, setZoom] = useState(1);
   const [keepPhotoRatio, setKeepPhotoRatio] = useState(false);
   const [editingPhoto, setEditingPhoto] = useState<string | null>(null);
+  const [autoCutout, setAutoCutout] = useState(false);
   const [viewer, setViewer] = useState(false);
   const [video, setVideo] = useState<Album | null>(null);
   const [share, setShare] = useState<string | null>(null);
@@ -1893,6 +1952,21 @@ function Editor({
               </div>
             </div>
             <div className="design-quickbar" role="toolbar" aria-label="Thiết kế nhanh">
+              {selectedElement?.type === 'image' && (
+                <button
+                  disabled={
+                    selectedElement.locked ||
+                    !album.assets.some((a) => a.id === selectedElement.assetId)
+                  }
+                  onClick={() => {
+                    setAutoCutout(true);
+                    setEditingPhoto(selectedElement.id);
+                  }}
+                >
+                  <Sparkles size={16} />
+                  Tách nền sticker
+                </button>
+              )}
               <button
                 onClick={() =>
                   add(
@@ -2415,10 +2489,14 @@ function Editor({
       </Suspense>
       {editingPhoto && page.elements.find((e) => e.id === editingPhoto && !e.locked) && (
         <PhotoEditorDialog
+          autoCutout={autoCutout}
           uploadStatus={uploadMessage}
           element={page.elements.find((e) => e.id === editingPhoto)!}
           album={album}
-          onClose={() => setEditingPhoto(null)}
+          onClose={() => {
+            setEditingPhoto(null);
+            setAutoCutout(false);
+          }}
           onApply={(p) => patch(editingPhoto, p)}
           onUpload={async (file) => {
             setUploadMessage('Đang chuẩn bị ảnh…');
@@ -2659,13 +2737,13 @@ function ElementProperties({
                 })
               }
             >
-              {(designExperienceEnabled ? photoStyleIds : (['polaroid', 'cutout'] as const)).map(
-                (id) => (
+              {(designExperienceEnabled ? photoStyleIds : (['polaroid', 'cutout'] as const))
+                .filter((id) => signatureFeaturesAvailable() || id !== 'film-35')
+                .map((id) => (
                   <option key={id} value={id}>
                     {photoStyleNames[id]}
                   </option>
-                ),
-              )}
+                ))}
             </select>
           </label>
           {designExperienceEnabled && e.photoStyle !== 'cutout' && (

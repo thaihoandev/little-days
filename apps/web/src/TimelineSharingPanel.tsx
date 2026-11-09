@@ -4,6 +4,8 @@ import type { TimelineGrant, TimelineSharingState } from '../../../packages/doma
 import { api } from './api.js';
 import { ConfirmDialog, useBodyScrollLock } from './Overlays.js';
 import { UserAvatar } from './UserAvatar.js';
+import { PairingCard } from './Pairing.js';
+import { signatureFeaturesAvailable } from './signature-features.js';
 
 export function TimelineSharingPanel({
   state,
@@ -21,6 +23,7 @@ export function TimelineSharingPanel({
   useBodyScrollLock();
   const dialog = useRef<HTMLDialogElement>(null);
   const [calendarChanges, setCalendarChanges] = useState<Record<string, boolean>>({});
+  const [inviteMode, setInviteMode] = useState<'email' | 'qr'>('email');
   const [email, setEmail] = useState(''),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
@@ -122,24 +125,48 @@ export function TimelineSharingPanel({
         {(!spaceId ||
           spaceId === state.ownId ||
           state.spaces?.some((s) => s.id === spaceId && !s.shared)) && (
-          <form onSubmit={(e) => void invite(e)} className="timeline-invite-form">
-            <label>
-              Email người cùng xây dựng
-              <input
-                type="email"
-                required
-                maxLength={254}
-                placeholder="nguoi-thuong@example.com"
-                value={email}
-                disabled={!verified || busy}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </label>
-            <button className="button primary" disabled={!verified || busy}>
-              {busy && <LoaderCircle size={16} className="spin" />}
-              {busy ? 'Đang gửi lời mời…' : 'Mời cùng chỉnh sửa'}
-            </button>
-          </form>
+          <div>
+            {signatureFeaturesAvailable() && (
+              <div className="document-kind-picker" role="group" aria-label="Cách mời người thương">
+                <button
+                  type="button"
+                  aria-pressed={inviteMode === 'email'}
+                  onClick={() => setInviteMode('email')}
+                >
+                  Qua email
+                </button>
+                <button
+                  type="button"
+                  aria-pressed={inviteMode === 'qr'}
+                  onClick={() => setInviteMode('qr')}
+                >
+                  Mã QR kết đôi
+                </button>
+              </div>
+            )}
+            {inviteMode === 'qr' ? (
+              <PairingCard verified={verified} />
+            ) : (
+              <form onSubmit={(e) => void invite(e)} className="timeline-invite-form">
+                <label>
+                  Email người cùng xây dựng
+                  <input
+                    type="email"
+                    required
+                    maxLength={254}
+                    placeholder="nguoi-thuong@example.com"
+                    value={email}
+                    disabled={!verified || busy}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </label>
+                <button className="button primary" disabled={!verified || busy}>
+                  {busy && <LoaderCircle size={16} className="spin" />}
+                  {busy ? 'Đang gửi lời mời…' : 'Mời cùng chỉnh sửa'}
+                </button>
+              </form>
+            )}
+          </div>
         )}
         {state.spaces
           ?.filter((space) => space.shared && (!spaceId || space.id === spaceId))

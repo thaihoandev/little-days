@@ -1,4 +1,5 @@
 import React from 'react';
+import { DeviceLock } from './DeviceLock.js';
 import { createRoot } from 'react-dom/client';
 import '@fontsource/be-vietnam-pro/latin-400.css';
 import '@fontsource/be-vietnam-pro/vietnamese-400.css';
@@ -49,7 +50,9 @@ class Boundary extends React.Component<{ children: React.ReactNode }, { error: b
 }
 createRoot(document.getElementById('root')!).render(
   <Boundary>
-    <App />
+    <DeviceLock>
+      <App />
+    </DeviceLock>
   </Boundary>,
 );
 
@@ -61,6 +64,7 @@ import './photo-journal.css';
 import './little-days-layout.css';
 import './recap-studio.css';
 import './portable-experience.css';
+import './signature-features.css';
 
 if (
   'serviceWorker' in navigator &&

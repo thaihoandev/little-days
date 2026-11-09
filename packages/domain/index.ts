@@ -109,7 +109,16 @@ export const presentationSchema = z
     transition: z.enum(['turn', 'slide', 'soft']).default('turn'),
     ambience: z.enum(['none', 'petals', 'sparkles', 'hearts']).default('none'),
     musicId: z
-      .enum(['none', 'gentle', 'warm-piano', 'little-waltz', 'evening', 'custom'])
+      .enum([
+        'none',
+        'gentle',
+        'warm-piano',
+        'little-waltz',
+        'evening',
+        'custom',
+        'piano-postcard',
+        'acoustic-sunday',
+      ])
       .default('none'),
     audioId: z.uuid().optional(),
     audioStart: finite.min(0).max(599.9).optional(),
@@ -198,7 +207,16 @@ export const videoConfigSchema = z
     pageIds: z.array(z.string().uuid()).min(1).max(20),
     opening: z.string().max(160),
     closing: z.string().max(250),
-    musicId: z.enum(['none', 'gentle', 'custom', 'warm-piano', 'little-waltz', 'evening']),
+    musicId: z.enum([
+      'none',
+      'gentle',
+      'custom',
+      'warm-piano',
+      'little-waltz',
+      'evening',
+      'piano-postcard',
+      'acoustic-sunday',
+    ]),
     sceneDurations: z.record(z.string().uuid(), finite.min(1).max(60).multipleOf(0.1)).optional(),
     audioId: z.string().uuid().optional(),
     audioStart: finite.min(0).max(599.9).optional(),

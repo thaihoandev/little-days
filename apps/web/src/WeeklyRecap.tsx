@@ -195,6 +195,19 @@ export function WeeklyRecap({
                 </button>
               ))}
             </div>
+            {week === current &&
+              data.items.length > 0 &&
+              ((new Date(today + 'T12:00:00Z').getUTCDay() + 6) % 7 >= 5 ||
+                (data.entryCount ?? 0) >= 3) && (
+                <button className="weekly-recap-nudge" onClick={() => setComposer(data)}>
+                  <ImagePlus size={21} />
+                  <span>
+                    <strong>Tạo trang sổ tuần</strong>
+                    <small>Giữ những kỉ niệm vừa qua trong một trang sổ của hai đứa.</small>
+                  </span>
+                  <ArrowRight size={18} />
+                </button>
+              )}
             <footer>
               <span>
                 {data.items.length

@@ -1,4 +1,5 @@
 import { extraDecorations, smallSymbols } from './extra-decorations.js';
+import { vietnamDecorations } from './vietnam-decorations.js';
 const art = (width: number, height: number, body: string) =>
   'data:image/svg+xml;charset=utf-8,' +
   encodeURIComponent(
@@ -282,6 +283,7 @@ export const decorationCatalog = [
     src: cinemaTicket,
   },
   ...extraDecorations,
+  ...vietnamDecorations,
   ...smallSymbols,
 ] as const;
 export type DecorationId = (typeof decorationCatalog)[number]['id'];

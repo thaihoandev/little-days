@@ -10,17 +10,19 @@ export function BackgroundRemovalPanel({
   asset,
   onResult,
   onProcessing,
+  autoStart = false,
 }: {
   asset?: Asset;
   onResult: (blob: Blob | null) => void;
   onProcessing: (busy: boolean) => void;
+  autoStart?: boolean;
 }) {
   const [base, setBase] = useState<Blob | null>(null),
     [running, setRunning] = useState(false),
     [error, setError] = useState(''),
     [progress, setProgress] = useState<RemovalProgress | null>(null),
     [outline, setOutline] = useState(true),
-    [shadow, setShadow] = useState(false);
+    [shadow, setShadow] = useState(autoStart);
   const cancel = useRef<(() => void) | null>(null),
     generation = useRef(0);
   useEffect(
@@ -104,6 +106,9 @@ export function BackgroundRemovalPanel({
       }
     }
   };
+  useEffect(() => {
+    if (autoStart) void start();
+  }, []);
   return (
     <section className="background-removal-panel" aria-label="Tách nền ảnh">
       <h3>

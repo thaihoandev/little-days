@@ -47,6 +47,7 @@ try {
       'tests/timeline-sharing.test.ts',
       'tests/couple-rituals.test.ts',
       'tests/portable-experience.test.ts',
+      'tests/signature-features.test.ts',
       'tests/shared-activity.test.ts',
       'tests/profile-location.test.ts',
       'tests/journal-community.test.ts',

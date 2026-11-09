@@ -4,6 +4,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Sử dụng
 
+- [Tách nền nhanh, mẫu nổi bật, PIN/QR, bộ Việt và khôi phục ZIP](SIGNATURE_FEATURES.md)
 - [Bản nháp nhiều phiên, ZIP/PDF, chủ đề câu hỏi và đồng hồ cát theo dữ liệu](PORTABLE_MEMORIES_AND_RHYTHM.md)
 - [Tinh chỉnh ba trang chính, card và bàn thiết kế](LAYOUT_REFINEMENT.md)
 - [Ngôn ngữ thiết kế Photo Journal và ranh giới nội dung sổ](DESIGN_SYSTEM.md)

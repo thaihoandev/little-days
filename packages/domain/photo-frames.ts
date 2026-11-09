@@ -7,6 +7,7 @@ export const photoStyleIds = [
   'circle',
   'arch',
   'film',
+  'film-35',
   'stamp',
   'minimal',
   'cutout',
@@ -18,6 +19,7 @@ export const photoStyleNames: Record<(typeof photoStyleIds)[number], string> = {
   circle: 'Ô ảnh tròn',
   arch: 'Cửa vòm',
   film: 'Thước phim',
+  'film-35': 'Dải phim 35mm',
   stamp: 'Tem kỉ niệm',
   minimal: 'Ảnh tràn khung',
   cutout: 'Ảnh tự do / tách nền',
@@ -32,7 +34,7 @@ export function photoFrame(e: Pick<ScrapElement, 'photoStyle' | 'frameColor'>) {
         ? 0
         : style === 'stamp'
           ? 18
-          : style === 'classic' || style === 'film'
+          : style === 'classic' || style === 'film' || style === 'film-35'
             ? 16
             : 12,
     bottom: style === 'polaroid' ? 38 : style === 'film' ? 28 : 0,
@@ -45,7 +47,7 @@ export function photoFrame(e: Pick<ScrapElement, 'photoStyle' | 'frameColor'>) {
           : style === 'stamp'
             ? 'stamp'
             : 'rect') as FrameShape,
-    color: e.frameColor || (style === 'film' ? '#292e29' : '#fffdf8'),
+    color: e.frameColor || (style === 'film' || style === 'film-35' ? '#292e29' : '#fffdf8'),
     tape: style === 'polaroid',
     caption: style === 'polaroid',
   };
@@ -53,9 +55,9 @@ export function photoFrame(e: Pick<ScrapElement, 'photoStyle' | 'frameColor'>) {
 export function photoBox(e: ScrapElement) {
   const f = photoFrame(e);
   return {
-    x: f.pad,
+    x: f.style === 'film-35' ? 28 : f.pad,
     y: f.style === 'film' ? 28 : f.pad,
-    width: Math.max(1, e.width - f.pad * 2),
+    width: Math.max(1, e.width - (f.style === 'film-35' ? 56 : f.pad * 2)),
     height: Math.max(
       1,
       e.height - (f.style === 'film' ? 56 : f.pad * 2 + f.bottom - (f.caption ? 12 : 0)),
@@ -147,4 +149,12 @@ export function filmHoles(width: number, height: number) {
   ])
     .flat()
     .filter((b) => b.x + b.width <= width - 5);
+}
+export function film35Holes(width: number, height: number) {
+  return Array.from({ length: Math.max(0, Math.floor((height - 26) / 26)) }, (_, i) => [
+    { x: 7, y: 13 + i * 26, width: 10, height: 14 },
+    { x: width - 17, y: 13 + i * 26, width: 10, height: 14 },
+  ])
+    .flat()
+    .filter((h) => h.x >= 0 && h.y + h.height <= height - 10);
 }

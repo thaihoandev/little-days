@@ -431,6 +431,25 @@ try {
   const login = client();
   assert.equal((await login('/auth/login', 'POST', { email, password })).status, 201);
   assert.equal((await login(`/albums/${id}`)).status, 200);
+  const loginActor = (await (await login('/session')).json()).id;
+  assert.equal(
+    (
+      await login('/auth/confirm-password', 'POST', {
+        actor: loginActor,
+        password: 'wrong-password',
+      })
+    ).status,
+    401,
+  );
+  assert.equal(
+    (await login('/auth/confirm-password', 'POST', { actor: crypto.randomUUID(), password }))
+      .status,
+    409,
+  );
+  assert.equal(
+    (await login('/auth/confirm-password', 'POST', { actor: loginActor, password })).status,
+    201,
+  );
   assert.equal(
     (await login('/auth/login', 'POST', { email, password: 'wrong-password' })).status,
     401,

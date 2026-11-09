@@ -4,6 +4,7 @@ Ngày cập nhật: **09/11/2026**.
 
 ## Kết quả hiện tại
 
+Đã bổ sung mã cho đợt dấu riêng: lối tắt tách nền, mẫu nổi bật/Story bản đồ/gợi ý recap, PIN thiết bị và mở khóa WebAuthn cục bộ, QR kết đôi có xác nhận/hết hạn/thu hồi, bộ Việt/khung 35mm/hai nhạc gốc và nhập ZIP cá nhân có checksum/CAS/quota. Phạm vi, giới hạn và cách kiểm chứng trong [SIGNATURE_FEATURES.md](SIGNATURE_FEATURES.md). Trạng thái kiểm thử/CI/deploy phải đối chiếu bản chốt; không provision worker hoặc dịch vụ mới.
 Đợt cải tiến độ bền và lưu giữ kỉ niệm: bản nháp IndexedDB theo phiên, xử lý lỗi dọn draft sau lưu, phục hồi vị trí đọc, ZIP dữ liệu cá nhân, PDF từng trang, iCalendar sự kiện đơn và 96 câu hỏi theo chủ đề áp dụng từ ngày mai. Đồng hồ cát tính cả lượt góp riêng của mỗi thành viên/ngày, bình dưới không có mức giả khi 0, dòng cát chỉ chạy khi số liệu tăng và có SVG dự phòng theo dữ liệu. Phạm vi, giới hạn và kết quả QA theo [kỉ niệm mang theo và nhịp thật](PORTABLE_MEMORIES_AND_RHYTHM.md); chưa xác nhận rollout production.
 
 Recap được tinh chỉnh riêng cho mobile: ba bước chọn ảnh/thiết kế/xem trước, bản xem trước co trọn trang theo vùng nhìn, footer luôn thấy, ba thẻ chọn layout và danh sách sắp xếp có thumbnail. Bản nháp giữ ID khi gõ, vẫn dùng quyền/revision/request ID và bản sao media hiện có khi lưu. Xem [luồng recap và giới hạn kiểm chứng](WEEKLY_DESIGN_REFRESH.md); không thêm hạ tầng hay biến môi trường.

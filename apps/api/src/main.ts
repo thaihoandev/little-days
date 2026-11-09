@@ -1,5 +1,7 @@
 import { longInvitation } from '../../../packages/domain/long-invitation.js';
 import { personalArchive } from './personal-archive.js';
+import { ArchiveImporter } from './archive-import.js';
+import { importMemoryStorage } from './import-storage.js';
 import 'reflect-metadata';
 import {
   BadRequestException,
@@ -23,10 +25,11 @@ import {
   Res,
   UnauthorizedException,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import type { Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
@@ -126,6 +129,7 @@ const coupleRituals = new CoupleRituals(repository, journal, deletion, resources
 const sharedActivity = new SharedActivity(repository, journal, deletion);
 const journalAlbums = new JournalAlbumService(repository, store, resources, deletion, journal);
 const weeklyRecaps = new WeeklyRecaps(repository, journal, journalAlbums);
+const archiveImporter = new ArchiveImporter(repository, deletion, resources, store, journal);
 const security = new AccountSecurity(
   repository,
   mailer,
@@ -150,7 +154,12 @@ function privateImageFresh(req: UserRequest, res: Response, identity: string) {
   }
   return false;
 }
-type UserRequest = Request & { userId: string };
+type UserRequest = Request & {
+  userId: string;
+  archiveRelease?: () => void;
+  archiveRunning?: boolean;
+  archiveReceived?: () => void;
+};
 const credentialSchema = z.object({
   email: z
     .string()
@@ -254,6 +263,36 @@ class AppController {
       return await personalArchive(repository, req.userId);
     } finally {
       await deletion.end(operation);
+    }
+  }
+  @Post('account/archive/import')
+  @UseInterceptors(
+    FilesInterceptor('files', 110, {
+      storage: importMemoryStorage(),
+      limits: { fileSize: 20 * 1048576, files: 110, fields: 2, fieldSize: 8 * 1048576, parts: 112 },
+      preservePath: true,
+    }),
+  )
+  async importArchive(
+    @Req() req: UserRequest,
+    @Body('record') record: string,
+    @Body('actor') actor: string,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    req.archiveRunning = true;
+    req.archiveReceived?.();
+    try {
+      if (actor !== req.userId)
+        throw new ConflictException('Tài khoản đã thay đổi. Mở lại mục tài khoản trước khi nhập.');
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(record);
+      } catch {
+        throw new BadRequestException('Nội dung nhập không hợp lệ.');
+      }
+      return await archiveImporter.restore(req.userId, parsed, files || []);
+    } finally {
+      req.archiveRelease?.();
     }
   }
   @Get('together/:spaceId/rhythm') async togetherRhythm(
@@ -457,6 +496,21 @@ class AppController {
   }
   @Get('timeline-sharing') async timelineSharing(@Req() req: UserRequest) {
     return journal.sharing.state(req.userId);
+  }
+  @Post('timeline-pair') async createPair(@Req() req: UserRequest) {
+    await security.rateLimit('pair-create:' + req.userId, 6, 60000);
+    return journal.sharing.createPair(req.userId);
+  }
+  @Delete('timeline-pair') async revokePair(@Req() req: UserRequest) {
+    return journal.sharing.revokePair(req.userId);
+  }
+  @Post('timeline-pair/preview') async previewPair(@Req() req: UserRequest, @Body() body: unknown) {
+    await security.rateLimit('pair-preview:' + req.userId, 20, 60000);
+    return journal.sharing.pairing(req.userId, body);
+  }
+  @Post('timeline-pair/accept') async acceptPair(@Req() req: UserRequest, @Body() body: unknown) {
+    await security.rateLimit('pair-accept:' + req.userId, 10, 60000);
+    return journal.sharing.pairing(req.userId, body, true);
   }
   @Post('timeline-sharing') async inviteTimeline(@Req() req: UserRequest, @Body() body: unknown) {
     await security.rateLimit('timeline-invite:' + req.userId, 10, 60000);
@@ -690,6 +744,7 @@ class AppController {
       emailVerified: !!account?.emailVerifiedAt,
       journalFeatures: 1,
       personalArchiveVersion: 1,
+      signatureFeaturesVersion: 1,
       questionCatalogVersion: 1,
       fontCatalogVersion: 1,
       libraryVersion: 1,
@@ -772,6 +827,38 @@ class AppController {
     if (!req.userId) throw new UnauthorizedException('Đăng nhập để xác minh email.');
     await security.requestVerification(req.userId);
     return { ok: true, message: 'Kiểm tra email để xác minh tài khoản.' };
+  }
+  @Post('auth/confirm-password') async confirmPassword(
+    @Req() req: UserRequest,
+    @Body() body: unknown,
+  ) {
+    await security.rateLimit('device-reset:' + req.userId, 6, 15 * 60000);
+    const input = z.object({ actor: z.uuid(), password: z.string().min(1).max(200) }).parse(body);
+    if (input.actor !== req.userId)
+      throw new ConflictException('Tài khoản đã thay đổi. Đăng nhập lại để đặt lại PIN.');
+    const account = (await repository.list<Account>('account', req.userId))[0];
+    if (!account || account.deletingAt || !(await passwordMatches(input.password, account)))
+      throw new UnauthorizedException('Mật khẩu tài khoản chưa đúng.');
+    return repository.transaction(async () => {
+      const rows = await repository.query(
+        "SELECT payload FROM records WHERE kind='account' AND id=? AND owner=?" +
+          (repository.driver === 'postgresql' ? ' FOR UPDATE' : ''),
+        [hash(account.email), req.userId],
+      );
+      const current = rows[0] ? (JSON.parse(String(rows[0].payload)) as Account) : undefined;
+      const token = req.cookies.scrapbook_session,
+        session = token ? await repository.get<Session>('session', hash(token)) : undefined;
+      if (
+        !current ||
+        current.password !== account.password ||
+        current.deletingAt ||
+        !(await security.validSession(session))
+      )
+        throw new UnauthorizedException(
+          'Tài khoản hoặc mật khẩu vừa thay đổi. Đăng nhập lại để đặt lại PIN.',
+        );
+      return { ok: true };
+    });
   }
   @Post('auth/verify-email') async verifyEmail(@Body() body: unknown) {
     const input = z.object({ token: z.string().regex(/^[a-f0-9]{64}$/) }).parse(body);
@@ -1451,7 +1538,11 @@ class AppController {
         (p) =>
           input.config.pageIds.includes(p.id) &&
           p.elements.some(
-            (e) => e.type === 'image' && e.visible !== false && e.photoStyle === 'cutout',
+            (e) =>
+              e.visible !== false &&
+              (e.photoStyle === 'cutout' ||
+                e.photoStyle === 'film-35' ||
+                e.decorationId?.startsWith('vn-')),
           ),
       )
     ) {
@@ -1460,19 +1551,37 @@ class AppController {
         ),
         now = await repository.now();
       const live = workers.filter((w) => now - w.lastSeen < 15000);
-      if (!live.length || live.some((w) => w.photoStylesVersion !== 1))
+      const requiredVersion = album.pages.some(
+        (p) =>
+          input.config.pageIds.includes(p.id) &&
+          p.elements.some(
+            (e) =>
+              e.visible !== false &&
+              (e.photoStyle === 'film-35' || e.decorationId?.startsWith('vn-')),
+          ),
+      )
+        ? 2
+        : 1;
+      if (!live.length || live.some((w) => (w.photoStylesVersion ?? 0) < requiredVersion))
         throw new HttpException(
           'Ảnh tách nền chưa sẵn sàng xuất video. Vui lòng thử lại sau khi bộ xuất được cập nhật.',
           503,
         );
     }
-    if (['warm-piano', 'little-waltz', 'evening'].includes(input.config.musicId)) {
+    if (
+      ['warm-piano', 'little-waltz', 'evening', 'piano-postcard', 'acoustic-sunday'].includes(
+        input.config.musicId,
+      )
+    ) {
       const workers = await repository.list<{ lastSeen: number; musicCatalogVersion?: number }>(
           'worker',
         ),
         now = await repository.now(),
         live = workers.filter((w) => now - w.lastSeen < 15000);
-      if (!live.length || live.some((w) => w.musicCatalogVersion !== 1))
+      const requiredVersion = ['piano-postcard', 'acoustic-sunday'].includes(input.config.musicId)
+        ? 2
+        : 1;
+      if (!live.length || live.some((w) => (w.musicCatalogVersion ?? 0) < requiredVersion))
         throw new HttpException(
           'Bản nhạc này chưa sẵn sàng xuất. Hãy chọn Chuông gió hoặc thử lại sau khi hệ thống xuất video được cập nhật.',
           503,
@@ -1645,6 +1754,7 @@ if (!Number.isInteger(proxyHops) || proxyHops < 0 || proxyHops > 5)
   throw new Error('TRUST_PROXY_HOPS phải từ 0 đến 5.');
 app.getHttpAdapter().getInstance().set('trust proxy', proxyHops);
 const authRateLimit = Number(process.env.AUTH_RATE_LIMIT_PER_MINUTE || 30);
+let archiveImportActive = false;
 if (!Number.isInteger(authRateLimit) || authRateLimit < 1 || authRateLimit > 1000)
   throw new Error('AUTH_RATE_LIMIT_PER_MINUTE phải từ 1 đến 1000.');
 app.use('/api', async (req: UserRequest, res: Response, next: NextFunction) => {
@@ -1686,6 +1796,38 @@ app.use('/api', async (req: UserRequest, res: Response, next: NextFunction) => {
       req.path.startsWith('/shared/');
     if (!publicPath && !req.userId)
       return res.status(401).json({ message: 'Phiên đã hết hạn. Hãy tải lại hoặc đăng nhập.' });
+    if (req.path === '/account/archive/import' && req.method === 'POST') {
+      if (req.headers['x-archive-actor'] !== req.userId)
+        return res
+          .status(409)
+          .json({ message: 'Tài khoản đã thay đổi. Mở lại mục tài khoản trước khi nhập.' });
+      const account = (await repository.list<Account>('account', req.userId))[0];
+      if (!account || account.deletingAt)
+        return res.status(401).json({ message: 'Đăng nhập tài khoản trước khi khôi phục ZIP.' });
+      await security.rateLimit('archive-import:' + req.userId, 60, 60000);
+      if (archiveImportActive)
+        return res
+          .status(429)
+          .set('Retry-After', '15')
+          .json({ message: 'Một gói dữ liệu đang được nhập. Thử lại sau ít phút.' });
+      archiveImportActive = true;
+      let released = false;
+      const timer = setTimeout(() => {
+        if (!req.archiveRunning) req.destroy();
+      }, 180000);
+      timer.unref();
+      req.archiveReceived = () => clearTimeout(timer);
+      req.archiveRelease = () => {
+        if (released) return;
+        released = true;
+        archiveImportActive = false;
+        clearTimeout(timer);
+      };
+      res.once('finish', req.archiveRelease);
+      res.once('close', () => {
+        if (!req.archiveRunning) req.archiveRelease?.();
+      });
+    }
     next();
   } catch (e) {
     if (e instanceof AuthError) {

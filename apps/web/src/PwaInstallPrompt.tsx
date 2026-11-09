@@ -81,17 +81,54 @@ export function usePwaInstall() {
 }
 
 export function IosInstallDialog({ onClose }: { onClose: () => void }) {
+  const apple =
+    /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   return (
-    <Modal title="Cài Little Days trên màn hình chính" onClose={onClose}>
+    <Modal
+      title="Cài Little Days trên màn hình chính"
+      portal
+      onClose={onClose}
+      className={apple ? 'pwa-install-guide' : ''}
+    >
       <div className="pwa-ios-steps">
-        <p>Trên iPhone/iPad: mở bằng Safari → Chia sẻ → Thêm vào Màn hình chính → Thêm.</p>
-        <p>
-          Trên Android: mở bằng Chrome → menu ⋮ → Cài đặt ứng dụng hoặc Thêm vào màn hình chính.
-        </p>
-        <p>
-          Trên máy tính: mở bằng Chrome/Edge → menu → Cài đặt Little Days. Nếu trình duyệt chưa hiện
-          tùy chọn, hãy mở trang bằng trình duyệt chính và thử lại.
-        </p>
+        {apple && (
+          <>
+            <div className="ios-safari-preview" aria-hidden="true">
+              <span>little-days</span>
+              <Share size={28} />
+            </div>
+            <ol className="ios-install-illustration">
+              <li>
+                <Share size={28} />
+                <span>
+                  <strong>1. Chạm Chia sẻ trong Safari</strong>
+                  <small>
+                    Hình vuông có mũi tên hướng lên, ở thanh công cụ trên hoặc dưới màn hình.
+                  </small>
+                </span>
+              </li>
+              <li>
+                <PlusSquare size={28} />
+                <span>
+                  <strong>2. Thêm vào Màn hình chính</strong>
+                  <small>Cuộn trong bảng Chia sẻ, chọn “Add to Home Screen”, rồi chạm Thêm.</small>
+                </span>
+              </li>
+            </ol>
+            <p>Đang mở trong Facebook/Zalo? Chọn mở bằng Safari trước.</p>
+          </>
+        )}
+        <details className="pwa-other-browsers">
+          <summary>Cài trên Android hoặc máy tính</summary>
+          <p>
+            Trên Android: mở bằng Chrome → menu ⋮ → Cài đặt ứng dụng hoặc Thêm vào màn hình chính.
+          </p>
+          <p>
+            Trên máy tính: mở bằng Chrome/Edge → menu → Cài đặt Little Days. Nếu trình duyệt chưa
+            hiện tùy chọn, hãy mở trang bằng trình duyệt chính và thử lại.
+          </p>
+        </details>
         <small>
           Ứng dụng vẫn cần mạng để đọc dữ liệu riêng tư. Cài đặt không tự bật thông báo đẩy.
         </small>

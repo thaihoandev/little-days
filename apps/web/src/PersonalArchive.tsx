@@ -101,7 +101,7 @@ export function PersonalArchiveCard({ actor }: { actor: string }) {
       await add(
         'README.txt',
         encode(
-          'Little Days — gói dữ liệu cá nhân v1\nMở memories.md để đọc, little-days.json để giữ cấu trúc sổ và media/ để lấy ảnh, nhạc đang lưu. checksums.json chứa SHA-256 của các tệp nội dung.\nKhông gồm timeline chung, lời kín, lịch sử, thùng rác, phiên đăng nhập hoặc bản nháp trên thiết bị. Không phải gói backup/restore toàn hệ thống. Ảnh là phiên bản đang lưu sau tối ưu; PDF được tải riêng trong editor. Dữ liệu mẫu minh họa không được đóng gói.\nGói tải về chứa nội dung riêng tư; tự chọn nơi lưu. Chưa hỗ trợ nhập lại ZIP.',
+          'Little Days — gói dữ liệu cá nhân v1\nMở memories.md để đọc, little-days.json để giữ cấu trúc sổ và media/ để lấy ảnh, nhạc đang lưu. checksums.json chứa SHA-256 của các tệp nội dung.\nKhông gồm timeline chung, lời kín, lịch sử, thùng rác, phiên đăng nhập hoặc bản nháp trên thiết bị. Không phải gói backup/restore toàn hệ thống. Ảnh là phiên bản đang lưu sau tối ưu; PDF được tải riêng trong editor. Dữ liệu mẫu minh họa không được đóng gói.\nGói tải về chứa nội dung riêng tư; tự chọn nơi lưu. Có thể nhập ZIP gốc trong mục Khôi phục dữ liệu; dữ liệu khôi phục là bản sao riêng, không gồm quyền chia sẻ cũ.',
         ),
       );
       const current = await api<PersonalArchive>('/account/archive', { signal: controller.signal });
@@ -128,7 +128,7 @@ export function PersonalArchiveCard({ actor }: { actor: string }) {
       <h3>Mang kỉ niệm theo mình</h3>
       <p>
         Tải ZIP gồm sổ, dấu mốc riêng, ảnh và nhạc đang lưu. Không gồm không gian chung, lời kín,
-        lịch sử hoặc bản nháp. Tối đa 96 MiB; chưa hỗ trợ nhập lại.
+        lịch sử hoặc bản nháp. Tối đa 96 MiB; nhập lại ZIP gốc qua mục Khôi phục dữ liệu.
       </p>
       <p>Bản tải về chứa nội dung riêng tư và nằm ngoài quyền thu hồi của ứng dụng.</p>
       <button className="button quiet" disabled={busy} onClick={() => void run()}>

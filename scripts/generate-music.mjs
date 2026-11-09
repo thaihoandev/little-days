@@ -4,7 +4,7 @@ const rate = 22050,
   seconds = 32,
   notes = [261.6256, 293.6648, 329.6276, 349.2282, 391.9954, 440, 493.8833, 523.2511];
 await mkdir('apps/web/public/audio', { recursive: true });
-for (const name of ['warm-piano', 'little-waltz', 'evening']) {
+for (const name of ['warm-piano', 'little-waltz', 'evening', 'piano-postcard', 'acoustic-sunday']) {
   const data = Buffer.alloc(44 + rate * seconds * 2);
   data.write('RIFF');
   data.writeUInt32LE(data.length - 8, 4);
@@ -22,7 +22,32 @@ for (const name of ['warm-piano', 'little-waltz', 'evening']) {
   for (let i = 0; i < rate * seconds; i++) {
     const t = i / rate;
     let value = 0;
-    if (name === 'evening') {
+    if (name === 'piano-postcard' || name === 'acoustic-sunday') {
+      const beat = name === 'piano-postcard' ? 0.9 : 0.65;
+      for (let tail = 0; tail < 8; tail++) {
+        const n = Math.floor(t / beat) - tail;
+        if (n < 0) continue;
+        const age = t - n * beat,
+          pattern =
+            name === 'piano-postcard'
+              ? [0, 2, 4, 7, 5, 4, 2, 4, 3, 5, 7, 4, 2, 1, 4, 0]
+              : [0, 4, 7, 4, 5, 2, 7, 2, 3, 0, 5, 0, 4, 1, 6, 1];
+        const f = notes[pattern[n % pattern.length]] * (n % 4 === 0 ? 0.5 : 1);
+        if (name === 'piano-postcard')
+          value +=
+            0.1 *
+            (1 - Math.exp(-age * 65)) *
+            Math.exp(-age * 2.3) *
+            (Math.sin(2 * Math.PI * f * age) + 0.18 * Math.sin(4 * Math.PI * f * age));
+        else
+          for (let harmonic = 1; harmonic <= 6; harmonic++)
+            value +=
+              (0.085 / (harmonic * harmonic)) *
+              (1 - Math.exp(-age * 150)) *
+              Math.exp(-age * (2.1 + harmonic * 0.35)) *
+              Math.sin(2 * Math.PI * f * harmonic * age);
+      }
+    } else if (name === 'evening') {
       for (let voice = 0; voice < 3; voice++) {
         const chord = Math.floor(t / 8) % 4,
           idx = [
@@ -64,4 +89,4 @@ for (const name of ['warm-piano', 'little-waltz', 'evening']) {
   }
   await writeFile('apps/web/public/audio/' + name + '.wav', data);
 }
-console.log('Generated three original 32-second PCM music beds.');
+console.log('Generated five original 32-second PCM music beds.');

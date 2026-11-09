@@ -216,6 +216,17 @@ try {
     };
   assert.equal((await users[0]('/albums/' + album.id + '/exports', 'POST', input)).status, 201);
   await users[0]('/exports/' + input.idempotencyKey + '/cancel', 'POST');
+  await wait(
+    async () =>
+      ((await (await users[0]('/exports/' + input.idempotencyKey)).json()) as JobView).status ===
+      'canceled',
+    'Canceled export must leave the active-owner slot before testing rolling quota.',
+  );
+  assert.equal(
+    (await (await users[0]('/usage')).json()).exportsLast24h,
+    2,
+    'Cancellation must not refund an admitted export.',
+  );
   assert.equal(
     (
       await users[0]('/albums/' + album.id + '/exports', 'POST', {

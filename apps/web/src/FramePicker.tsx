@@ -2,6 +2,7 @@ import { element, type Album, type ScrapElement } from '../../../packages/domain
 import { photoStyleIds, photoStyleNames } from '../../../packages/domain/photo-frames.js';
 import { ElementContent } from '../../../packages/scrapbook-renderer/index.js';
 import { thumbnailUrl } from './thumbnail.js';
+import { signatureFeaturesAvailable } from './signature-features.js';
 export function FramePicker({
   album,
   selected,
@@ -14,7 +15,7 @@ export function FramePicker({
   return (
     <div className="frame-picker" role="group" aria-label="Bộ khung ảnh">
       {photoStyleIds
-        .filter((id) => id !== 'cutout')
+        .filter((id) => id !== 'cutout' && (id !== 'film-35' || signatureFeaturesAvailable()))
         .map((id) => (
           <button
             key={id}

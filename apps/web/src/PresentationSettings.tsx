@@ -8,6 +8,7 @@ import {
   defaultPresentation,
 } from '../../../packages/domain/index.js';
 import { musicCatalog } from '../../../packages/domain/music.js';
+import { signatureFeaturesAvailable } from './signature-features.js';
 import { api } from './api.js';
 import { PreviewAudio } from './PreviewAudio.js';
 import { previewAudioClip } from '../../../packages/domain/preview-audio.js';
@@ -163,11 +164,17 @@ export function PresentationSettings({
           }}
         >
           <option value="none">Không nhạc</option>
-          {musicCatalog.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
+          {musicCatalog
+            .filter(
+              (track) =>
+                signatureFeaturesAvailable() ||
+                !['piano-postcard', 'acoustic-sunday'].includes(track.id),
+            )
+            .map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
           {p.musicId === 'custom' && !tracks.some((t) => t.id === p.audioId) && (
             <option value={p.audioId}>Nhạc đã chọn</option>
           )}

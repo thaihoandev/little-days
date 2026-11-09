@@ -3,7 +3,11 @@ import { Check, LoaderCircle, Plus } from 'lucide-react';
 import { Modal } from './Modal.js';
 import { api } from './api.js';
 import { type Album, type Theme, createAlbumContent } from '../../../packages/domain/index.js';
-import { builtInTemplates, templatePage } from '../../../packages/domain/templates.js';
+import {
+  featuredTemplates,
+  isFeaturedTemplate,
+  templatePage,
+} from '../../../packages/domain/templates.js';
 import { PagePreview } from './Viewer.js';
 
 export function CreateModal({
@@ -105,7 +109,7 @@ export function CreateModal({
           </label>
           <label>Chọn một phong cách</label>
           <div className="template-picker">
-            {builtInTemplates
+            {featuredTemplates
               .filter((t) => t.id.startsWith('invite-') === (kind === 'invitation'))
               .map((t) => (
                 <button
@@ -126,6 +130,9 @@ export function CreateModal({
                     />
                   </span>
                   <span className="template-name">{t.name}</span>
+                  {isFeaturedTemplate(t.id) && (
+                    <small className="featured-template-badge">Nổi bật</small>
+                  )}
                   {templateId === t.id && <Check size={15} />}
                 </button>
               ))}

@@ -1,4 +1,16 @@
 export const musicCatalog = [
+  {
+    id: 'piano-postcard',
+    name: 'Bưu thiếp ngày nắng',
+    mood: 'Piano nhẹ · không lời',
+    file: 'piano-postcard.wav',
+  },
+  {
+    id: 'acoustic-sunday',
+    name: 'Chủ nhật bên nhau',
+    mood: 'Acoustic tổng hợp · không lời',
+    file: 'acoustic-sunday.wav',
+  },
   { id: 'gentle', name: 'Chuông gió dịu dàng', mood: 'Nhẹ nhàng', file: 'gentle.wav' },
   { id: 'warm-piano', name: 'Nắng qua ô cửa', mood: 'Ấm áp · phím đàn', file: 'warm-piano.wav' },
   {

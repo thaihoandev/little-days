@@ -54,7 +54,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
       Math.min(300, Math.max(1, Number.isFinite(seconds) ? seconds : 15)) * 1000,
     );
   }
-  if (mutation && /^\/(together|journal|timeline-sharing|auth)(\/|$|\?)/.test(path)) {
+  if (mutation && /^\/(together|journal|timeline-sharing|timeline-pair|auth)(\/|$|\?)/.test(path)) {
     clearRhythmMemory();
     if (typeof window !== 'undefined')
       window.dispatchEvent(new Event('little-days:shared-activity'));

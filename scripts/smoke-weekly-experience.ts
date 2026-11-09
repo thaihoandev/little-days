@@ -314,8 +314,8 @@ try {
       assert.equal(metadata.height, 900);
       await p.getByRole('button', { name: 'Ảnh', exact: true }).first().click();
       const gallery = p.getByRole('group', { name: 'Bộ khung ảnh', exact: true }).first();
-      await expect(gallery.getByRole('button')).toHaveCount(8);
-      for (const name of ['Ô ảnh tròn', 'Cửa vòm', 'Tem kỉ niệm'])
+      await expect(gallery.getByRole('button')).toHaveCount(9);
+      for (const name of ['Ô ảnh tròn', 'Cửa vòm', 'Tem kỉ niệm', 'Dải phim 35mm'])
         await gallery.getByRole('button', { name, exact: true }).click();
       await p.getByLabel('Kiểu hiển thị ảnh', { exact: true }).selectOption('film');
       await expect(p.getByLabel('Màu viền khung', { exact: true })).toHaveValue('#292e29');
@@ -413,9 +413,9 @@ try {
                 assetId: album.assets[0].id,
                 photoStyle: style,
                 x: 35 + (i % 3) * 230,
-                y: 35 + Math.floor(i / 3) * 280,
+                y: 35 + Math.floor(i / 3) * 210,
                 width: 205,
-                height: 245,
+                height: 180,
                 text: style,
                 animation: 'none',
               }),
@@ -425,6 +425,22 @@ try {
         ];
         content.presentation = { ...long.presentation, ambience: 'none' };
         content.pages[0].elements.push(
+          element('sticker', {
+            decorationId: 'vn-iced-coffee',
+            x: 270,
+            y: 680,
+            width: 100,
+            height: 100,
+            animation: 'none',
+          }),
+          element('sticker', {
+            decorationId: 'vn-washi-1',
+            x: 390,
+            y: 720,
+            width: 260,
+            height: 70,
+            animation: 'none',
+          }),
           element('sticker', {
             decorationId: 'heart-pink',
             x: 620,
@@ -457,6 +473,8 @@ try {
           (e: any) => e.counterStyle === 'postcard',
         );
         const heldSvg = [
+          decoration('vn-iced-coffee')!.src,
+          decoration('vn-washi-1')!.src,
           decoration('heart-pink')!.src,
           counterMotif('postcard', 160, 60, counterAppearance('postcard', motifElement)!.accent),
         ];
@@ -470,7 +488,7 @@ try {
         await p.goto(origin + '/albums/' + id);
         await expect(p.locator('.konvajs-content')).toHaveCount(1);
         await p.screenshot({ path: 'test-results/poster-svg-loading.png' });
-        await expect.poll(() => p.evaluate(() => (window as any).__posterSvgPending())).toBe(2);
+        await expect.poll(() => p.evaluate(() => (window as any).__posterSvgPending())).toBe(4);
         const poster = p.waitForEvent('download');
         await p.getByRole('button', { name: 'Tải trang PNG', exact: true }).click();
         await expect(p.getByRole('button', { name: 'Đang tạo ảnh…', exact: true })).toBeDisabled();
@@ -493,7 +511,7 @@ try {
               pageIds: designed.pages.map((p: any) => p.id),
               opening: 'Một tuần nhỏ',
               closing: 'Hẹn một tuần mới',
-              musicId: 'none',
+              musicId: 'piano-postcard',
             },
           },
         });

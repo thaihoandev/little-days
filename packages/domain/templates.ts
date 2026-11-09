@@ -150,6 +150,15 @@ export const builtInTemplates = [
     description: 'Vé xem phim và chuyến bay đầu tiên cùng nhau.',
   },
 ] as const;
+export const featuredTemplateIds = ['photobooth', 'wooden-clips', 'ticket-stubs'] as const;
+export const isFeaturedTemplate = (id: string) => featuredTemplateIds.some((value) => value === id);
+export const featuredTemplates = [...builtInTemplates].sort((a, b) => {
+  const rank = (id: string) => {
+    const index = featuredTemplateIds.findIndex((value) => value === id);
+    return index < 0 ? featuredTemplateIds.length : index;
+  };
+  return rank(a.id) - rank(b.id);
+});
 export type BuiltInTemplateId = (typeof builtInTemplates)[number]['id'];
 export function templatePage(id: string, assets: string[] = []): Page {
   const spec = builtInTemplates.find((t) => t.id === id);

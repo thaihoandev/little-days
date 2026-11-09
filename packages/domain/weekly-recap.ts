@@ -59,6 +59,7 @@ export type WeeklyPhoto = {
   authorAvatarUrl?: string;
 };
 export type WeeklyView = {
+  entryCount?: number;
   weekStart: string;
   weekEnd: string;
   space: TimelineSpace;

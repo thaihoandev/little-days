@@ -6,8 +6,11 @@ import { ProfileSettings, type ProfileView } from './ProfileSettings.js';
 import { PwaAccountCard } from './PwaInstallPrompt.js';
 import { PersonalArchiveCard } from './PersonalArchive.js';
 import { clearDeviceDrafts } from './draft-store.js';
+import { PasscodeSettings } from './DeviceLock.js';
+import { ArchiveImportCard } from './ArchiveImportCard.js';
 
 export type PublicUser = {
+  signatureFeaturesVersion?: number;
   personalArchiveVersion?: number;
   questionCatalogVersion?: number;
   coupleRhythmVersion?: number;
@@ -105,9 +108,11 @@ export default function AccountSettings({
           <PwaAccountCard />
           <UsagePanel />
           {user.personalArchiveVersion === 1 && <PersonalArchiveCard actor={user.id} />}
+          {user.signatureFeaturesVersion === 1 && <ArchiveImportCard actor={user.id} />}
         </div>
         <div className="account-security-column" data-active={accountTab === 'security'}>
           <h3>Đăng nhập & bảo mật</h3>
+          {user.signatureFeaturesVersion === 1 && <PasscodeSettings actor={user.id} />}
           <p>
             <strong>{user.email}</strong>
           </p>
