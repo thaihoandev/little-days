@@ -236,6 +236,45 @@ export function PhotoEditorDialog({
             >
               Đặt lại vùng ảnh
             </button>
+            <div className="photo-nudge" role="group" aria-label="Dịch ảnh bằng nút">
+              {(
+                [
+                  ['Trái', -0.02, 0],
+                  ['Phải', 0.02, 0],
+                  ['Lên', 0, -0.02],
+                  ['Xuống', 0, 0.02],
+                ] as const
+              ).map(([label, x, y]) => (
+                <button
+                  key={label}
+                  className="button quiet"
+                  onClick={() =>
+                    setDraft((old) => ({
+                      ...old,
+                      crop: panPhoto(old, asset, crop.x + x, crop.y + y),
+                    }))
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+              <label>
+                Độ phóng
+                <input
+                  type="number"
+                  aria-label="Nhập độ phóng ảnh"
+                  min={1}
+                  max={8}
+                  step={0.05}
+                  value={Math.min(8, photoZoom(draft, asset)).toFixed(2)}
+                  onChange={(e) => {
+                    const n = Number(e.target.value);
+                    if (Number.isFinite(n) && n >= 1 && n <= 8)
+                      setDraft((old) => ({ ...old, crop: zoomPhoto(old, asset, n) }));
+                  }}
+                />
+              </label>
+            </div>
           </fieldset>
         </div>
         <div>

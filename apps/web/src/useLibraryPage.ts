@@ -21,6 +21,7 @@ export function useLibraryPage<T extends { id?: string; key?: string }>(
     [error, setError] = useState(''),
     [epoch, setEpoch] = useState(0);
   const [stats, setStats] = useState<LibraryPage<T>['stats']>();
+  const [loadedPath, setLoadedPath] = useState('');
   const version = useRef(0),
     previousPath = useRef(path),
     controller = useRef<AbortController | null>(null),
@@ -53,6 +54,7 @@ export function useLibraryPage<T extends { id?: string; key?: string }>(
         setTotal(page.total);
         setNextCursor(page.nextCursor);
         setStats(page.stats);
+        setLoadedPath(path);
       } catch (e) {
         if (
           current === version.current &&
@@ -94,6 +96,7 @@ export function useLibraryPage<T extends { id?: string; key?: string }>(
   }, [request, epoch, enabled]);
   return {
     items,
+    ready: loadedPath === path,
     setItems,
     total,
     stats,

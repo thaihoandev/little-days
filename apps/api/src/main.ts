@@ -1,4 +1,5 @@
 import { longInvitation } from '../../../packages/domain/long-invitation.js';
+import { personalArchive } from './personal-archive.js';
 import 'reflect-metadata';
 import {
   BadRequestException,
@@ -239,6 +240,22 @@ async function albumWrite<T>(owner: string, action: () => Promise<T>) {
 
 @Controller('api')
 class AppController {
+  @Patch('together/:spaceId/question-preferences') async questionPreferences(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+    @Body() body: unknown,
+  ) {
+    return coupleRituals.setQuestionPreferences(req.userId, spaceId, body);
+  }
+  @Get('account/archive') async personalArchive(@Req() req: UserRequest) {
+    await security.rateLimit('archive:' + req.userId, 12, 60000);
+    const operation = await deletion.begin(req.userId);
+    try {
+      return await personalArchive(repository, req.userId);
+    } finally {
+      await deletion.end(operation);
+    }
+  }
   @Get('together/:spaceId/rhythm') async togetherRhythm(
     @Req() req: UserRequest,
     @Param('spaceId') spaceId: string,
@@ -259,6 +276,14 @@ class AppController {
   ) {
     await security.rateLimit('couple-write:' + req.userId, 30, 60000);
     return coupleRituals.answer(req.userId, spaceId, body);
+  }
+  @Post('together/:spaceId/answers-v2') async catalogAnswer(
+    @Req() req: UserRequest,
+    @Param('spaceId') spaceId: string,
+    @Body() body: unknown,
+  ) {
+    await security.rateLimit('couple-write:' + req.userId, 30, 60000);
+    return coupleRituals.answer(req.userId, spaceId, body, true);
   }
   @Post('together/:spaceId/questions/:id/withdraw') async withdrawAnswer(
     @Req() req: UserRequest,
@@ -664,6 +689,8 @@ class AppController {
       email: account?.email ?? null,
       emailVerified: !!account?.emailVerifiedAt,
       journalFeatures: 1,
+      personalArchiveVersion: 1,
+      questionCatalogVersion: 1,
       fontCatalogVersion: 1,
       libraryVersion: 1,
       remindersVersion: 1,

@@ -1,5 +1,9 @@
 import { weekStartFor, shiftDate } from './weekly-recap.js';
-export type RhythmDay = { date: string; state: 'empty' | 'started' | 'together' | 'future' };
+export type RhythmDay = {
+  date: string;
+  state: 'empty' | 'started' | 'together' | 'future';
+  contributors?: number;
+};
 export type RhythmView = {
   spaceId: string;
   today: string;
@@ -12,6 +16,9 @@ export type RhythmView = {
   myToday: boolean;
   togetherToday: boolean;
   days: RhythmDay[];
+  memberDays?: number;
+  weeklyCapacity?: number;
+  generatedAt?: string;
 };
 /** One contribution per member/day. Opening the app, retries and autosaves do not create contributions. */
 export function summarizeRhythm(
@@ -40,6 +47,7 @@ export function summarizeRhythm(
     const date = shiftDate(start, i);
     return {
       date,
+      contributors: date > today ? 0 : byDay.get(date)?.size || 0,
       state:
         date > today
           ? 'future'
@@ -55,6 +63,8 @@ export function summarizeRhythm(
     today,
     weekStart: start,
     memberCount: members.length,
+    memberDays: days.reduce((sum, d) => sum + (d.contributors || 0), 0),
+    weeklyCapacity: members.length * 7,
     completedDays: days.filter((d) => d.state === 'together').length,
     activeDays: days.filter((d) => ['started', 'together'].includes(d.state)).length,
     streak,

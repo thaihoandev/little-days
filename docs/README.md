@@ -4,6 +4,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Sử dụng
 
+- [Bản nháp nhiều phiên, ZIP/PDF, chủ đề câu hỏi và đồng hồ cát theo dữ liệu](PORTABLE_MEMORIES_AND_RHYTHM.md)
 - [Tinh chỉnh ba trang chính, card và bàn thiết kế](LAYOUT_REFINEMENT.md)
 - [Ngôn ngữ thiết kế Photo Journal và ranh giới nội dung sổ](DESIGN_SYSTEM.md)
 - [Chuyển động, đồng hồ cát và nhập liệu mobile](INTERACTION_AND_MOBILE_REFINEMENT.md)
@@ -40,6 +41,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Kế hoạch và hồ sơ
 
+- [Nghiên cứu cải tiến: lưu nháp, dữ liệu kỉ niệm và trải nghiệm lâu dài](IMPROVEMENT_RESEARCH_2026_11.md)
 - [Giữ chân người dùng: hoạt động nhỏ, nhịp tuần và scrapbook](RETENTION_STRATEGY.md)
 - [Quy tắc agent và cơ sở nghiên cứu](AGENT_GUIDE.md)
 - [Trạng thái triển khai](IMPLEMENTATION_STATUS.md)

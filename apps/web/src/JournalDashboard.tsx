@@ -1,4 +1,7 @@
 import { WeeklyRecap } from './WeeklyRecap.js';
+import { CalendarExport } from './CalendarExport.js';
+import { FirstMemory } from './FirstMemory.js';
+import { readingKey, getReading, useReadingPosition } from './reading-state.js';
 import { ActionPopover } from './ActionPopover.js';
 import {
   Fragment,
@@ -159,15 +162,18 @@ export default function JournalDashboard({
   onViewRecaps?: () => void;
   onOpenTogether?: (space: string) => void;
 }) {
+  const viewKey = useRef(readingKey(userId, mode)).current;
+  const remembered = useRef(getReading(viewKey)).current;
   const [today, setToday] = useState(() =>
     todayIn(Intl.DateTimeFormat().resolvedOptions().timeZone),
   );
   const [newKind, setNewKind] = useState<JournalContent['kind']>('memory');
+  const [calendarExport, setCalendarExport] = useState<JournalEntry | null>(null);
   const [selectionMode, setSelectionMode] = useState(false);
-  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set());
+  const [expandedDays, setExpandedDays] = useState<Set<string>>(new Set(remembered.expanded));
   const [homeExpanded, setHomeExpanded] = useState(false);
   useEffect(() => {
-    setExpandedDays(new Set());
+    setExpandedDays(new Set(remembered.expanded));
     setHomeExpanded(false);
   }, [mode, userId]);
   const [reminderTarget, setReminderTarget] = useState<{
@@ -189,7 +195,7 @@ export default function JournalDashboard({
   const [openingPoint, setOpeningPoint] = useState(false);
   const [sharing, setSharing] = useState<TimelineSharingState>({ ownId: userId, grants: [] }),
     [sharingOpen, setSharingOpen] = useState(false),
-    [selectedTimeline, setSelectedTimeline] = useState('all'),
+    [selectedTimeline, setSelectedTimeline] = useState(remembered.timeline || 'all'),
     [deleting, setDeleting] = useState<JournalEntry | null>(null),
     [deletingBusy, setDeletingBusy] = useState(false);
   const legacyOptions = [
@@ -223,6 +229,7 @@ export default function JournalDashboard({
           state.spaces?.some((s) => s.shared && s.members.length > 1)))
     ) {
       const desired =
+        remembered.timeline ||
         spaceSelection.get(userId) ||
         state.spaces?.find((s) => s.shared && s.members.length > 1)?.id ||
         (separateSpaces ? state.spaces?.find((s) => !s.shared)?.id : undefined) ||
@@ -250,13 +257,13 @@ export default function JournalDashboard({
     );
     return () => clearInterval(timer);
   }, []);
-  const [selected, setSelected] = useState(today),
-    [month, setMonth] = useState(today.slice(0, 7)),
+  const [selected, setSelected] = useState(remembered.selected || today),
+    [month, setMonth] = useState(remembered.month || today.slice(0, 7)),
     [entries, setEntries] = useState<JournalEntry[]>([]),
     [loading, setLoading] = useState(true),
     [error, setError] = useState(''),
-    [query, setQuery] = useState(''),
-    [kind, setKind] = useState('all'),
+    [query, setQuery] = useState(remembered.query || ''),
+    [kind, setKind] = useState(remembered.kind || 'all'),
     [limit, setLimit] = useState(20),
     [editing, setEditing] = useState<JournalEntry | null | undefined>();
   useEffect(() => {
@@ -294,6 +301,25 @@ export default function JournalDashboard({
     today,
   });
   const feed = useLibraryPage<FeedEntry>('/library/feed?' + pageQuery, paged && !loading);
+  const restoreCount = Math.min(200, remembered.count || 0);
+  const moreToRestore =
+    paged && !feed.error && feed.items.length < restoreCount && !!feed.nextCursor;
+  useEffect(() => {
+    if (!loading && !feed.loading && moreToRestore) feed.loadMore();
+  }, [loading, feed.loading, feed.items.length, feed.nextCursor, moreToRestore]);
+  useReadingPosition(
+    viewKey,
+    {
+      query,
+      kind,
+      timeline: selectedTimeline,
+      selected,
+      month,
+      expanded: [...expandedDays],
+      count: feed.items.length,
+    },
+    !loading && (!paged || feed.ready) && !feed.loading && !moreToRestore && !error && !feed.error,
+  );
   const points = useLibraryPage<FeedEntry>(
     '/library/map?' + pageQuery,
     paged && enhancedReady && !loading,
@@ -751,6 +777,22 @@ export default function JournalDashboard({
           <ArrowUpRight size={16} />
         </button>
       )}
+      {mode === 'home' &&
+        !loading &&
+        !error &&
+        sharingReady &&
+        entries.length === 0 &&
+        albums.length === 0 && (
+          <FirstMemory
+            actor={userId}
+            onCreate={() => {
+              setNewKind('memory');
+              setSelected(today);
+              setSelectedTimeline(sharing.spaces?.find((s) => !s.shared)?.id || 'all');
+              setEditing(null);
+            }}
+          />
+        )}
       {mode === 'home' && weeklyReady && (
         <WeeklyRecap
           spaces={sharing.spaces || []}
@@ -1344,6 +1386,7 @@ export default function JournalDashboard({
                               <h4 className="story-category">{storyCategory(entry)}</h4>
                             )}
                           <article
+                            data-reading-id={entry.id}
                             className={
                               'journal-entry ' +
                               entry.kind +
@@ -1561,6 +1604,14 @@ export default function JournalDashboard({
                                 </button>
                                 {(!entry.album || remindersReady) && (
                                   <ActionPopover label={'Tùy chọn ' + entry.title}>
+                                    {!entry.album && (
+                                      <button
+                                        onClick={() => setCalendarExport(entry as JournalEntry)}
+                                      >
+                                        <CalendarDays size={16} />
+                                        <span>Thêm vào lịch điện thoại</span>
+                                      </button>
+                                    )}
                                     {remindersReady && (
                                       <button
                                         className="icon-button"
@@ -1784,6 +1835,9 @@ export default function JournalDashboard({
           onIndex={(index) => setPhotoPreview({ ...photoPreview, index })}
           onClose={() => setPhotoPreview(null)}
         />
+      )}
+      {calendarExport && (
+        <CalendarExport entry={calendarExport} onClose={() => setCalendarExport(null)} />
       )}
       {details && (
         <JournalDetails

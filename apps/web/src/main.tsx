@@ -60,6 +60,7 @@ import './interaction-polish.css';
 import './photo-journal.css';
 import './little-days-layout.css';
 import './recap-studio.css';
+import './portable-experience.css';
 
 if (
   'serviceWorker' in navigator &&

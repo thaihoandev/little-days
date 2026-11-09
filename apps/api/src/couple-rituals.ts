@@ -8,7 +8,13 @@ import {
 } from '@nestjs/common';
 import { z } from 'zod';
 import {
+  catalogQuestion,
+  questionPreferencesInput,
+  type QuestionPreferences,
+} from '../../../packages/domain/question-catalog.js';
+import {
   answerInput,
+  catalogAnswerInput,
   jarInput,
   revisionInput,
   dailyQuestions,
@@ -43,6 +49,44 @@ function uuid(s: string) {
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`;
 }
 export class CoupleRituals {
+  private async preferences(spaceId: string, epoch: string) {
+    const row = await this.db.owned<{
+      epoch: string;
+      revision: number;
+      changes: { date: string; excluded: string[] }[];
+    }>('question-preferences', spaceId, spaceId);
+    return row?.epoch === epoch ? row : { epoch, revision: row?.revision ?? -1, changes: [] };
+  }
+  async setQuestionPreferences(actor: string, spaceId: string, raw: unknown) {
+    const input = questionPreferencesInput.parse(raw);
+    return this.write(actor, spaceId, async (c) => {
+      const current = await this.preferences(spaceId, c.epoch);
+      if (current.revision !== input.expectedRevision)
+        throw new ConflictException('Chủ đề vừa thay đổi. Hãy tải lại.');
+      const date = shiftDate(todayIn(TZ, this.clock()), 1),
+        excluded = [...new Set(input.excluded)].sort();
+      const next = {
+        epoch: c.epoch,
+        revision: current.revision + 1,
+        changes: [...current.changes.filter((x) => x.date !== date), { date, excluded }].slice(-9),
+      };
+      if (current.revision === -1) {
+        await this.resources.admitTextRecord(spaceId, 'question-preferences', 3000);
+        if (!(await this.db.insert('question-preferences', spaceId, spaceId, next)))
+          throw new ConflictException();
+      } else if (
+        !(await this.db.compareAndSwap(
+          'question-preferences',
+          spaceId,
+          spaceId,
+          current.revision,
+          next,
+        ))
+      )
+        throw new ConflictException();
+      return { revision: next.revision, excluded, effectiveDate: date };
+    });
+  }
   private clock: () => Date;
   private store?: MediaStore;
   constructor(
@@ -97,10 +141,14 @@ export class CoupleRituals {
       this.db.driver === 'postgresql'
         ? `${alias}.payload::jsonb->>'${name}'`
         : `json_extract(${alias}.payload,'$.${name}')`;
+    const hasPhotos =
+      this.db.driver === 'postgresql'
+        ? "jsonb_array_length(COALESCE(e.payload::jsonb->'assets','[]'::jsonb))>0"
+        : "json_array_length(COALESCE(json_extract(e.payload,'$.assets'),'[]'))>0";
     const source = `SELECT ${f('createdAt')} AS at,${f('authorId')} AS author FROM records r WHERE r.kind='love-note' AND ${f('spaceId')}=? AND ${f('epoch')}=?
       UNION ALL SELECT ${f('createdAt')} AS at,${f('actorId')} AS author FROM records r JOIN records q ON q.kind='couple-round' AND q.id=${f('roundId')} WHERE r.kind='couple-answer' AND ${f('spaceId')}=? AND ${f('epoch', 'q')}=?
       UNION ALL SELECT ${f('createdAt')} AS at,${f('createdBy')} AS author FROM records r WHERE r.kind='journal' AND r.owner=? AND ${sharedJournalSql(this.db.driver)} AND ${f('deletedAt')} IS NULL AND ${f('createdAt')}>=?
-      UNION ALL SELECT ${f('createdAt')} AS at,${f('actorId')} AS author FROM records r JOIN records e ON e.kind='journal' AND e.id=${f('entryId')} AND e.owner=r.owner WHERE r.kind='journal-version' AND r.owner=? AND ${f('action')}='photo' AND ${sharedJournalSql(this.db.driver, 'e')} AND ${f('deletedAt', 'e')} IS NULL AND ${f('createdAt')}>=?`;
+      UNION ALL SELECT ${f('createdAt')} AS at,${f('actorId')} AS author FROM records r JOIN records e ON e.kind='journal' AND e.id=${f('entryId')} AND e.owner=r.owner WHERE r.kind='journal-version' AND r.owner=? AND ${f('action')}='photo' AND ${sharedJournalSql(this.db.driver, 'e')} AND ${f('deletedAt', 'e')} IS NULL AND ${hasPhotos} AND ${f('createdAt')}>=?`;
     const day =
       this.db.driver === 'postgresql'
         ? `to_char((at::timestamptz AT TIME ZONE 'Asia/Ho_Chi_Minh'),'YYYY-MM-DD')`
@@ -121,13 +169,16 @@ export class CoupleRituals {
         ...scope.ids,
       ],
     );
-    return summarizeRhythm(
-      spaceId,
-      today,
-      scope.ids,
-      actor,
-      rows.map((r) => ({ date: String(r.day), author: String(r.author) })),
-    );
+    return {
+      ...summarizeRhythm(
+        spaceId,
+        today,
+        scope.ids,
+        actor,
+        rows.map((r) => ({ date: String(r.day), author: String(r.author) })),
+      ),
+      generatedAt: this.now(),
+    };
   }
   private async write<T>(
     actor: string,
@@ -155,20 +206,28 @@ export class CoupleRituals {
       for (const operation of operations.reverse()) await this.deletion.end(operation);
     }
   }
-  private virtual(
+  private async virtual(
     c: Awaited<ReturnType<CoupleRituals['context']>>,
     forDate?: string,
-  ): QuestionRound {
+    useCatalog = false,
+  ): Promise<QuestionRound> {
     const date = forDate || todayIn(TZ, this.clock()),
       day = Math.floor(Date.parse(date + 'T00:00:00Z') / 86400000);
+    const offset = parseInt(digest(c.spaceId).slice(0, 6), 16);
+    const preferences = useCatalog ? await this.preferences(c.spaceId, c.epoch) : null;
+    const excluded = preferences?.changes.filter((x) => x.date <= date).at(-1)?.excluded || [];
+    const legacyIndex = (day + offset) % dailyQuestions.length;
+    const selected = useCatalog
+      ? catalogQuestion(day, offset, excluded)
+      : { id: `daily-v1-${legacyIndex + 1}`, prompt: dailyQuestions[legacyIndex] };
     return {
       id: uuid(c.spaceId + ':' + c.epoch + ':' + date),
       spaceId: c.spaceId,
       epoch: c.epoch,
       participants: c.ids,
       date,
-      prompt:
-        dailyQuestions[(day + parseInt(digest(c.spaceId).slice(0, 6), 16)) % dailyQuestions.length],
+      prompt: selected.prompt,
+      promptId: selected.id,
       revision: -1,
       createdAt: this.now(),
     };
@@ -280,14 +339,15 @@ export class CoupleRituals {
     };
   }
   async state(actor: string, spaceId: string, raw: unknown = {}) {
-    const { page, questionPage } = z
+    const { page, questionPage, catalogVersion } = z
       .object({
         page: z.coerce.number().int().min(0).max(100).default(0),
         questionPage: z.coerce.number().int().min(0).max(200).default(0),
+        catalogVersion: z.coerce.number().int().min(0).max(1).default(0),
       })
       .parse(raw);
     const c = await this.context(actor, spaceId),
-      v = this.virtual(c),
+      v = await this.virtual(c, undefined, catalogVersion === 1),
       round = await this.db.owned<QuestionRound>('couple-round', v.id, spaceId);
     const all = await this.pageRecords<LoveNote>('love-note', spaceId, actor, page);
     const rounds = await this.pageRecords<QuestionRound>(
@@ -299,6 +359,11 @@ export class CoupleRituals {
     );
     return {
       members: c.members,
+      questionPreferences: await (async () => {
+        const p = await this.preferences(spaceId, c.epoch),
+          last = p.changes.at(-1);
+        return { revision: p.revision, excluded: last?.excluded || [], effectiveDate: last?.date };
+      })(),
       today: v.date,
       daily: c.ids.length === 2 ? await this.question(actor, round || v, c) : null,
       jar: all.items.map((n) => this.note(actor, n, c)),
@@ -310,8 +375,8 @@ export class CoupleRituals {
       limits: { noteLength: 1200, answerLength: 1200, notesPerPerson: 500 },
     };
   }
-  async answer(actor: string, spaceId: string, body: unknown) {
-    const input = answerInput.parse(body);
+  async answer(actor: string, spaceId: string, body: unknown, useCatalog = false) {
+    const input = (useCatalog ? catalogAnswerInput : answerInput).parse(body);
     return this.write(actor, spaceId, async (c) => {
       if (c.ids.length !== 2)
         throw new BadRequestException(
@@ -326,8 +391,12 @@ export class CoupleRituals {
           .slice(0, 10);
         if (date > today || date < earliest)
           throw new BadRequestException('Bản nháp câu hỏi đã quá hạn bảy ngày.');
-        const draft = this.virtual(c, date);
+        const draft = await this.virtual(c, date, useCatalog);
         if (input.roundId !== draft.id) throw new NotFoundException();
+        if (input.promptId && input.promptId !== draft.promptId)
+          throw new ConflictException(
+            'Bộ câu hỏi vừa cập nhật. Bản nháp vẫn được giữ; hãy đọc lại câu hỏi trước khi gửi.',
+          );
         round = draft;
       }
       if (!round.participants.includes(actor) || round.epoch !== c.epoch)

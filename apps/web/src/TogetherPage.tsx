@@ -1,5 +1,6 @@
 import { uploadImage } from './image-upload.js';
 import { LoveJar } from './LoveJar.js';
+import { QuestionTopics } from './QuestionTopics.js';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   ArrowRight,
@@ -81,6 +82,7 @@ function readSubmissionKey(key: string, signature: string) {
 }
 export default function TogetherPage({
   photoEnabled = false,
+  topicsEnabled = false,
   userId,
   ready,
   search,
@@ -88,6 +90,7 @@ export default function TogetherPage({
   onAccount,
 }: {
   photoEnabled?: boolean;
+  topicsEnabled?: boolean;
   userId: string;
   ready: boolean;
   search: string;
@@ -163,7 +166,7 @@ export default function TogetherPage({
     if (!quiet) setLoading(true);
     try {
       const result = await api<CoupleState>(
-        `/together/${space}?page=${page}&questionPage=${questionPage}`,
+        `/together/${space}?page=${page}&questionPage=${questionPage}&catalogVersion=${topicsEnabled ? 1 : 0}`,
       );
       if (sequence !== generation.current || !alive.current) return;
       if (
@@ -386,6 +389,14 @@ export default function TogetherPage({
                 </nav>
                 {tab === 'questions' ? (
                   <>
+                    {topicsEnabled && state.daily && state.questionPreferences && (
+                      <QuestionTopics
+                        key={space}
+                        space={space}
+                        value={state.questionPreferences}
+                        onSaved={() => load(true)}
+                      />
+                    )}
                     <div className="ritual-intro">
                       <div>
                         <span className="eyebrow">CÂU HỎI HÔM NAY · {prettyDate(state.today)}</span>
@@ -409,15 +420,27 @@ export default function TogetherPage({
                         pending={pending}
                         onSubmit={(q, text, requestId) =>
                           run(async () => {
-                            const updated = await api<QuestionView>(root + '/answers', {
-                              method: 'POST',
-                              body: JSON.stringify({
-                                roundId: q.id,
-                                date: q.date,
-                                expectedRevision: q.revision,
-                                requestId,
-                                text,
-                              }),
+                            const modern = topicsEnabled && !!q.promptId;
+                            const updated = await api<QuestionView>(
+                              root + (modern ? '/answers-v2' : '/answers'),
+                              {
+                                method: 'POST',
+                                body: JSON.stringify({
+                                  roundId: q.id,
+                                  promptId: q.promptId,
+                                  date: q.date,
+                                  expectedRevision: q.revision,
+                                  requestId,
+                                  text,
+                                }),
+                              },
+                            ).catch((error) => {
+                              if (modern && error instanceof ApiError && error.status === 404)
+                                throw new ApiError(
+                                  404,
+                                  'Ứng dụng hoặc quyền truy cập vừa thay đổi. Hãy tải lại trang trước khi gửi; bản nháp vẫn giữ trên thiết bị.',
+                                );
+                              throw error;
                             });
                             setState((s) => (s ? { ...s, daily: updated } : s));
                             setNotice(
@@ -1283,6 +1306,7 @@ function PastQuestion({
                 method: 'POST',
                 body: JSON.stringify({
                   roundId: q.id,
+                  promptId: q.promptId,
                   date: q.date,
                   text,
                   requestId,

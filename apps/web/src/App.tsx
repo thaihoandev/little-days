@@ -68,7 +68,9 @@ import {
   todayIn,
   fonts,
 } from '../../../packages/domain/index.js';
-import { api, ApiError } from './api.js';
+import { api, ApiError, clearReadMemory } from './api.js';
+import { clearReadingMemory } from './reading-state.js';
+import { downloadFile } from './portable-files.js';
 import { SelectionTools, Layers, TemplateLibrary } from './LayoutTools.js';
 import {
   expandSelection,
@@ -187,7 +189,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [toast, setToast] = useState('');
   const [modal, setModal] = useState<'create' | 'account' | 'help' | null>(null);
-  const { route, pathname, search, navigate } = useAppRoute();
+  const { route, pathname, search, navigate, entryKey } = useAppRoute();
   usePageMotion(pathname, loading || !!authLink || openingAlbum);
   const [notifications, setNotifications] = useState<{
     userId: string;
@@ -216,6 +218,7 @@ export default function App() {
         return true;
       }
       const session = await api<User>('/session');
+      if (libraryActor.current && libraryActor.current !== session.id) clearReadingMemory();
       configureUploads(session.libraryVersion === 1);
       configureThumbnails(session.libraryVersion === 1);
       const library = await api<Album[]>(
@@ -233,6 +236,19 @@ export default function App() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const restore = (event: PageTransitionEvent) => {
+      if (!event.persisted) return;
+      clearReadMemory();
+      clearDashboardMemory();
+      clearRhythmMemory();
+      setUser(null);
+      setAlbums([]);
+      void load();
+    };
+    window.addEventListener('pageshow', restore);
+    return () => window.removeEventListener('pageshow', restore);
+  }, []);
   useEffect(() => {
     if (!authLink) void load();
   }, []);
@@ -486,6 +502,7 @@ export default function App() {
                 userId={user.id}
                 ready={user.coupleRitualsVersion === 1}
                 photoEnabled={user.jarPhotoVersion === 1}
+                topicsEnabled={user.questionCatalogVersion === 1}
                 search={search}
                 onNavigate={navigate}
                 onAccount={() => setModal('account')}
@@ -494,7 +511,7 @@ export default function App() {
           )}
           {user && ['home', 'timeline', 'calendar'].includes(section) && (
             <JournalDashboard
-              key={user.id}
+              key={user.id + ':' + entryKey}
               userId={user.id}
               verified={!!user.emailVerified}
               displayName={user.email ? user.displayName : undefined}
@@ -711,6 +728,7 @@ export default function App() {
           onClose={() => setModal(null)}
           onChange={(message, receipt) => {
             clearDashboardMemory();
+            clearReadingMemory();
             clearRhythmMemory();
             libraryActor.current = undefined;
             if (receipt) {
@@ -821,6 +839,8 @@ function Editor({
   designExperienceEnabled: boolean;
 }) {
   const doc = useDocument(initial, userId);
+  const [reloadConflict, setReloadConflict] = useState(false),
+    [reloadingConflict, setReloadingConflict] = useState(false);
   const { album } = doc;
   const [pageId, setPageId] = useState(album.pages[0].id);
   const page = album.pages.find((p) => p.id === pageId) || album.pages[0];
@@ -1205,17 +1225,21 @@ function Editor({
           <div className="error-banner" role="alert">
             {localError || doc.error}
             {doc.status === 'conflict' && (
+              <button onClick={() => setReloadConflict(true)}>Tải bản mới</button>
+            )}
+            {doc.error && (
               <button
-                onClick={() => {
-                  if (
-                    confirm(
-                      'Tải bản trên máy chủ? Bản nháp cục bộ vẫn được giữ để khôi phục khi mở lại album.',
-                    )
+                title="Giữ cấu trúc và chữ hiện tại; không kèm tệp ảnh hoặc nhạc"
+                onClick={() =>
+                  downloadFile(
+                    new Blob([JSON.stringify(doc.draftSnapshot(), null, 2)], {
+                      type: 'application/json',
+                    }),
+                    `little-days-draft-${album.id}.json`,
                   )
-                    void api<Album>(`/albums/${album.id}`).then(doc.accept);
-                }}
+                }
               >
-                Tải bản mới
+                Tải bản nháp (.json)
               </button>
             )}
             <button aria-label="Đóng thông báo" onClick={() => setLocalError('')}>
@@ -1226,7 +1250,19 @@ function Editor({
         {doc.draft && (
           <div className="draft-banner">
             Có bản nháp chưa được lưu từ lần trước.
-            <button onClick={doc.restoreDraft}>Khôi phục</button>
+            {doc.branches.length > 1 && (
+              <select
+                aria-label="Chọn bản nháp từ các phiên"
+                onChange={(e) => doc.chooseDraft(e.target.value)}
+              >
+                {doc.branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {new Date(b.at).toLocaleString('vi-VN')} · phiên bản gốc {b.baseRevision}
+                  </option>
+                ))}
+              </select>
+            )}
+            <button onClick={() => doc.restoreDraft()}>Khôi phục</button>
             <button onClick={doc.discardDraft}>Bỏ bản nháp</button>
           </div>
         )}
@@ -2175,6 +2211,25 @@ function Editor({
             )}
           </aside>
         </div>
+        {reloadConflict && (
+          <ConfirmDialog
+            title="Tải bản trên máy chủ?"
+            description="Bản nháp trên thiết bị vẫn được giữ để khôi phục khi mở lại sổ. Nội dung đang xem sẽ chuyển sang phiên bản máy chủ."
+            confirmLabel="Tải bản mới"
+            busy={reloadingConflict}
+            onClose={() => setReloadConflict(false)}
+            onConfirm={() => {
+              setReloadingConflict(true);
+              void api<Album>(`/albums/${album.id}`)
+                .then((value) => {
+                  doc.accept(value);
+                  setReloadConflict(false);
+                })
+                .catch((error) => setLocalError((error as Error).message))
+                .finally(() => setReloadingConflict(false));
+            }}
+          />
+        )}
         {pageToDelete && (
           <ConfirmDialog
             title="Xóa trang sổ này?"

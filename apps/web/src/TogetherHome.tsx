@@ -5,7 +5,6 @@ import type { RhythmView } from '../../../packages/domain/rhythm.js';
 import { api, ApiError } from './api.js';
 import { Hourglass3D } from './Hourglass3D.js';
 import { UserAvatar } from './UserAvatar.js';
-import { rhythmCache as cache } from './rhythm-cache.js';
 export { clearRhythmMemory } from './rhythm-cache.js';
 export function TogetherHome({
   userId,
@@ -38,31 +37,23 @@ export function TogetherHome({
         return false;
       }
     });
-  const version = useRef(refreshKey);
+  const previousScope = useRef(scope);
   useEffect(() => {
     const controller = new AbortController();
-    const key = userId + ':' + scope + ':' + refreshKey;
     setError('');
-    setData((current) => (current?.spaceId === space?.id ? current : null));
+    const scopeChanged = previousScope.current !== scope;
+    previousScope.current = scope;
+    setData((current) => (!scopeChanged && current?.spaceId === space?.id ? current : null));
     if (!space || !enabled || hidden) return;
-    const cached = cache.get(key);
-    if (cached && Date.now() - cached.at < 30000 && version.current === refreshKey) {
-      setData(cached.data);
-      return;
-    }
-    version.current = refreshKey;
     void api<RhythmView>('/together/' + space.id + '/rhythm', { signal: controller.signal })
       .then((value) => {
         if (controller.signal.aborted) return;
-        cache.set(key, { at: Date.now(), data: value });
-        while (cache.size > 12) cache.delete(cache.keys().next().value!);
         setData(value);
       })
       .catch((e) => {
         if (!controller.signal.aborted) {
           setError(e.message);
           if (e instanceof ApiError && [401, 403, 404].includes(e.status)) {
-            cache.delete(key);
             setData(null);
           }
         }
@@ -72,16 +63,17 @@ export function TogetherHome({
   useEffect(() => {
     const refresh = () => {
       if (document.visibilityState === 'visible') {
-        cache.clear();
         setRetry((n) => n + 1);
       }
     };
     window.addEventListener('little-days:shared-activity', refresh);
     window.addEventListener('focus', refresh);
+    window.addEventListener('pageshow', refresh);
     const timer = setInterval(refresh, 60000);
     return () => {
       window.removeEventListener('little-days:shared-activity', refresh);
       window.removeEventListener('focus', refresh);
+      window.removeEventListener('pageshow', refresh);
       clearInterval(timer);
     };
   }, []);
@@ -101,7 +93,17 @@ export function TogetherHome({
         <Hourglass3D
           active={immersiveActive}
           autoStart={!!space}
-          progress={(data?.completedDays || 0) / 7}
+          progress={
+            data?.weeklyCapacity
+              ? (data.memberDays || 0) / data.weeklyCapacity
+              : (data?.completedDays || 0) / 7
+          }
+          label={
+            data
+              ? `${data.memberDays ?? data.completedDays * data.memberCount}/${data.weeklyCapacity ?? 7 * data.memberCount} lượt góp theo ngày trong tuần`
+              : 'Đang chờ dữ liệu tuần này'
+          }
+          hasData={!!data && !error}
         />
       )}
       <div className="together-home-content">
@@ -205,6 +207,23 @@ export function TogetherHome({
                       ? 'Bạn đã góp một chút thương hôm nay.'
                       : 'Hôm nay, mình dành cho nhau một điều nhỏ nhé.'}
                 </p>
+                {data.memberDays !== undefined && (
+                  <p className="rhythm-evidence">
+                    {data.memberDays}/{data.weeklyCapacity} lượt góp theo ngày · {data.activeDays}{' '}
+                    ngày có hoạt động. Một người góp nhiều lần trong ngày vẫn tính một lượt.
+                    {data.generatedAt && (
+                      <small>
+                        Đối chiếu lúc{' '}
+                        {new Date(data.generatedAt).toLocaleTimeString('vi-VN', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          timeZone: 'Asia/Ho_Chi_Minh',
+                        })}{' '}
+                        · giờ Việt Nam
+                      </small>
+                    )}
+                  </p>
+                )}
               </>
             )}
           </>

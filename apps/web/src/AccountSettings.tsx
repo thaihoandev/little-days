@@ -4,8 +4,12 @@ import { api } from './api.js';
 import { UsagePanel } from './UsagePanel.js';
 import { ProfileSettings, type ProfileView } from './ProfileSettings.js';
 import { PwaAccountCard } from './PwaInstallPrompt.js';
+import { PersonalArchiveCard } from './PersonalArchive.js';
+import { clearDeviceDrafts } from './draft-store.js';
 
 export type PublicUser = {
+  personalArchiveVersion?: number;
+  questionCatalogVersion?: number;
   coupleRhythmVersion?: number;
   jarPhotoVersion?: number;
   previewAudioClipVersion?: number;
@@ -100,6 +104,7 @@ export default function AccountSettings({
           )}
           <PwaAccountCard />
           <UsagePanel />
+          {user.personalArchiveVersion === 1 && <PersonalArchiveCard actor={user.id} />}
         </div>
         <div className="account-security-column" data-active={accountTab === 'security'}>
           <h3>Đăng nhập & bảo mật</h3>
@@ -211,6 +216,7 @@ export default function AccountSettings({
             onClick={() =>
               void run(async () => {
                 await api('/auth/logout', { method: 'POST' });
+                await clearDeviceDrafts(user.id).catch(() => {});
                 try {
                   for (const key of Object.keys(localStorage))
                     if (key.startsWith('scrapbook-draft:' + user.id + ':'))
@@ -253,6 +259,7 @@ export default function AccountSettings({
                         body: JSON.stringify({ password: deletePassword, confirmation }),
                       },
                     );
+                    await clearDeviceDrafts(user.id).catch(() => {});
                     try {
                       for (const key of Object.keys(localStorage))
                         if (key.startsWith('scrapbook-draft:' + user.id + ':'))

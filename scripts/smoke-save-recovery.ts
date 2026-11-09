@@ -116,13 +116,32 @@ try {
       await page.waitForTimeout(3500);
       assert.equal(conflicts, 1, 'A conflict must not be retried automatically');
       assert.ok(
-        await page.evaluate(
-          (id) =>
-            Object.entries(localStorage).some(
-              ([k, v]) => k.endsWith(':' + id) && v.includes('Bản nháp có xung đột'),
-            ),
-          album.id,
-        ),
+        await page.evaluate(async (id) => {
+          const session = await (await fetch('/api/session')).json();
+          const scope = `scrapbook-draft:${session.id}:${id}`;
+          return new Promise<boolean>((resolve, reject) => {
+            const open = indexedDB.open('little-days-drafts', 2);
+            open.onerror = () => reject(open.error);
+            open.onsuccess = () => {
+              const db = open.result,
+                read = db.transaction('drafts').objectStore('drafts').getAll();
+              read.onsuccess = () => {
+                resolve(
+                  read.result.some(
+                    (row) =>
+                      row.scope === scope &&
+                      JSON.stringify(row.content).includes('Bản nháp có xung đột'),
+                  ),
+                );
+                db.close();
+              };
+              read.onerror = () => {
+                reject(read.error);
+                db.close();
+              };
+            };
+          });
+        }, album.id),
       );
       assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
       await page.screenshot({

@@ -200,3 +200,55 @@ test('weekly rhythm preserves completed days across a break; one person or futur
   assert.equal(v.days[6].state, 'future');
   assert.equal(summarizeRhythm('s', '2026-11-05', ['a'], 'a', activity).completedDays, 0);
 });
+test('photo contribution stops counting when the current shared entry has no photos left', async () => {
+  const f = await fixture();
+  const [a, b] = f.users;
+  try {
+    const grant = await f.journal.sharing.invite(a, { email: f.emails[1] });
+    await f.journal.sharing.change(b, grant.id, { expectedRevision: 0, action: 'accept' });
+    const today = todayIn('Asia/Ho_Chi_Minh'),
+      tomorrow = shiftDate(today, 1),
+      at = new Date(tomorrow + 'T05:00:00Z').toISOString();
+    const entry = await f.journal.create(a, {
+      title: 'Ảnh metadata fixture',
+      note: '',
+      date: today,
+      kind: 'memory',
+      annual: false,
+      timelineId: a,
+    });
+    const next = {
+      ...entry,
+      revision: entry.revision + 1,
+      assets: [
+        {
+          id: randomUUID(),
+          name: 'fixture.webp',
+          url: '/api/fixture',
+          width: 1,
+          height: 1,
+          bytes: 1,
+        },
+      ],
+    };
+    assert.ok(await f.db.compareAndSwap('journal', entry.id, a, entry.revision, next));
+    await f.db.insert('journal-version', randomUUID(), a, {
+      entryId: entry.id,
+      actorId: b,
+      action: 'photo',
+      createdAt: at,
+    });
+    f.setNow(at);
+    assert.equal((await f.rituals.rhythm(b, a)).myToday, true);
+    assert.ok(
+      await f.db.compareAndSwap('journal', entry.id, a, next.revision, {
+        ...next,
+        revision: next.revision + 1,
+        assets: [],
+      }),
+    );
+    assert.equal((await f.rituals.rhythm(b, a)).myToday, false);
+  } finally {
+    await f.close();
+  }
+});

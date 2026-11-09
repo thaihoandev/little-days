@@ -110,30 +110,48 @@ export function createHourglass(
       points.map(([x, y]) => new T.Vector2(x, y)),
       48,
     );
-  const bottom = mesh(
-    lathe([
-      [0, 0],
-      [0.38, 0],
-      [0.56, 0.14],
-      [0.54, 0.2],
-      [0.36, 0.34],
-      [0, 0.46],
-    ]),
-    sand,
-    -1.31,
-  );
-  const top = mesh(
-    lathe([
-      [0, 0],
-      [0.06, 0.04],
-      [0.3, 0.34],
-      [0.57, 0.75],
-      [0.52, 0.85],
-      [0, 0.85],
-    ]),
-    sand,
-    0.1,
-  );
+  const upperProfile = [
+    [0.035, 0.04],
+    [0.18, 0.23],
+    [0.53, 0.72],
+    [0.6, 1.12],
+    [0.46, 1.29],
+  ];
+  const lowerProfile = upperProfile.map(([r, y]) => [r, -y]).reverse();
+  // Equal sand volume is transferred between vessels; surfaces stay inside the glass.
+  const fillGeometry = (profile: number[][], fraction: number) => {
+    const samples: number[][] = [];
+    for (let i = 0; i < profile.length - 1; i++) {
+      const [r0, y0] = profile[i],
+        [r1, y1] = profile[i + 1];
+      for (let j = 0; j < 16; j++)
+        samples.push([T.MathUtils.lerp(r0, r1, j / 16), T.MathUtils.lerp(y0, y1, j / 16)]);
+    }
+    samples.push(profile.at(-1)!);
+    const volumes = [0];
+    for (let i = 1; i < samples.length; i++) {
+      const [r0, y0] = samples[i - 1],
+        [r1, y1] = samples[i];
+      volumes.push(volumes[i - 1] + ((y1 - y0) * (r0 * r0 + r0 * r1 + r1 * r1)) / 3);
+    }
+    const wanted = Math.max(0, Math.min(1, fraction)) * volumes.at(-1)!;
+    const end = Math.max(
+      1,
+      volumes.findIndex((v) => v >= wanted),
+    );
+    const t = (wanted - volumes[end - 1]) / Math.max(0.000001, volumes[end] - volumes[end - 1]);
+    const level = T.MathUtils.lerp(samples[end - 1][1], samples[end][1], t);
+    const geometry = lathe([
+      [0, samples[0][1]],
+      ...samples.slice(0, end),
+      [T.MathUtils.lerp(samples[end - 1][0], samples[end][0], t), level],
+      [0, level],
+    ]);
+    geometry.computeBoundingBox();
+    return geometry;
+  };
+  const bottom = mesh(fillGeometry(lowerProfile, progress), sand);
+  const top = mesh(fillGeometry(upperProfile, 1 - progress), sand);
   const grainGeometry = new T.BufferGeometry();
   const grains = new Float32Array(96 * 3);
   const grainPositions = new T.BufferAttribute(grains, 3).setUsage(T.DynamicDrawUsage);
@@ -192,6 +210,8 @@ export function createHourglass(
     pointer = 0;
   let target = Math.max(0, Math.min(1, progress)),
     amount = target;
+  let geometryAmount = -1,
+    flowingUntil = 0;
   let blocked = !!document.querySelector('[role="dialog"][aria-modal="true"]');
   const still = () => reduced.matches || settings.motion === 'still';
   const applyPalette = () => {
@@ -211,10 +231,18 @@ export function createHourglass(
       : Math.abs(target - amount) < 0.001
         ? target
         : T.MathUtils.lerp(amount, target, 0.09);
-    bottom.scale.y = 0.5 + amount * 1.8;
-    const remaining = Math.max(0.005, 1 - amount);
+    bottom.visible = amount > 0.001;
     top.visible = amount < 0.999;
-    top.scale.set(Math.sqrt(remaining), 1.2 * remaining, Math.sqrt(remaining));
+    if (
+      Math.abs(geometryAmount - amount) > 0.002 ||
+      (amount === target && geometryAmount !== target)
+    ) {
+      bottom.geometry.dispose();
+      top.geometry.dispose();
+      bottom.geometry = fillGeometry(lowerProfile, amount);
+      top.geometry = fillGeometry(upperProfile, 1 - amount);
+      geometryAmount = amount;
+    }
     const lively = settings.motion === 'lively';
     group.rotation.y =
       orbit + (fixed ? 0 : pointer + Math.sin(now * 0.00022) * (lively ? 0.2 : 0.08));
@@ -222,9 +250,9 @@ export function createHourglass(
     starCloud.visible = !fixed && (lively || settings.theme === 'midnight');
     starCloud.rotation.y = now * 0.00006;
     starMaterial.opacity = 0.3 + Math.sin(now * 0.0011) * 0.12;
-    grainCloud.visible = !fixed && target < 1;
+    grainCloud.visible = !fixed && now < flowingUntil && target > 0;
     if (grainCloud.visible) {
-      const base = -1.1 + amount * 0.7;
+      const base = bottom.geometry.boundingBox?.max.y ?? -1.29;
       for (let i = 0; i < grains.length / 3; i++) {
         const t = (now * 0.0007 + i / 96) % 1;
         grainPositions.setXYZ(
@@ -318,7 +346,11 @@ export function createHourglass(
   return Object.assign(dispose, {
     update: (next: { progress?: number } & Partial<HourglassOptions>) => {
       if (disposed) return;
-      if (next.progress !== undefined) target = Math.max(0, Math.min(1, next.progress));
+      if (next.progress !== undefined) {
+        const nextAmount = Math.max(0, Math.min(1, next.progress));
+        if (nextAmount > target) flowingUntil = performance.now() + 1800;
+        target = nextAmount;
+      }
       settings = { ...settings, ...next };
       applyPalette();
       resume();

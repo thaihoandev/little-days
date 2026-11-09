@@ -6,7 +6,9 @@ export const answerInput = z.object({
   requestId: z.uuid(),
   text: z.string().trim().min(1).max(1200),
   date: dateString.optional(),
+  promptId: z.string().max(80).optional(),
 });
+export const catalogAnswerInput = answerInput.extend({ promptId: z.string().min(1).max(80) });
 export const revisionInput = z.object({ expectedRevision: z.number().int().nonnegative() });
 export const jarModes = { 'month-end': 'Cuối tháng này', scheduled: 'Chọn ngày mở' } as const;
 export const jarInput = z.object({
@@ -27,6 +29,7 @@ export type QuestionRound = {
   participants: string[];
   date: string;
   prompt: string;
+  promptId?: string;
   revision: number;
   createdAt: string;
   revealedAt?: string;
@@ -77,6 +80,7 @@ export type LoveNoteView = Omit<LoveNote, 'epoch' | 'participants' | 'text' | 'a
   canDelete: boolean;
 };
 export type CoupleState = {
+  questionPreferences?: import('./question-catalog.js').QuestionPreferences;
   members: CoupleMember[];
   today: string;
   daily: QuestionView | null;

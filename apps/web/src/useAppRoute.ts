@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { historyEntry } from './reading-state.js';
 export const sectionPaths = {
   home: '/today',
   timeline: '/timeline',
@@ -20,23 +21,38 @@ export function parseRoute(path: string): {
   return item ? { section: item[0] as AppSection } : { section: 'home', unknown: true };
 }
 export function useAppRoute() {
+  historyEntry();
   const [locationKey, setLocationKey] = useState(() => location.pathname + location.search);
   const pathname = locationKey.split('?')[0],
     search = locationKey.includes('?') ? locationKey.slice(locationKey.indexOf('?')) : '';
   useEffect(() => {
-    const back = () => setLocationKey(location.pathname + location.search);
+    const previousRestoration = history.scrollRestoration;
+    history.scrollRestoration = 'manual';
+    const back = () => {
+      window.dispatchEvent(new Event('little-days:before-navigate'));
+      historyEntry();
+      setLocationKey(location.pathname + location.search);
+    };
     window.addEventListener('popstate', back);
-    return () => window.removeEventListener('popstate', back);
+    return () => {
+      window.removeEventListener('popstate', back);
+      history.scrollRestoration = previousRestoration;
+    };
   }, []);
   const navigate = (path: string, replace = false) => {
     const target = new URL(path, location.origin);
     if (target.origin !== location.origin) throw new Error('Chỉ điều hướng trong ứng dụng.');
     const next = target.pathname + target.search;
     if (location.pathname + location.search !== next) {
-      history[replace ? 'replaceState' : 'pushState'](null, '', next);
+      window.dispatchEvent(new Event('little-days:before-navigate'));
+      history[replace ? 'replaceState' : 'pushState'](
+        { littleDaysEntry: crypto.randomUUID() },
+        '',
+        next,
+      );
       setLocationKey(next);
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
   };
-  return { route: parseRoute(pathname), pathname, search, navigate };
+  return { route: parseRoute(pathname), pathname, search, navigate, entryKey: historyEntry() };
 }

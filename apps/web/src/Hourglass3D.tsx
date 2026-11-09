@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, RotateCcw, SlidersHorizontal, Sparkles } from 'lucide-react';
 import type { HourglassController, HourglassMotion, HourglassTheme } from './hourglass-scene.js';
 const themes = { amber: 'Nắng ấm', rose: 'Hồng sương', midnight: 'Trời sao' } as const;
@@ -22,13 +22,18 @@ export function Hourglass3D({
   progress,
   active = true,
   autoStart = true,
+  label = 'Nhịp đóng góp trong tuần',
+  hasData = true,
 }: {
   progress: number;
   active?: boolean;
   autoStart?: boolean;
+  label?: string;
+  hasData?: boolean;
 }) {
   const host = useRef<HTMLDivElement>(null),
     controller = useRef<HourglassController | null>(null);
+  const clipId = useId().replaceAll(':', '');
   const [style, setStyle] = useState(preference),
     [demo, setDemo] = useState(false);
   const [state, setState] = useState<'poster' | 'loading' | 'ready' | 'fallback'>('poster');
@@ -103,15 +108,38 @@ export function Hourglass3D({
       data-theme={style.theme}
       data-motion={style.motion}
       data-active={running}
+      data-has-data={hasData}
+      data-progress={hasData ? Math.round(progress * 100) : undefined}
     >
       <div className="hourglass-aura" aria-hidden="true" />
       <div className="hourglass-canvas" ref={host} />
-      {state !== 'ready' && (
+      {state !== 'ready' && !hasData && (
         <img
           className="hourglass-still"
           src="/hourglass-still.png"
           alt="Đồng hồ cát kết xuất từ mô hình 3D"
         />
+      )}
+      {state !== 'ready' && hasData && (
+        <svg className="hourglass-fallback" viewBox="0 0 100 180" role="img" aria-label={label}>
+          <defs>
+            <clipPath id={clipId}>
+              <path d="M27 24Q12 43 29 65L47 88Q50 91 47 94L29 117Q12 139 27 156H73Q88 139 71 117L53 94Q50 91 53 88L71 65Q88 43 73 24Z" />
+            </clipPath>
+          </defs>
+          <path d="M20 20V160M80 20V160" stroke="#a78a65" strokeWidth="3" />
+          <g clipPath={`url(#${clipId})`} fill="currentColor">
+            <rect x="15" y={24 + 66 * progress} width="70" height={66 * (1 - progress)} />
+            <rect x="15" y={156 - 66 * progress} width="70" height={66 * progress} />
+          </g>
+          <path
+            d="M27 24Q12 43 29 65L47 88Q50 91 47 94L29 117Q12 139 27 156H73Q88 139 71 117L53 94Q50 91 53 88L71 65Q88 43 73 24Z"
+            fill="none"
+            stroke="#c6b79f"
+            strokeWidth="1.5"
+          />
+          <path d="M18 20H82M18 160H82" stroke="#92734b" strokeWidth="7" strokeLinecap="round" />
+        </svg>
       )}
       {state === 'loading' && (
         <span className="hourglass-loading" role="status">
@@ -183,7 +211,15 @@ export function Hourglass3D({
           <small>Luôn tôn trọng chế độ giảm chuyển động của thiết bị.</small>
         </div>
       </details>
-      <span className="hourglass-caption">Từng chút thời gian, cùng giữ lại.</span>
+      <div className="hourglass-data" role="status" aria-live="polite">
+        <meter min={0} max={1} value={hasData ? progress : 0} aria-label={label} />
+        <span aria-label={label}>
+          {hasData ? `${Math.round(progress * 100)}% tuần` : 'Chờ dữ liệu'}
+        </span>
+      </div>
+      <span className="hourglass-caption">
+        Cát ghi lại đóng góp, không đếm thời gian mở ứng dụng.
+      </span>
     </div>
   );
 }

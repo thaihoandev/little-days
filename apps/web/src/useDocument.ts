@@ -5,6 +5,13 @@ import {
   albumContentSchema,
 } from '../../../packages/domain/index.js';
 import { api, ApiError } from './api.js';
+import {
+  deviceDrafts,
+  draftGeneration,
+  writeDeviceDraft,
+  removeMatchingDraft,
+  type DeviceDraft,
+} from './draft-store.js';
 export function contentOf(album: Album): AlbumContent {
   return {
     ...(album.documentKind ? { documentKind: album.documentKind } : {}),
@@ -36,6 +43,61 @@ export function useDocument(initial: Album, userId: string) {
   const [retryAt, setRetryAt] = useState<number | null>(null);
   const busy = useRef<Promise<Album> | null>(null);
   const key = `scrapbook-draft:${userId}:${initial.id}`;
+  const writer = useRef(key + ':branch:' + crypto.randomUUID());
+  const draftQueue = useRef(Promise.resolve());
+  const deviceGeneration = useRef(draftGeneration(userId)).current;
+  const deviceSequence = useRef(0);
+  const pendingDevice = useRef<DeviceDraft | null>(null);
+  const deviceDrain = useRef(false);
+  const [branches, setBranches] = useState<DeviceDraft[]>([]);
+  const [deviceError, setDeviceError] = useState('');
+  const adopted = useRef<DeviceDraft | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void deviceDrafts(key).then((rows) => {
+      if (!alive) return;
+      const pending = rows.filter(
+        (r) => r.id !== writer.current && JSON.stringify(r.content) !== saved.current,
+      );
+      setBranches(pending);
+      if (pending.length) setDraft(pending[0].content);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [key]);
+  const persistDevice = useCallback(() => {
+    if (JSON.stringify(contentOf(current.current)) === saved.current) return;
+    const row: DeviceDraft = {
+      id: writer.current,
+      scope: key,
+      schemaVersion: 1,
+      baseRevision: revision.current,
+      at: Date.now(),
+      sequence: ++deviceSequence.current,
+      content: contentOf(current.current),
+    };
+    pendingDevice.current = row;
+    if (deviceDrain.current) return;
+    deviceDrain.current = true;
+    draftQueue.current = draftQueue.current
+      .catch(() => {})
+      .then(async () => {
+        try {
+          while (pendingDevice.current) {
+            const latest = pendingDevice.current;
+            pendingDevice.current = null;
+            await writeDeviceDraft(latest, deviceGeneration);
+          }
+        } finally {
+          deviceDrain.current = false;
+        }
+      });
+    void draftQueue.current.then(
+      () => setDeviceError(''),
+      () => setDeviceError('Không lưu được bản nháp trên thiết bị. Hãy lưu về máy chủ.'),
+    );
+  }, [key]);
   const [draft, setDraft] = useState<AlbumContent | null>(() => {
     try {
       const raw = localStorage.getItem(key);
@@ -115,7 +177,21 @@ export function useDocument(initial: Album, userId: string) {
       publish({ ...current.current, revision: response.revision, updatedAt: response.updatedAt });
       setStatus(JSON.stringify(contentOf(current.current)) === serialized ? 'saved' : 'dirty');
       setError('');
-      if (JSON.stringify(contentOf(current.current)) === serialized) localStorage.removeItem(key);
+      if (JSON.stringify(contentOf(current.current)) === serialized) {
+        draftQueue.current = draftQueue.current
+          .catch(() => {})
+          .then(() => removeMatchingDraft(writer.current, content));
+        const source = adopted.current;
+        if (source) {
+          draftQueue.current = draftQueue.current.then(() =>
+            removeMatchingDraft(source.id, source.content),
+          );
+          adopted.current = null;
+        }
+        void draftQueue.current.catch(() =>
+          setDeviceError('Đã lưu máy chủ; chưa dọn được bản nháp trên thiết bị.'),
+        );
+      }
     } catch (e) {
       blocked.current = e instanceof ApiError && e.status === 409;
       const maintenance =
@@ -143,11 +219,7 @@ export function useDocument(initial: Album, userId: string) {
       if (status === 'dirty') setStatus('saved');
       return;
     }
-    try {
-      localStorage.setItem(key, serialized);
-    } catch {
-      setError('Không lưu được bản nháp trên thiết bị. Hãy lưu về máy chủ.');
-    }
+    persistDevice();
     if (status !== 'dirty') return;
     const timer = setTimeout(
       () => {
@@ -156,7 +228,7 @@ export function useDocument(initial: Album, userId: string) {
       Math.max(1100, (retryAt || 0) - Date.now()),
     );
     return () => clearTimeout(timer);
-  }, [album, flush, key, status, retryAt]);
+  }, [album, flush, key, status, retryAt, persistDevice]);
   useEffect(() => {
     if (status !== 'error' || retryAt === null) return;
     const timer = setTimeout(() => void flush().catch(() => {}), Math.max(0, retryAt - Date.now()));
@@ -168,9 +240,16 @@ export function useDocument(initial: Album, userId: string) {
         e.preventDefault();
       }
     };
-    window.addEventListener('beforeunload', before);
-    return () => window.removeEventListener('beforeunload', before);
-  }, []);
+    const hidden = () => {
+      if (document.hidden) persistDevice();
+    };
+    if (status !== 'saved') window.addEventListener('beforeunload', before);
+    document.addEventListener('visibilitychange', hidden);
+    return () => {
+      window.removeEventListener('beforeunload', before);
+      document.removeEventListener('visibilitychange', hidden);
+    };
+  }, [status, persistDevice]);
   const accept = (next: Album, resetHistory = false) => {
     if (resetHistory) {
       past.current = [];
@@ -178,11 +257,13 @@ export function useDocument(initial: Album, userId: string) {
       group.current = undefined;
       setHistoryVersion((n) => n + 1);
       setDraft(null);
-      try {
-        localStorage.removeItem(key);
-      } catch {
-        /* Server restore must still update the editor when device storage is unavailable. */
-      }
+      const previousContent = contentOf(current.current);
+      draftQueue.current = draftQueue.current
+        .catch(() => {})
+        .then(() => removeMatchingDraft(writer.current, previousContent));
+      void draftQueue.current.catch(() =>
+        setDeviceError('Đã khôi phục máy chủ; chưa dọn được bản nháp trên thiết bị.'),
+      );
     }
     revision.current = next.revision;
     saved.current = JSON.stringify(contentOf(next));
@@ -192,12 +273,17 @@ export function useDocument(initial: Album, userId: string) {
     setStatus('saved');
     setError('');
   };
-  const restoreDraft = () => {
-    if (draft) edit((a) => ({ ...a, ...draft }));
+  const restoreDraft = (selected?: AlbumContent) => {
+    const value = selected || draft;
+    adopted.current = branches.find((b) => b.content === value) || null;
+    if (value) edit((a) => ({ ...a, ...value }));
     setDraft(null);
   };
   const discardDraft = () => {
-    localStorage.removeItem(key);
+    const selected = branches.find((b) => b.content === draft);
+    void (draft ? removeMatchingDraft(selected?.id || key, draft) : Promise.resolve()).catch(() =>
+      setDeviceError('Chưa xóa được bản nháp trên thiết bị.'),
+    );
     setDraft(null);
   };
   return {
@@ -208,7 +294,15 @@ export function useDocument(initial: Album, userId: string) {
     canUndo: past.current.length > 0,
     canRedo: future.current.length > 0,
     status,
-    error,
+    error: error || deviceError,
+    branches,
+    draftSnapshot: () => ({
+      schemaVersion: 1,
+      albumId: initial.id,
+      baseRevision: revision.current,
+      content: contentOf(current.current),
+    }),
+    chooseDraft: (id: string) => setDraft(branches.find((b) => b.id === id)?.content || null),
     flush,
     accept,
     draft,

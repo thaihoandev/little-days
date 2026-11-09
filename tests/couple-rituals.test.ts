@@ -108,6 +108,92 @@ const note = (text: string, openDate = '2026-11-30') => ({
   mode: 'scheduled',
   openDate,
 });
+test('question topics apply tomorrow, use CAS, keep started rounds and reject revoked members', async () => {
+  const f = await couple();
+  try {
+    const today = (await f.rituals.state(f.a, f.a, { catalogVersion: 1 })).daily!;
+    const selected = await f.rituals.setQuestionPreferences(f.a, f.a, {
+      expectedRevision: -1,
+      excluded: ['everyday', 'plans', 'gratitude'],
+    });
+    assert.equal(selected.effectiveDate, '2026-11-04');
+    assert.equal(
+      (await f.rituals.state(f.b, f.a, { catalogVersion: 1 })).daily!.prompt,
+      today.prompt,
+    );
+    await assert.rejects(
+      f.rituals.setQuestionPreferences(f.b, f.a, { expectedRevision: -1, excluded: [] }),
+      status(409),
+    );
+    await f.rituals.answer(
+      f.a,
+      f.a,
+      {
+        ...answer(today, 'Giữ nguyên câu hỏi'),
+        promptId: today.promptId,
+      },
+      true,
+    );
+    f.setNow('2026-11-04T05:00:00Z');
+    const next = (await f.rituals.state(f.b, f.a, { catalogVersion: 1 })).daily!;
+    assert.match(next.promptId!, /^memories-v1-/);
+    const history = (await f.rituals.state(f.b, f.a)).questions;
+    assert.equal(history.find((q) => q.id === today.id)?.prompt, today.prompt);
+    await assert.rejects(
+      f.rituals.answer(
+        f.b,
+        f.a,
+        { ...answer(next, 'Đã xem câu cũ'), promptId: 'wrong-version' },
+        true,
+      ),
+      status(409),
+    );
+    await f.journal.sharing.change(f.a, f.grant.id, { expectedRevision: 1 }, true);
+    await assert.rejects(
+      f.rituals.setQuestionPreferences(f.b, f.a, { expectedRevision: 0, excluded: [] }),
+      status(404),
+    );
+  } finally {
+    await f.close();
+  }
+});
+test('legacy and catalog protocols keep the prompt read by each client and fence mixed-version first answers', async () => {
+  const f = await couple();
+  try {
+    await f.rituals.setQuestionPreferences(f.a, f.a, {
+      expectedRevision: -1,
+      excluded: ['everyday', 'gratitude', 'plans'],
+    });
+    f.setNow('2026-11-04T05:00:00Z');
+    const legacy = (await f.rituals.state(f.a, f.a)).daily!;
+    const modern = (await f.rituals.state(f.b, f.a, { catalogVersion: 1 })).daily!;
+    assert.equal(legacy.id, modern.id);
+    assert.notEqual(legacy.prompt, modern.prompt);
+    await f.rituals.answer(f.a, f.a, answer(legacy, 'Theo câu đã đọc trên frontend cũ'));
+    await assert.rejects(
+      f.rituals.answer(f.b, f.a, { ...answer(modern, 'Câu mới'), promptId: modern.promptId }, true),
+      status(409),
+    );
+    assert.equal(
+      (await f.rituals.state(f.b, f.a, { catalogVersion: 1 })).daily!.prompt,
+      legacy.prompt,
+    );
+    f.setNow('2026-11-05T05:00:00Z');
+    const oldNext = (await f.rituals.state(f.a, f.a)).daily!,
+      newNext = (await f.rituals.state(f.b, f.a, { catalogVersion: 1 })).daily!;
+    await f.rituals.answer(
+      f.b,
+      f.a,
+      { ...answer(newNext, 'Theo câu mới'), promptId: newNext.promptId },
+      true,
+    );
+    await assert.rejects(f.rituals.answer(f.a, f.a, answer(oldNext, 'Bản nháp cũ')), status(409));
+    assert.equal((await f.rituals.state(f.a, f.a)).daily!.prompt, newNext.prompt);
+    assert.equal((await f.db.list('couple-round', f.a)).length, 2);
+  } finally {
+    await f.close();
+  }
+});
 test('daily question keeps peer text off the wire, supports retry/withdraw/CAS and saves exactly one memory', async () => {
   const f = await couple();
   try {

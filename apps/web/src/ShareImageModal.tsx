@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Konva from 'konva';
 import {
   Check,
@@ -10,10 +10,12 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-import type { Album, Page } from '../../../packages/domain/index.js';
+import { albumContentSchema, type Album, type Page } from '../../../packages/domain/index.js';
 import { Modal } from './Modal.js';
+import { downloadFile, imagePdf } from './portable-files.js';
+import { api } from './api.js';
 
-export type ExportFormat = 'standard' | 'story' | 'photobooth-strip' | 'album-long';
+export type ExportFormat = 'standard' | 'story' | 'photobooth-strip' | 'album-long' | 'pdf';
 
 const formatOptions: {
   id: ExportFormat;
@@ -24,6 +26,16 @@ const formatOptions: {
   description: string;
   icon: typeof Smartphone;
 }[] = [
+  {
+    id: 'pdf',
+    title: 'Cuốn sổ PDF',
+    badge: 'Tối đa 20 trang',
+    ratio: '4:5',
+    size: 'Mỗi trang 720 × 900',
+    description:
+      'Giữ từng trang riêng để đọc và in. PDF dạng ảnh, chưa tìm kiếm được chữ; không kèm nhạc hoặc chuyển động.',
+    icon: ImageIcon,
+  },
   {
     id: 'album-long',
     title: 'Toàn bộ sổ · ảnh dài',
@@ -79,6 +91,13 @@ export function ShareImageModal({
   renderPage: (page: Page) => Promise<string>;
 }) {
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>('story');
+  const alive = useRef(true);
+  useEffect(
+    () => () => {
+      alive.current = false;
+    },
+    [],
+  );
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState('');
   const [downloaded, setDownloaded] = useState(false);
@@ -227,7 +246,57 @@ export function ShareImageModal({
       setError('');
       setDownloaded(false);
 
+      if (selectedFormat === 'pdf') {
+        await ensureReady();
+        await document.fonts.ready;
+        const before = await api<Album>('/albums/' + album.id);
+        if (
+          JSON.stringify(albumContentSchema.parse(before)) !==
+          JSON.stringify(albumContentSchema.parse(album))
+        )
+          throw Error(
+            'Cuốn sổ đã có phiên bản mới trên máy chủ. Hãy tải bản mới trước khi xuất PDF.',
+          );
+        const pages: { jpeg: Uint8Array; width: number; height: number }[] = [];
+        let bytes = 0;
+        for (const page of album.pages) {
+          if (!alive.current) return;
+          const url = await renderPage(page),
+            image = new Image();
+          await new Promise<void>((resolve, reject) => {
+            image.onload = () => resolve();
+            image.onerror = () => reject(Error('Chưa tải được một trang PDF.'));
+            image.src = url;
+          });
+          const canvas = document.createElement('canvas');
+          canvas.width = image.naturalWidth;
+          canvas.height = image.naturalHeight;
+          const context = canvas.getContext('2d');
+          if (!context) throw Error('Thiết bị chưa hỗ trợ xuất PDF.');
+          context.fillStyle = page.background;
+          context.fillRect(0, 0, canvas.width, canvas.height);
+          context.drawImage(image, 0, 0);
+          const blob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, 'image/jpeg', 0.94),
+          );
+          if (!blob) throw Error('Chưa tạo được ảnh trang PDF.');
+          const jpeg = new Uint8Array(await blob.arrayBuffer());
+          bytes += jpeg.length;
+          if (bytes > 32 * 1024 * 1024) throw Error('PDF vượt 32 MiB. Hãy xuất từng trang PNG.');
+          pages.push({ jpeg, width: canvas.width, height: canvas.height });
+          canvas.width = canvas.height = 1;
+        }
+        const current = await api<Album>('/albums/' + album.id);
+        if (!alive.current) return;
+        if (current.revision !== before.revision)
+          throw Error('Cuốn sổ vừa thay đổi. Hãy xuất PDF lại.');
+        downloadFile(await imagePdf(pages), `little-days-${album.id}.pdf`);
+        setDownloaded(true);
+        return;
+      }
+
       const dataUrl = await renderImage(selectedFormat);
+      if (!alive.current) return;
       const filename = `little-days-${album.id}-${selectedFormat}.png`;
 
       // If mobile sharing requested and supported
@@ -315,13 +384,13 @@ export function ShareImageModal({
 
         {downloaded && (
           <p className="success-banner" role="status">
-            ✓ Đã tạo ảnh thành công! Bạn có thể lưu hoặc chia sẻ ngay.
+            ✓ Đã tạo tệp thành công! Bạn có thể lưu hoặc chia sẻ ngay.
           </p>
         )}
 
         {/* Actions */}
         <div className="share-modal-actions">
-          {typeof navigator !== 'undefined' && 'share' in navigator && (
+          {selectedFormat !== 'pdf' && typeof navigator !== 'undefined' && 'share' in navigator && (
             <button
               type="button"
               className="button quiet"
@@ -340,7 +409,11 @@ export function ShareImageModal({
             onClick={() => void handleAction(false)}
           >
             {exporting ? <LoaderCircle className="spin" size={16} /> : <Download size={16} />}
-            {exporting ? 'Đang kết xuất ảnh…' : 'Tải ảnh PNG'}
+            {exporting
+              ? 'Đang kết xuất…'
+              : selectedFormat === 'pdf'
+                ? 'Tải cuốn sổ PDF'
+                : 'Tải ảnh PNG'}
           </button>
         </div>
       </div>

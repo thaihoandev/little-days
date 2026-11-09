@@ -237,10 +237,14 @@ try {
         await page.route(rhythmPath, async (route) => {
           const response = await route.fetch();
           const data = await response.json();
-          await route.fulfill({ response, json: { ...data, completedDays: 3 } });
+          await route.fulfill({
+            response,
+            json: { ...data, completedDays: 3, memberDays: 6, weeklyCapacity: 14 },
+          });
         });
         await page.evaluate(() => window.dispatchEvent(new Event('focus')));
         await expect(page.locator('.rhythm-summary>strong')).toContainText('3/7');
+        await expect(page.locator('.hourglass-stage')).toHaveAttribute('data-progress', '43');
         assert.ok(
           await page.evaluate(
             () =>
@@ -446,12 +450,12 @@ try {
         await page.goto(origin + '/today');
         await page.locator('.hourglass-stage').scrollIntoViewIfNeeded();
         await expect(page.locator('.hourglass-stage')).toHaveAttribute('data-renderer', 'fallback');
-        await expect(page.locator('.hourglass-still')).toBeVisible();
-        await expect
-          .poll(() =>
-            page.locator('.hourglass-still').evaluate((img: HTMLImageElement) => img.naturalWidth),
-          )
-          .toBeGreaterThan(0);
+        await expect(page.locator('.hourglass-fallback')).toBeVisible();
+        await expect(page.locator('.hourglass-fallback rect')).toHaveCount(2);
+        const percent = Number(
+          await page.locator('.hourglass-stage').getAttribute('data-progress'),
+        );
+        assert.ok(Number.isFinite(percent) && percent >= 0 && percent <= 100);
       }
       if (width === 1440) {
         let unsupportedReads = 0;
