@@ -1,5 +1,13 @@
 # Upload phục hồi và thư viện lớn
 
+## Chẩn đoán độ trễ điều hướng — 10/11/2026
+
+- Chưa có trace request đã đăng nhập hoặc `EXPLAIN ANALYZE` trên dữ liệu thật để kết luận bảng chung là nguyên nhân. `records` có khóa chính `(kind,id)` và index `(kind,owner)` cho cả hai driver. Chưa thay schema hoặc chuyển dữ liệu production.
+- `JournalDashboard` chờ `/journal-state` trước khi dùng cache hoặc đọc trạng thái chia sẻ; `ValidatedReads` cũng kiểm tra endpoint này trước mỗi lượt tái sử dụng. Trong `journal.state`, việc gọi `sharing.state` dựng cả không gian/thành viên/hồ sơ bằng nhiều lượt đọc nối tiếp; thành viên tham gia còn đọc từng grant từ chỉ mục. Vì vậy kiểm tra cache không đồng nghĩa chỉ chạy một truy vấn SQL nhẹ.
+- Chạy `node --import tsx scripts/benchmark-read-queries.ts` để tái lập bằng hai tài khoản giả, SQLite riêng dưới `test-results/`, không dùng `DATABASE_URL` hoặc media thật. Bản `ee1cbc7`: `/journal-state` chưa qua middleware chạy **9 truy vấn** khi chưa ghép; **23** ở chủ không gian và **29** ở thành viên sau ghép. CPU/thời gian SQLite cục bộ chỉ khoảng **3–6 ms**; không chuyển số này thành tốc độ Neon/production. Chi phí mỗi lượt giao tiếp database ở xa có thể cộng dồn ngay cả khi từng truy vấn dùng index và trả ít dòng.
+- Hướng ưu tiên: projection nhẹ cho phiên bản/quyền, đọc grant/account/profile theo lô và loại request kiểm tra trùng trong cùng lượt điều hướng; đo SQL count/thời gian trước-sau trên cùng fixture. Tiếp tục kiểm tra quyền hiện tại, thu hồi, xóa tài khoản và revision trước khi trả cache. Sau đó mới dùng query plan và dữ liệu đo để quyết định index JSON hoặc tách bảng theo nhu cầu cụ thể; không đổi storage chỉ vì cảm giác tải chậm.
+- Chẩn đoán chưa bao gồm cold start, độ trễ vị trí Render↔Neon, thời gian Cloudinary hoặc request tài khoản thật từ máy người dùng. Không thêm cache dài hạn cho session/quyền và không đổi hạ tầng trong lần rà soát này.
+
 ## Tinh chỉnh bố cục — bổ sung 06/11/2026
 
 - Hôm nay dựng hai thẻ trước, mở thêm tối đa bốn; timeline thu/mở từng ngày trên tập dữ liệu đã tải. Đây là giảm số card DOM ban đầu, **không** thay payload hoặc phân trang API. Agenda gộp từ dữ liệu ngày lễ/dấu mốc hiện có, gợi ý hành động không tạo thêm request.

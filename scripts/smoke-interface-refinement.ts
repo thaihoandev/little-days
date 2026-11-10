@@ -237,8 +237,20 @@ try {
       await expect(
         page.getByRole('button', { name: 'Mở thùng rác dấu mốc', exact: true }),
       ).toBeVisible();
-      const trash = await page.locator('.journal-trash-action').boundingBox(),
-        filters = await page.locator('.journal-filters').boundingBox();
+      // Read related bounds in one browser frame; the arrival animation can move
+      // their shared header between separate Playwright protocol requests.
+      const { trash, filters, toolbar } = await page
+        .locator('.journal-feed > .section-heading')
+        .evaluate(async (header) => {
+          await document.fonts.ready;
+          const trash = header.querySelector('.journal-trash-action'),
+            filters = header.querySelector('.journal-filters');
+          return {
+            trash: trash?.getBoundingClientRect().toJSON(),
+            filters: filters?.getBoundingClientRect().toJSON(),
+            toolbar: header.getBoundingClientRect().toJSON(),
+          };
+        });
       assert.ok(trash && filters);
       if (mobile)
         assert.ok(
@@ -250,7 +262,6 @@ try {
           trash.x >= filters.x + filters.width - 1,
           'desktop management actions sit beside the filters',
         );
-      const toolbar = await page.locator('.journal-feed > .section-heading').boundingBox();
       assert.ok(
         toolbar &&
           trash.x + trash.width <= toolbar.x + toolbar.width + 1 &&
