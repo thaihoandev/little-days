@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { X, ImagePlus } from 'lucide-react';
+import { lazy, Suspense, useEffect, useRef, useState, type FormEvent } from 'react';
+import { X, ImagePlus, MapPin, ChevronDown, CalendarDays, Check, LoaderCircle } from 'lucide-react';
 import { api } from './api.js';
-import { uploadImage, uploadBatch } from './image-upload.js';
+import { uploadImage, uploadBatch, prepareUploadImage } from './image-upload.js';
 import { thumbnailUrl } from './thumbnail.js';
-import { LocationFields } from './LocationFields.js';
+import { ConfirmDialog, useBodyScrollLock } from './Overlays.js';
 import { PlanFields } from './PlanFields.js';
 import {
   type JournalEntry,
@@ -11,6 +11,96 @@ import {
   type TimelineSpace,
   journalKindNames,
 } from '../../../packages/domain/journal.js';
+const LocationFields = lazy(() =>
+  import('./LocationFields.js').then((m) => ({ default: m.LocationFields })),
+);
+
+function SelectedPhotos({
+  files,
+  disabled,
+  onRemove,
+}: {
+  files: File[];
+  disabled: boolean;
+  onRemove: (index: number) => void;
+}) {
+  const [previews, setPreviews] = useState<{ file: File; url: string }[]>([]);
+  const [failed, setFailed] = useState<File[]>([]);
+  const urls = useRef(new Map<File, string>());
+  const fail = (file: File) => setFailed((old) => (old.includes(file) ? old : [...old, file]));
+  useEffect(
+    () => () => {
+      urls.current.forEach((url) => URL.revokeObjectURL(url));
+      urls.current.clear();
+    },
+    [],
+  );
+  useEffect(() => {
+    let active = true;
+    for (const [file, url] of urls.current)
+      if (!files.includes(file)) {
+        URL.revokeObjectURL(url);
+        urls.current.delete(file);
+      }
+    setPreviews(
+      files.flatMap((file) => {
+        const url = urls.current.get(file);
+        return url ? [{ file, url }] : [];
+      }),
+    );
+    setFailed((old) => old.filter((file) => files.includes(file)));
+    for (const file of files)
+      if (!urls.current.has(file))
+        void prepareUploadImage(file)
+          .then((prepared) => {
+            if (!active) return;
+            const url = URL.createObjectURL(prepared);
+            urls.current.set(file, url);
+            setPreviews((old) => [...old, { file, url }]);
+          })
+          .catch(() => {
+            if (active) fail(file);
+          });
+    return () => {
+      active = false;
+    };
+  }, [files]);
+  if (!files.length) return null;
+  return (
+    <div className="milestone-selected-photos" aria-label="Ảnh đã chọn">
+      {files.map((file, index) => {
+        const preview = previews.find((p) => p.file === file);
+        return (
+          <div key={index}>
+            {preview && !failed.includes(file) ? (
+              <img src={preview.url} alt={`Ảnh đã chọn ${index + 1}`} onError={() => fail(file)} />
+            ) : (
+              <span className="milestone-photo-loading">
+                {failed.includes(file) ? (
+                  'Chưa xem được ảnh'
+                ) : (
+                  <>
+                    <LoaderCircle size={18} />
+                    Ảnh {index + 1}
+                  </>
+                )}
+              </span>
+            )}
+            <button
+              type="button"
+              className="icon-button"
+              disabled={disabled}
+              aria-label={`Bỏ ảnh đã chọn ${index + 1}`}
+              onClick={() => onRemove(index)}
+            >
+              <X size={14} />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function JournalPhotoTiles({
   entry,
@@ -112,15 +202,46 @@ export function JournalDialog({
     [files, setFiles] = useState<File[]>([]),
     [busy, setBusy] = useState(false),
     [uploadMessage, setUploadMessage] = useState(''),
-    [error, setError] = useState('');
+    [error, setError] = useState(''),
+    [locationReady, setLocationReady] = useState(!!initial?.location || !!draft?.location),
+    [locationOpen, setLocationOpen] = useState(!!initial?.location || !!draft?.location),
+    [confirmation, setConfirmation] = useState<'close' | string | null>(null);
+  const saving = useRef(false);
+  useBodyScrollLock();
+  const requestClose = () => {
+    if (saving.current) return;
+    const changed =
+      files.length > 0 ||
+      (entry
+        ? Object.entries(content).some(
+            ([key, value]) =>
+              JSON.stringify(value) !== JSON.stringify(entry[key as keyof JournalEntry]),
+          )
+        : !!(
+            content.title.trim() ||
+            content.note.trim() ||
+            content.location ||
+            content.annual ||
+            content.plan?.checklist.length
+          ));
+    if (changed) setConfirmation('close');
+    else onClose();
+  };
 
   useEffect(() => {
-    dialog.current?.showModal();
-    return () => dialog.current?.close();
+    const trigger = document.activeElement as HTMLElement | null;
+    const node = dialog.current;
+    node?.showModal();
+    return () => {
+      node?.close();
+      if (trigger?.isConnected) trigger.focus({ preventScroll: true });
+    };
   }, []);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    if (saving.current) return;
+    saving.current = true;
     setBusy(true);
     setError('');
     let current = entry,
@@ -149,7 +270,6 @@ export function JournalDialog({
         });
       if (!current) throw new Error('Chưa lưu được dấu mốc.');
       setEntry(current);
-      onUpdated(current);
       const id = current.id;
       let completed = 0;
       const batch = await uploadBatch<JournalEntry>(files, async (file, index) => {
@@ -165,15 +285,16 @@ export function JournalDialog({
       remaining = batch.results.filter((r) => r.error).map((r) => r.file);
       setFiles(remaining);
       setEntry(current);
-      onUpdated(current);
       if (remaining.length)
         throw new Error(
           `Đã lưu ${completed}/${files.length} ảnh. ${batch.results.find((r) => r.error)!.error!.message}`,
         );
       onSaved(current);
     } catch (e) {
+      if (current && current !== entry) onUpdated(current);
       setError((e as Error).message);
     } finally {
+      saving.current = false;
       setBusy(false);
     }
   };
@@ -185,19 +306,26 @@ export function JournalDialog({
       aria-label={initial ? 'Sửa dấu mốc' : 'Thêm dấu mốc'}
       onCancel={(event) => {
         event.preventDefault();
-        if (!busy) onClose();
+        requestClose();
       }}
     >
       <header>
         <div>
-          <span className="eyebrow">MỘT NGÀY ĐỂ NHỚ</span>
+          <span className="eyebrow">
+            <CalendarDays size={13} /> MỘT KHOẢNH KHẮC CỦA MÌNH
+          </span>
           <h2>{initial ? 'Sửa dấu mốc' : 'Thêm dấu mốc'}</h2>
         </div>
-        <button className="icon-button" aria-label="Đóng dấu mốc" disabled={busy} onClick={onClose}>
+        <button
+          className="icon-button"
+          aria-label="Đóng dấu mốc"
+          disabled={busy}
+          onClick={requestClose}
+        >
           <X size={20} />
         </button>
       </header>
-      <form className="form-stack" onSubmit={(event) => void submit(event)}>
+      <form className="form-stack" aria-busy={busy} onSubmit={(event) => void submit(event)}>
         {busy && uploadMessage && (
           <p role="status" className="upload-detail">
             {uploadMessage}
@@ -230,6 +358,48 @@ export function JournalDialog({
         )}
         <div className="journal-form-fields">
           <fieldset disabled={busy}>
+            <label className="journal-upload milestone-upload">
+              <ImagePlus size={19} />
+              <span>
+                <strong>{files.length ? 'Thêm ảnh khác' : 'Thêm ảnh cho khoảnh khắc'}</strong>
+                <small>Chọn ảnh trước, hoặc chỉ viết một dòng cũng được</small>
+              </span>
+              <input
+                aria-label="Ảnh dấu mốc"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={(e) => {
+                  const selected = Array.from(e.target.files || []);
+                  e.target.value = '';
+                  if (selected.length + files.length + (entry?.assets.length || 0) > 6) {
+                    setError('Mỗi dấu mốc tối đa 6 ảnh.');
+                    return;
+                  }
+                  if (selected.some((f) => f.size > 20 * 1048576)) {
+                    setError('Mỗi ảnh tối đa 20 MB.');
+                    return;
+                  }
+                  if (
+                    selected.some(
+                      (f) => !['image/jpeg', 'image/png', 'image/webp'].includes(f.type),
+                    )
+                  ) {
+                    setError('Chọn ảnh JPEG, PNG hoặc WebP.');
+                    return;
+                  }
+                  setFiles((old) => [...old, ...selected]);
+                  setError('');
+                }}
+              />
+              <small>{(entry?.assets.length || 0) + files.length}/6 ảnh · tối đa 20 MB/ảnh</small>
+            </label>
+            <SelectedPhotos
+              files={files}
+              disabled={busy}
+              onRemove={(index) => setFiles((old) => old.filter((_, i) => i !== index))}
+            />
+
             <label>
               Tên dấu mốc
               <input
@@ -273,7 +443,7 @@ export function JournalDialog({
               Lời nhắn / ghi chú
               <textarea
                 aria-label="Lời nhắn / ghi chú"
-                rows={5}
+                rows={3}
                 maxLength={5000}
                 value={content.note}
                 onChange={(e) => setContent({ ...content, note: e.target.value })}
@@ -295,55 +465,22 @@ export function JournalDialog({
                 onChange={(plan) => setContent({ ...content, plan })}
               />
             )}
-            <label className="journal-upload">
-              <ImagePlus size={19} />
-              Ảnh cho ngày này
-              <input
-                aria-label="Ảnh dấu mốc"
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                onChange={(e) => {
-                  const selected = Array.from(e.target.files || []);
-                  if (selected.length + (entry?.assets.length || 0) > 6) {
-                    setError('Mỗi dấu mốc tối đa 6 ảnh.');
-                    return;
-                  }
-                  if (selected.some((f) => f.size > 20 * 1048576)) {
-                    setError('Mỗi ảnh tối đa 20 MB.');
-                    return;
-                  }
-                  setFiles(selected);
-                  setError('');
-                }}
-              />
-              <small>JPEG/PNG/WebP · tối đa 6 ảnh, 20 MB/ảnh</small>
-            </label>
-            {files.length > 0 && (
-              <p className="muted small">Sẽ thêm: {files.map((f) => f.name).join(', ')}</p>
-            )}
             {entry && entry.assets.length > 0 && (
               <div className="journal-edit-photos">
                 {entry.assets.map((asset) => (
                   <div key={asset.id}>
-                    <img src={asset.url} alt={asset.name} />
+                    <img
+                      src={thumbnailUrl(asset.url)}
+                      alt="Ảnh đã lưu của dấu mốc"
+                      loading="lazy"
+                      decoding="async"
+                    />
                     <button
                       type="button"
                       className="text-button"
                       aria-label={'Xóa ảnh ' + asset.name}
                       onClick={() => {
-                        if (!window.confirm('Xóa ảnh này khỏi dấu mốc?')) return;
-                        setBusy(true);
-                        api<JournalEntry>('/journal/' + entry.id + '/assets/' + asset.id, {
-                          method: 'DELETE',
-                          body: JSON.stringify({ expectedRevision: entry.revision }),
-                        })
-                          .then((value) => {
-                            setEntry(value);
-                            onUpdated(value);
-                          })
-                          .catch((e) => setError(e.message))
-                          .finally(() => setBusy(false));
+                        setConfirmation(asset.id);
                       }}
                     >
                       Xóa ảnh
@@ -354,11 +491,33 @@ export function JournalDialog({
             )}
           </fieldset>
           {enhancedReady && (
-            <LocationFields
-              value={content.location}
-              disabled={busy}
-              onChange={(location) => setContent((current) => ({ ...current, location }))}
-            />
+            <details
+              className="milestone-location"
+              open={locationOpen}
+              onToggle={(e) => {
+                setLocationOpen(e.currentTarget.open);
+                if (e.currentTarget.open) setLocationReady(true);
+              }}
+              onInvalidCapture={() => setLocationOpen(true)}
+            >
+              <summary>
+                <MapPin size={16} />
+                <span>
+                  {content.location?.label || 'Ghim thêm địa điểm'}
+                  <small>Không bắt buộc · mở bản đồ khi cần</small>
+                </span>
+                <ChevronDown size={16} />
+              </summary>
+              {locationReady && (
+                <Suspense fallback={<p role="status">Đang mở địa điểm…</p>}>
+                  <LocationFields
+                    value={content.location}
+                    disabled={busy}
+                    onChange={(location) => setContent((current) => ({ ...current, location }))}
+                  />
+                </Suspense>
+              )}
+            </details>
           )}
         </div>
         {error && (
@@ -368,13 +527,66 @@ export function JournalDialog({
         )}
         <footer className="journal-form-footer">
           <button type="submit" className="button primary full" disabled={busy}>
-            {busy ? 'Đang giữ lại…' : 'Lưu dấu mốc'}
+            {busy ? (
+              <>
+                <LoaderCircle size={17} className="spin" />
+                Đang giữ lại…
+              </>
+            ) : (
+              <>
+                <Check size={17} />
+                Lưu dấu mốc
+              </>
+            )}
           </button>
           <p className="muted small">
-            Chỉ những người có quyền truy cập dòng thời gian này mới xem và chỉnh sửa được.
+            {spaces.find((s) => s.id === timelineId)
+              ? spaces.find((s) => s.id === timelineId)?.shared
+                ? 'Lưu trong không gian chung · các thành viên cùng xem và viết.'
+                : 'Lưu trong không gian riêng · chỉ mình bạn xem.'
+              : 'Chỉ người có quyền truy cập dòng thời gian đã chọn được xem.'}
           </p>
         </footer>
       </form>
+      {confirmation && (
+        <ConfirmDialog
+          title={confirmation === 'close' ? 'Rời dấu mốc đang viết?' : 'Xóa ảnh khỏi dấu mốc?'}
+          description={
+            confirmation === 'close'
+              ? 'Nội dung chưa lưu và ảnh chưa tải sẽ không được giữ. Dấu mốc đã lưu trên máy chủ vẫn còn.'
+              : 'Ảnh sẽ được gỡ khỏi dấu mốc. Nội dung bạn đang viết vẫn được giữ trong form.'
+          }
+          confirmLabel={confirmation === 'close' ? 'Rời và bỏ phần chưa lưu' : 'Xóa ảnh'}
+          busy={busy}
+          onClose={() => setConfirmation(null)}
+          onConfirm={() => {
+            if (confirmation === 'close') {
+              onClose();
+              return;
+            }
+            if (!entry || saving.current) return;
+            saving.current = true;
+            setBusy(true);
+            void api<JournalEntry>('/journal/' + entry.id + '/assets/' + confirmation, {
+              method: 'DELETE',
+              body: JSON.stringify({ expectedRevision: entry.revision }),
+            })
+              .then((value) => {
+                setEntry(value);
+                onUpdated(value);
+                setConfirmation(null);
+              })
+              .catch((e) => {
+                setConfirmation(null);
+                setError(e.message);
+              })
+              .finally(() => {
+                saving.current = false;
+                setBusy(false);
+              });
+          }}
+        />
+      )}
     </dialog>
   );
 }

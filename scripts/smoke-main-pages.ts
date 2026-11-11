@@ -361,6 +361,10 @@ try {
           'focusing/typing does not scale the mobile page',
         );
         await form.getByRole('button', { name: 'Đóng dấu mốc', exact: true }).click();
+        const discard = page.getByRole('dialog', { name: 'Rời dấu mốc đang viết?', exact: true });
+        await expect(discard).toBeVisible();
+        await discard.getByRole('button', { name: 'Rời và bỏ phần chưa lưu', exact: true }).click();
+        await expect(form).not.toBeVisible();
       }
       await expect(page.locator('.together-home')).toHaveCount(0);
       await expect(page.locator('.timeline-map-panel')).toHaveCount(0);

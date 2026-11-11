@@ -756,7 +756,7 @@ export default function JournalDashboard({
             </button>
           )}
           <button
-            className="button primary"
+            className="button primary moment-primary-action"
             aria-label="Thêm dấu mốc"
             onClick={() => {
               setNewKind('memory');

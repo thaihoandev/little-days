@@ -6,6 +6,7 @@ import path from 'node:path';
 import { ensureBrowser } from '@remotion/renderer';
 
 const suites = [
+  ['moment-composer', 'scripts/smoke-moment-composer.ts'],
   ['signature-features', 'scripts/smoke-signature-features.ts'],
   ['portable-experience', 'scripts/smoke-portable-experience.ts'],
   ['device-drafts', 'scripts/smoke-device-drafts.ts'],

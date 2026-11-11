@@ -65,6 +65,7 @@ import './little-days-layout.css';
 import './recap-studio.css';
 import './portable-experience.css';
 import './signature-features.css';
+import './moment-composer.css';
 
 if (
   'serviceWorker' in navigator &&

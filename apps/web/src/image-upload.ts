@@ -60,6 +60,16 @@ export function prepareImage(file: File, maxEdge = 1600): Promise<File> {
   preparationQueue = task;
   return task;
 }
+/** Share bounded image preparation between a selected-photo preview and its upload. */
+export function prepareUploadImage(source: File, maxEdge = 1600): Promise<File> {
+  let prepared = preparedFiles.get(source);
+  if (!prepared) {
+    prepared = new Map();
+    preparedFiles.set(source, prepared);
+  }
+  if (!prepared.has(maxEdge)) prepared.set(maxEdge, prepareImage(source, maxEdge));
+  return prepared.get(maxEdge)!;
+}
 export async function uploadImage<T>(
   path: string,
   source: File,
@@ -68,13 +78,7 @@ export async function uploadImage<T>(
   maxEdge = 1600,
 ): Promise<T> {
   progress?.({ phase: 'prepare', loaded: 0, total: source.size });
-  let prepared = preparedFiles.get(source);
-  if (!prepared) {
-    prepared = new Map();
-    preparedFiles.set(source, prepared);
-  }
-  if (!prepared.has(maxEdge)) prepared.set(maxEdge, prepareImage(source, maxEdge));
-  const file = await prepared.get(maxEdge)!,
+  const file = await prepareUploadImage(source, maxEdge),
     body = new FormData();
   body.append('file', file);
   for (const [key, value] of Object.entries(fields)) body.append(key, value);

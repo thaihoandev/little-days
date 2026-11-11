@@ -1,5 +1,12 @@
 # Upload phục hồi và thư viện lớn
 
+## Form dấu mốc — 11/11/2026
+
+- Preview và upload dùng chung bước chuẩn bị ảnh theo File. Giữ hàng đợi decode một ảnh và upload tối đa hai ảnh đồng thời như trước. Không tăng độ song song hoặc thay receipt/CAS.
+- Form tạo mới chưa mount bản đồ trước khi người dùng mở mục địa điểm. Ảnh đang có dùng thumbnail riêng tư; URL preview trên thiết bị được thu hồi khi không còn cần.
+- Luồng thành công chỉ cập nhật danh sách một lần sau khi batch hoàn tất; lỗi từng phần vẫn cập nhật dữ liệu đã lưu và giữ các ảnh lỗi. Các số callback này đối chiếu theo mã, không tương đương số HTTP thực tế trong mọi tình huống.
+- Fixture `moment-composer` giữ phản hồi hai upload: ghi nhận **0 GET `/library/feed` trong khi đang lưu ảnh**, **1 POST tạo metadata**, **2 lần decode cho 2 ảnh**, dùng lại khi upload. Đây là request/decode fixture cục bộ, không đo cold start hoặc tốc độ mạng production. Xem [phạm vi và kiểm chứng](MOMENT_CAPTURE.md).
+
 ## Chẩn đoán độ trễ điều hướng — 10/11/2026
 
 - Chưa có trace request đã đăng nhập hoặc `EXPLAIN ANALYZE` trên dữ liệu thật để kết luận bảng chung là nguyên nhân. `records` có khóa chính `(kind,id)` và index `(kind,owner)` cho cả hai driver. Chưa thay schema hoặc chuyển dữ liệu production.

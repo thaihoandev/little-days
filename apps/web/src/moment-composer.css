@@ -1,0 +1,254 @@
+.journal-primary-actions .moment-primary-action {
+  min-height: 48px;
+  padding: 12px 20px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px #bf426521;
+  font-size: 13px;
+  font-weight: 700;
+}
+.moment-primary-action > svg {
+  background: #ffffff25;
+  border-radius: 7px;
+  width: 25px;
+  height: 25px;
+  padding: 4px;
+}
+.journal-dialog {
+  width: min(640px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 22px;
+  border-radius: 24px;
+  background: #fffdfc;
+}
+.journal-dialog > header {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 14px;
+}
+.journal-dialog > header .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  color: var(--accent);
+}
+.journal-dialog > header h2 {
+  font: 700 23px/1.4 var(--ui-font);
+  letter-spacing: -0.04em;
+  margin: 5px 0 0;
+}
+.journal-dialog .journal-form-fields {
+  padding: 2px 5px 2px 1px;
+  scrollbar-gutter: auto;
+}
+.journal-dialog fieldset {
+  gap: 13px;
+}
+.journal-dialog .journal-form-row {
+  gap: 12px;
+}
+.journal-dialog textarea {
+  resize: vertical;
+  min-height: 82px;
+  max-height: 190px;
+}
+.journal-dialog .milestone-upload {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
+  min-height: 85px;
+  border: 1px dashed #ddafbd;
+  border-radius: 16px;
+  background: linear-gradient(120deg, #fff3f6, #fffaf5);
+  cursor: pointer;
+}
+.milestone-upload > svg {
+  color: var(--accent);
+  flex: none;
+  width: 38px;
+  height: 38px;
+  padding: 8px;
+  background: white;
+  border-radius: 11px;
+}
+.milestone-upload > span {
+  flex: 1;
+}
+.milestone-upload strong,
+.milestone-upload small {
+  display: block;
+}
+.milestone-upload strong {
+  font-size: 13px;
+  color: var(--ink);
+}
+.milestone-upload small {
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.6;
+  font-weight: 400;
+}
+.milestone-upload > small {
+  flex: 0 0 100%;
+  text-align: right;
+}
+.milestone-upload > input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+.milestone-upload:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.milestone-selected-photos {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.milestone-selected-photos > div {
+  position: relative;
+  aspect-ratio: 1;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 11px;
+  background: #f2ecee;
+  border: 1px solid var(--line);
+}
+.milestone-selected-photos img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.milestone-selected-photos .icon-button {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-height: 36px;
+  height: 36px;
+  width: 36px;
+  background: #25232cdb;
+  color: white;
+  border: 1px solid #ffffff50;
+  border-radius: 50%;
+}
+.milestone-photo-loading {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 9px;
+}
+.milestone-location {
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  margin-top: 14px;
+  background: white;
+}
+.milestone-location > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  list-style: none;
+}
+.milestone-location > summary::-webkit-details-marker {
+  display: none;
+}
+.milestone-location summary span {
+  flex: 1;
+  min-width: 0;
+}
+.milestone-location summary small {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+  font-weight: 400;
+  margin-top: 3px;
+}
+.milestone-location[open] > summary > svg:last-child {
+  transform: rotate(180deg);
+}
+.milestone-location > fieldset {
+  margin: 0 12px 12px;
+}
+.journal-dialog .journal-form-footer {
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.journal-form-footer .button {
+  border-radius: 13px;
+}
+.journal-form-footer p {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 10px;
+}
+.journal-dialog .journal-target-label {
+  font-size: 11px;
+  margin-bottom: 0;
+}
+.journal-dialog .journal-target-label select {
+  min-height: 40px;
+}
+.journal-dialog .upload-detail {
+  flex: none;
+  background: #edf7f0;
+  border-radius: 10px;
+  padding: 9px 12px;
+  margin: 0;
+  font-size: 11px;
+}
+@media (max-width: 640px) {
+  .journal-dialog {
+    padding: 16px;
+    border-radius: 22px;
+    width: calc(100vw - 16px);
+    max-height: calc(100dvh - 16px);
+  }
+  .journal-dialog input,
+  .journal-dialog textarea,
+  .journal-dialog select {
+    font-size: 16px;
+  }
+  .journal-dialog .journal-form-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .journal-dialog .journal-form-row label {
+    min-width: 0;
+  }
+  .journal-dialog .milestone-upload {
+    min-height: 74px;
+    padding: 11px;
+  }
+  .milestone-selected-photos {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .milestone-selected-photos > div {
+    aspect-ratio: 1.5;
+  }
+  .journal-primary-actions .moment-primary-action {
+    min-height: 46px;
+    font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .milestone-photo-loading svg {
+    animation: none;
+  }
+}

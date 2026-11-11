@@ -185,6 +185,8 @@ try {
       } else assert.ok(Math.abs(positions[1].x - positions[0].x) < 2);
       await page.getByRole('button', { name: 'Sửa dấu mốc ' + entry.title, exact: true }).click();
       const form = page.getByRole('dialog', { name: 'Sửa dấu mốc', exact: true });
+      if (!(await form.getByLabel('Tên địa điểm', { exact: true }).isVisible()))
+        await form.locator('.milestone-location > summary').click();
       await form.getByLabel('Tên địa điểm', { exact: true }).fill('Hội An');
       await expect(form.getByLabel('Vĩ độ', { exact: true })).toHaveCount(0);
       await expect(form.getByLabel('Kinh độ', { exact: true })).toHaveCount(0);
