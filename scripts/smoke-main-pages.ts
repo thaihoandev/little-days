@@ -482,7 +482,8 @@ try {
           } as typeof original;
         });
         await page.goto(origin + '/today');
-        await page.locator('.hourglass-stage').scrollIntoViewIfNeeded();
+        await expect(page.locator('.hourglass-stage')).toHaveAttribute('data-has-data', 'true');
+        await page.locator('.hourglass-canvas').scrollIntoViewIfNeeded();
         await expect(page.locator('.hourglass-stage')).toHaveAttribute('data-renderer', 'fallback');
         await expect(page.locator('.hourglass-fallback')).toBeVisible();
         await expect(page.locator('.hourglass-fallback rect')).toHaveCount(2);
