@@ -48,6 +48,8 @@ try {
       'tests/couple-rituals.test.ts',
       'tests/portable-experience.test.ts',
       'tests/signature-features.test.ts',
+      'tests/postgres-config.test.ts',
+      'tests/postgres-transfer.test.ts',
       'tests/shared-activity.test.ts',
       'tests/profile-location.test.ts',
       'tests/journal-community.test.ts',

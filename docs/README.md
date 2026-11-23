@@ -4,6 +4,7 @@ Tài liệu hướng dẫn được tập trung tại đây. Xem [README dự á
 
 ## Sử dụng
 
+- [Chuyển PostgreSQL Neon sang Aiven Free và cấu hình CA/pool](FREE_HOSTING.md#aiven-postgresql)
 - [Lưu dấu mốc: form ảnh, địa điểm mở thêm và giảm tải lại khi lưu](MOMENT_CAPTURE.md)
 - [Tách nền nhanh, mẫu nổi bật, PIN/QR, bộ Việt và khôi phục ZIP](SIGNATURE_FEATURES.md)
 - [Bản nháp nhiều phiên, ZIP/PDF, chủ đề câu hỏi và đồng hồ cát theo dữ liệu](PORTABLE_MEMORIES_AND_RHYTHM.md)

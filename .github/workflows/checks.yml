@@ -79,6 +79,8 @@ jobs:
       - run: npm ci
       - run: npm run video:browser
       - run: npm run test:postgres
+        env:
+          QA_PG_CLIENT_CONTAINER: ${{ job.services.postgres.id }}
       - run: npm run test:scheduled-backup
       - uses: actions/upload-artifact@v4
         if: always()

@@ -9,6 +9,11 @@
   },
   "type": "module",
   "scripts": {
+    "setup:aiven": "node scripts/setup-aiven.mjs",
+    "db:aiven:check": "node --import tsx scripts/migrate-aiven.ts check",
+    "db:aiven:check-target": "node --import tsx scripts/migrate-aiven.ts check-target",
+    "db:aiven:transfer": "node --import tsx scripts/migrate-aiven.ts transfer",
+    "db:aiven:verify": "node --import tsx scripts/migrate-aiven.ts verify",
     "licenses:inventory": "node scripts/license-inventory.mjs",
     "legal:prepare": "node scripts/prepare-legal.mjs",
     "background:prepare": "node scripts/prepare-background.mjs",

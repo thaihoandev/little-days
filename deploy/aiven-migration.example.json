@@ -1,0 +1,7 @@
+{
+  "sourceUrl": "",
+  "targetUrl": "",
+  "sourceCaFile": "",
+  "targetCaFile": ".secrets/aiven-ca.pem",
+  "outputDirectory": "backups/aiven-migration"
+}

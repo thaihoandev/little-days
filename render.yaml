@@ -25,6 +25,8 @@ services:
         value: cloudinary
       - key: DATABASE_URL
         sync: false
+      - key: DATABASE_POOL_MAX
+        value: '5'
       - key: CLOUDINARY_CLOUD_NAME
         sync: false
       - key: CLOUDINARY_API_KEY

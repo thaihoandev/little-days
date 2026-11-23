@@ -16,23 +16,24 @@ Mở [Settings → Secrets and variables → Actions](https://github.com/thaihoa
 
 **Repository secrets:**
 
-| Tên | Giá trị |
-| --- | --- |
-| `BACKUP_DATABASE_URL` | Cùng PostgreSQL connection string TLS mà API đang dùng |
-| `BACKUP_CLOUDINARY_CLOUD_NAME` | Cùng cloud name của API |
-| `BACKUP_CLOUDINARY_API_KEY` | Cùng API key Cloudinary của API |
-| `BACKUP_CLOUDINARY_API_SECRET` | Cùng API secret Cloudinary của API |
-| `BACKUP_ENCRYPTION_KEY` | Khóa 32 byte ngẫu nhiên dạng hex, 64 ký tự |
+| Tên                            | Giá trị                                                                                        |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `BACKUP_DATABASE_URL`          | Cùng PostgreSQL connection string TLS mà API đang dùng                                         |
+| `BACKUP_DATABASE_CA_CERT`      | Nếu dùng Aiven: PEM CA của dịch vụ, khớp API; để trống với provider dùng CA công khai mặc định |
+| `BACKUP_CLOUDINARY_CLOUD_NAME` | Cùng cloud name của API                                                                        |
+| `BACKUP_CLOUDINARY_API_KEY`    | Cùng API key Cloudinary của API                                                                |
+| `BACKUP_CLOUDINARY_API_SECRET` | Cùng API secret Cloudinary của API                                                             |
+| `BACKUP_ENCRYPTION_KEY`        | Khóa 32 byte ngẫu nhiên dạng hex, 64 ký tự                                                     |
 
 Tạo khóa một lần trên terminal của bạn bằng `npm run backup:key`. Lưu khóa trong password manager hoặc nơi riêng an toàn, ngoài GitHub; sau đó nhập vào secret. Không cần chạy lại mỗi ngày. Mất khóa thì không giải mã được archive; đổi khóa chỉ ảnh hưởng các bản tạo sau đó, bản cũ vẫn cần khóa cũ.
 
 **Repository variables** (tab Variables bên cạnh Secrets):
 
-| Tên | Giá trị |
-| --- | --- |
-| `BACKUP_API_ORIGIN` | `https://little-days-api.onrender.com` |
+| Tên                        | Giá trị                                                                   |
+| -------------------------- | ------------------------------------------------------------------------- |
+| `BACKUP_API_ORIGIN`        | `https://little-days-api.onrender.com`                                    |
 | `BACKUP_CLOUDINARY_FOLDER` | Chính xác folder API đang dùng; blueprint hiện tại là `little-days-cloud` |
-| `BACKUP_SCHEDULE_ENABLED` | `true`, chỉ đặt sau khi hoàn tất bước 1 và secrets |
+| `BACKUP_SCHEDULE_ENABLED`  | `true`, chỉ đặt sau khi hoàn tất bước 1 và secrets                        |
 
 Không thêm các biến này vào Vercel/frontend. Job không cần khóa Brevo hoặc địa chỉ mail. Secrets chỉ được cấp cho bước backup, không cấp cho bước cài dependencies.
 

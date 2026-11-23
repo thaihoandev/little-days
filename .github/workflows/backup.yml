@@ -24,6 +24,8 @@ jobs:
       - run: npm run backup:scheduled
         env:
           DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+          DATABASE_POOL_MAX: '2'
+          DATABASE_CA_CERT: ${{ secrets.BACKUP_DATABASE_CA_CERT }}
           STORAGE_DRIVER: cloudinary
           CLOUDINARY_CLOUD_NAME: ${{ secrets.BACKUP_CLOUDINARY_CLOUD_NAME }}
           CLOUDINARY_API_KEY: ${{ secrets.BACKUP_CLOUDINARY_API_KEY }}

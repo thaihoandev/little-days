@@ -3,6 +3,7 @@ import { mkdirSync } from 'node:fs';
 import path from 'node:path';
 import pg from 'pg';
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { postgresConfig } from './postgres-config.js';
 
 /** Small durable repository: SQLite locally, PostgreSQL with DATABASE_URL. */
 export class Repository {
@@ -30,8 +31,11 @@ export class Repository {
   }
   async init() {
     if (this.driver === 'postgresql') {
-      this.postgres = new pg.Pool({
-        connectionString: this.options.databaseUrl ?? process.env.DATABASE_URL,
+      this.postgres = new pg.Pool(
+        postgresConfig(this.options.databaseUrl ?? process.env.DATABASE_URL!),
+      );
+      this.postgres.on('error', () => {
+        console.error(JSON.stringify({ event: 'postgres_idle_connection_lost' }));
       });
       await this.migrate(async () => {
         await this.query(

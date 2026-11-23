@@ -4,6 +4,7 @@ Ngày cập nhật: **09/11/2026**.
 
 ## Kết quả hiện tại
 
+Chuẩn bị Aiven Free ngày 23/11/2026: có cấu hình pool/CA và công cụ kiểm tra/dump/restore/đối soát PostgreSQL vào đích trống. Aiven đích đã kết nối TLS bằng Node/libpq, chưa có dữ liệu ứng dụng; Neon nguồn đang bị quota `53000` chặn đọc nên **chưa chuyển dữ liệu hoặc đổi DB trên Render**. Xem [quy trình và điều kiện tiếp tục](FREE_HOSTING.md#aiven-postgresql). Không coi cấu hình kết nối thành công là migration production đã hoàn tất.
 Form dấu mốc được tinh chỉnh theo luồng ảnh → nội dung/ngày → lưu, bản đồ mở khi cần, preview dùng lại ảnh đã chuẩn bị, callback cập nhật danh sách được gộp và lỗi ảnh giữ được phần đã lưu để thử lại. Nút thêm dấu mốc được nhấn rõ hơn trên ba trang chính; xem [MOMENT_CAPTURE.md](MOMENT_CAPTURE.md) để phân biệt phạm vi UI/upload với tối ưu SQL và trạng thái kiểm chứng.
 Đã bổ sung mã cho đợt dấu riêng: lối tắt tách nền, mẫu nổi bật/Story bản đồ/gợi ý recap, PIN thiết bị và mở khóa WebAuthn cục bộ, QR kết đôi có xác nhận/hết hạn/thu hồi, bộ Việt/khung 35mm/hai nhạc gốc và nhập ZIP cá nhân có checksum/CAS/quota. Phạm vi, giới hạn và cách kiểm chứng trong [SIGNATURE_FEATURES.md](SIGNATURE_FEATURES.md). Trạng thái kiểm thử/CI/deploy phải đối chiếu bản chốt; không provision worker hoặc dịch vụ mới.
 Đợt cải tiến độ bền và lưu giữ kỉ niệm: bản nháp IndexedDB theo phiên, xử lý lỗi dọn draft sau lưu, phục hồi vị trí đọc, ZIP dữ liệu cá nhân, PDF từng trang, iCalendar sự kiện đơn và 96 câu hỏi theo chủ đề áp dụng từ ngày mai. Đồng hồ cát tính cả lượt góp riêng của mỗi thành viên/ngày, bình dưới không có mức giả khi 0, dòng cát chỉ chạy khi số liệu tăng và có SVG dự phòng theo dữ liệu. Phạm vi, giới hạn và kết quả QA theo [kỉ niệm mang theo và nhịp thật](PORTABLE_MEMORIES_AND_RHYTHM.md); chưa xác nhận rollout production.
@@ -66,36 +67,36 @@ Ngày 30/10/2026, người dùng xác nhận đã bật backup theo lịch và h
 
 **Đa dạng kiểu và giảm tài nguyên ảnh:** có 6 mẫu chữ, 6 mẫu bộ đếm với 5 giao diện; `counterStyle` tùy chọn được dùng chung trong Canvas/DOM/video, tách khỏi cách tính ngày. Viewer có 3 kiểu sổ, 3 hiệu ứng chuyển trang, vuốt ngang và reduced motion. Ảnh mới dùng chung bộ chuẩn hóa tối đa cạnh 1600px, chất lượng 80; ảnh còn trên mục tiêu 700 KiB được thử 1280/72 rồi 1024/66, tối đa 3 lượt, bỏ EXIF và không phóng ảnh nhỏ. Ảnh cũ không tự đổi. Timeline hiển thị tối đa 3 thumbnail dạng cụm gọn, có số ảnh còn lại và xem đủ qua popup.
 
-| Hạng mục | Kết quả |
-| --- | --- |
-| Workspace | React/TypeScript/Vite, NestJS, domain schemas và Remotion composition |
-| Giao diện | Dashboard, thư viện ảnh, editor, viewer, video builder; bố cục desktop/mobile |
-| Template | Chín mẫu có sẵn trên ba theme và mẫu cá nhân theo tài khoản; lưu chữ/nhóm/layout/hiệu ứng, dùng ảnh album đích |
-| Lịch/timeline | Trang chủ ưu tiên lịch và ngày sắp tới; dấu mốc/ngày/lời nhắn/6 ảnh, ghi chú, lặp hằng năm, tìm/lọc; dữ liệu riêng theo tài khoản |
-| Nhạc có sẵn | Bốn track tổng hợp bằng mã nguồn, nghe thử, lưu lựa chọn, lặp/fade/âm lượng dùng chung preview và MP4; API kiểm tra worker hỗ trợ track mới |
-| Editor | Shift/marquee/checkbox chọn nhiều, nhóm/bỏ nhóm, kéo/resize/xoay nhóm; căn chỉnh, chia đều, snap guides; thứ tự lớp, ẩn/hiện/khóa; pinch zoom 60–150% và reset 100% |
-| Trang | Thêm, nhân bản, đổi màu, đổi tên, sắp xếp và xóa |
-| Lưu | Autosave/revision/409, bản nháp và undo/redo; lịch sử server 50 phiên bản, checkpoint có tên, preview và restore có CAS |
-| Backup/restore | Database logic + media có SHA-256; restore vào đích trống, dry-run mặc định, import transaction; workflow GitHub Actions snapshot có lease/table locks, AES-256-GCM và restore drill trước khi upload; lịch chưa bật khi thiếu secrets/variables |
-| Upload | JPEG/PNG/WebP, kiểm tra định dạng thực, 20 MB/40 megapixel, WebP tối ưu và bỏ EXIF |
-| Kỉ niệm | Sự kiện có ngày, text, ảnh, đánh dấu nổi bật; đưa lời nhắn lên scrapbook |
-| Ngày động | Số ngày bên nhau, countdown hằng năm, mốc số ngày tùy chỉnh; múi giờ album và 29/2 |
-| Tài khoản | Phiên khách; đăng ký/đăng nhập, scrypt async, cookie HttpOnly; xác minh email, quên/reset/đổi mật khẩu; thu hồi phiên cũ và rate-limit bền vững |
-| Email | Hộp thư local, SMTP/TLS, Brevo và Resend HTTPS; timeout, chặn redirect, log không chứa secret; link một lần 24h/15 phút |
-| Quyền | Album/ảnh/export theo chủ sở hữu; link chia sẻ chỉ đọc và thu hồi |
-| Database | SQLite mặc định; PostgreSQL 17 thật qua auth/history/lease/quota/cleanup, API, video và backup/restore |
-| Video | Preset 15/30/60 giây hoặc cảnh 1–60 giây, tổng ≤180 giây; lưu tùy chọn theo album; preview và MP4 dùng cùng timeline |
-| Nhạc riêng | Upload MP3/WAV/M4A AAC; kiểm tra file thật, chuẩn hóa MP3, trim/loop/volume/fade; quyền riêng tư, byte-range, chặn xóa khi đang render |
-| Export | Snapshot bất biến, atomic claim, lease/heartbeat, retry tối đa 3 lần, cancel và output riêng cho từng lần render |
-| Worker | Tiến trình riêng; hai worker cùng SQLite đã kiểm thử; worker cũ hết lease không được cập nhật/publish/xóa output mới |
-| Storage | Local, Cloudinary authenticated hoặc S3-compatible private, stream qua API; cấu hình chung giữa API và worker |
-| Migration media | Dry-run mặc định; copy local → Cloudinary/S3, kiểm SHA-256, idempotent và không xóa nguồn |
-| Production build | NestJS phục vụ frontend build và API cùng origin |
-| Công cụ | Dockerfile, Compose PostgreSQL và workflow CI được chuẩn bị |
-| Vận hành | Quota bytes/lượt/giây video, retention 30 ngày, cleanup có lease và CLI dry-run, fingerprint đích storage |
-| Giám sát | RequestId/log JSON, operator status/metrics có khóa riêng, bảy Prometheus rules; email opt-in qua mailer hiện có, lease/dedup bền vững, grace/cooldown và thông báo phục hồi |
-| Staging | Caddy HTTPS, PostgreSQL/app/worker/Prometheus, cấu hình riêng, lịch backup và hướng dẫn rollback/pilot |
-| Project skills | Ba SKILL.md riêng cho editor, backend và video trong `skills/` |
+| Hạng mục         | Kết quả                                                                                                                                                                                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Workspace        | React/TypeScript/Vite, NestJS, domain schemas và Remotion composition                                                                                                                                                                            |
+| Giao diện        | Dashboard, thư viện ảnh, editor, viewer, video builder; bố cục desktop/mobile                                                                                                                                                                    |
+| Template         | Chín mẫu có sẵn trên ba theme và mẫu cá nhân theo tài khoản; lưu chữ/nhóm/layout/hiệu ứng, dùng ảnh album đích                                                                                                                                   |
+| Lịch/timeline    | Trang chủ ưu tiên lịch và ngày sắp tới; dấu mốc/ngày/lời nhắn/6 ảnh, ghi chú, lặp hằng năm, tìm/lọc; dữ liệu riêng theo tài khoản                                                                                                                |
+| Nhạc có sẵn      | Bốn track tổng hợp bằng mã nguồn, nghe thử, lưu lựa chọn, lặp/fade/âm lượng dùng chung preview và MP4; API kiểm tra worker hỗ trợ track mới                                                                                                      |
+| Editor           | Shift/marquee/checkbox chọn nhiều, nhóm/bỏ nhóm, kéo/resize/xoay nhóm; căn chỉnh, chia đều, snap guides; thứ tự lớp, ẩn/hiện/khóa; pinch zoom 60–150% và reset 100%                                                                              |
+| Trang            | Thêm, nhân bản, đổi màu, đổi tên, sắp xếp và xóa                                                                                                                                                                                                 |
+| Lưu              | Autosave/revision/409, bản nháp và undo/redo; lịch sử server 50 phiên bản, checkpoint có tên, preview và restore có CAS                                                                                                                          |
+| Backup/restore   | Database logic + media có SHA-256; restore vào đích trống, dry-run mặc định, import transaction; workflow GitHub Actions snapshot có lease/table locks, AES-256-GCM và restore drill trước khi upload; lịch chưa bật khi thiếu secrets/variables |
+| Upload           | JPEG/PNG/WebP, kiểm tra định dạng thực, 20 MB/40 megapixel, WebP tối ưu và bỏ EXIF                                                                                                                                                               |
+| Kỉ niệm          | Sự kiện có ngày, text, ảnh, đánh dấu nổi bật; đưa lời nhắn lên scrapbook                                                                                                                                                                         |
+| Ngày động        | Số ngày bên nhau, countdown hằng năm, mốc số ngày tùy chỉnh; múi giờ album và 29/2                                                                                                                                                               |
+| Tài khoản        | Phiên khách; đăng ký/đăng nhập, scrypt async, cookie HttpOnly; xác minh email, quên/reset/đổi mật khẩu; thu hồi phiên cũ và rate-limit bền vững                                                                                                  |
+| Email            | Hộp thư local, SMTP/TLS, Brevo và Resend HTTPS; timeout, chặn redirect, log không chứa secret; link một lần 24h/15 phút                                                                                                                          |
+| Quyền            | Album/ảnh/export theo chủ sở hữu; link chia sẻ chỉ đọc và thu hồi                                                                                                                                                                                |
+| Database         | SQLite mặc định; PostgreSQL 17 thật qua auth/history/lease/quota/cleanup, API, video và backup/restore                                                                                                                                           |
+| Video            | Preset 15/30/60 giây hoặc cảnh 1–60 giây, tổng ≤180 giây; lưu tùy chọn theo album; preview và MP4 dùng cùng timeline                                                                                                                             |
+| Nhạc riêng       | Upload MP3/WAV/M4A AAC; kiểm tra file thật, chuẩn hóa MP3, trim/loop/volume/fade; quyền riêng tư, byte-range, chặn xóa khi đang render                                                                                                           |
+| Export           | Snapshot bất biến, atomic claim, lease/heartbeat, retry tối đa 3 lần, cancel và output riêng cho từng lần render                                                                                                                                 |
+| Worker           | Tiến trình riêng; hai worker cùng SQLite đã kiểm thử; worker cũ hết lease không được cập nhật/publish/xóa output mới                                                                                                                             |
+| Storage          | Local, Cloudinary authenticated hoặc S3-compatible private, stream qua API; cấu hình chung giữa API và worker                                                                                                                                    |
+| Migration media  | Dry-run mặc định; copy local → Cloudinary/S3, kiểm SHA-256, idempotent và không xóa nguồn                                                                                                                                                        |
+| Production build | NestJS phục vụ frontend build và API cùng origin                                                                                                                                                                                                 |
+| Công cụ          | Dockerfile, Compose PostgreSQL và workflow CI được chuẩn bị                                                                                                                                                                                      |
+| Vận hành         | Quota bytes/lượt/giây video, retention 30 ngày, cleanup có lease và CLI dry-run, fingerprint đích storage                                                                                                                                        |
+| Giám sát         | RequestId/log JSON, operator status/metrics có khóa riêng, bảy Prometheus rules; email opt-in qua mailer hiện có, lease/dedup bền vững, grace/cooldown và thông báo phục hồi                                                                     |
+| Staging          | Caddy HTTPS, PostgreSQL/app/worker/Prometheus, cấu hình riêng, lịch backup và hướng dẫn rollback/pilot                                                                                                                                           |
+| Project skills   | Ba SKILL.md riêng cho editor, backend và video trong `skills/`                                                                                                                                                                                   |
 
 Trong lúc ảnh đang upload/lưu, editor tạm khóa tương tác để response chứa metadata mới không ghi đè thay đổi đang chỉnh. Canvas và video builder được lazy-load riêng khỏi dashboard.
 
@@ -169,17 +170,17 @@ Kết quả screenshot và video nằm trong `test-results/` và không đưa v�
 
 ## Khác biệt so với kiến trúc đích
 
-| Thiết kế đích | Bản hiện tại | Việc tiếp theo |
-| --- | --- | --- |
-| Supabase magic link | Guest + email/password, xác minh email, đổi/reset mật khẩu và thu hồi phiên | Magic link hoặc nhà cung cấp auth ngoài nếu có nhu cầu |
-| PostgreSQL + Prisma quan hệ | Record repository trên SQLite/PostgreSQL | Migration quan hệ, index, kiểm tra adapter trên Postgres thật |
-| Object storage private | Adapter local/S3 đã hoạt động qua API private | Xác minh bucket thật, lifecycle/retention, upload intent/complete |
-| BullMQ/Redis + worker riêng | Worker riêng và SQL queue có atomic lease, retry, fencing | Giữ SQL queue để tránh dual-write/outbox; load test và đo nhu cầu trước khi thêm Redis |
-| IndexedDB draft | LocalStorage document không chứa binary | Chuyển IndexedDB nếu dữ liệu lớn; hạn mức/lifecycle bản nháp |
-| Server checkpoint/migration | Lịch sử 50 revision, checkpoint có tên, xem trước và restore trong UI; trigger nguyên tử | Migration schema document khi lên phiên bản mới |
-| Editor nâng cao | Multi-select, nhóm, căn/chia đều, snap guides, lớp, mẫu cá nhân, cảnh báo chữ tràn và pinch zoom | Nhóm lồng nhau hoặc các gesture bổ sung khi có yêu cầu |
-| Audio cá nhân | Nhạc gốc/tắt/upload, waveform/trim kéo, loop/volume/fade; lưu cấu hình, Cloudinary/S3/local | Thư viện nhạc tuyển chọn |
-| Triển khai cloud | Render công khai, Neon/Cloudinary, Brevo thật đã được người dùng xác nhận; backup/restore CLI đã kiểm chứng qua fixture | Bật receiver cảnh báo, lịch backup và restore drill trên hạ tầng thật; worker cloud đã hủy |
+| Thiết kế đích               | Bản hiện tại                                                                                                            | Việc tiếp theo                                                                             |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Supabase magic link         | Guest + email/password, xác minh email, đổi/reset mật khẩu và thu hồi phiên                                             | Magic link hoặc nhà cung cấp auth ngoài nếu có nhu cầu                                     |
+| PostgreSQL + Prisma quan hệ | Record repository trên SQLite/PostgreSQL                                                                                | Migration quan hệ, index, kiểm tra adapter trên Postgres thật                              |
+| Object storage private      | Adapter local/S3 đã hoạt động qua API private                                                                           | Xác minh bucket thật, lifecycle/retention, upload intent/complete                          |
+| BullMQ/Redis + worker riêng | Worker riêng và SQL queue có atomic lease, retry, fencing                                                               | Giữ SQL queue để tránh dual-write/outbox; load test và đo nhu cầu trước khi thêm Redis     |
+| IndexedDB draft             | LocalStorage document không chứa binary                                                                                 | Chuyển IndexedDB nếu dữ liệu lớn; hạn mức/lifecycle bản nháp                               |
+| Server checkpoint/migration | Lịch sử 50 revision, checkpoint có tên, xem trước và restore trong UI; trigger nguyên tử                                | Migration schema document khi lên phiên bản mới                                            |
+| Editor nâng cao             | Multi-select, nhóm, căn/chia đều, snap guides, lớp, mẫu cá nhân, cảnh báo chữ tràn và pinch zoom                        | Nhóm lồng nhau hoặc các gesture bổ sung khi có yêu cầu                                     |
+| Audio cá nhân               | Nhạc gốc/tắt/upload, waveform/trim kéo, loop/volume/fade; lưu cấu hình, Cloudinary/S3/local                             | Thư viện nhạc tuyển chọn                                                                   |
+| Triển khai cloud            | Render công khai, Neon/Cloudinary, Brevo thật đã được người dùng xác nhận; backup/restore CLI đã kiểm chứng qua fixture | Bật receiver cảnh báo, lịch backup và restore drill trên hạ tầng thật; worker cloud đã hủy |
 
 Docker Desktop đã khởi động được; đã build image và chạy container/PostgreSQL 17 thật. CI có job PostgreSQL/container trong `.github/workflows/checks.yml`; kiểm tra kết quả GitHub Actions sau khi push. Kiểm thử cloud tự động dùng fixture; xác nhận email thật đến từ người dùng. Cảnh báo vận hành thật chưa được bật khi chưa có địa chỉ nhận cấu hình trên Render.
 

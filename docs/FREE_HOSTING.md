@@ -2,17 +2,51 @@
 
 Ngày kiểm tra tài liệu nhà cung cấp: 29/10/2026. Free tier có hạn mức và có thể thay đổi; không tự chuyển sang gói trả phí.
 
+## Aiven PostgreSQL
+
+Chuẩn bị ngày 23/11/2026: ứng dụng hỗ trợ PostgreSQL Aiven với CA riêng và pool nhỏ. **Chưa cutover dữ liệu production.** Kiểm tra thực tế: Aiven PostgreSQL 18 kết nối được bằng Node và `psql`, xác minh CA/hostname, schema public chưa có dữ liệu ứng dụng. Neon nguồn đang từ chối kết nối vì quota, SQLSTATE `53000`; chưa xuất được dữ liệu mới nhất. Lượt backup GitHub thành công gần nhất quan sát được là 19/11/2026, artifact không còn; các lượt 20–23/11 thất bại. Không coi đây là bằng chứng dữ liệu Neon đã bị xóa.
+
+### Cấu hình riêng tư và kiểm tra trước
+
+1. Chạy `npm run setup:aiven`. Generator chỉ tạo `.secrets/aiven-migration.json` nếu chưa có; giữ nguyên các `.env` hiện có. File mẫu `deploy/aiven-migration.example.json` phải luôn để trống credential.
+2. Điền `sourceUrl` là URI database Neon đang dùng, `targetUrl` là Service URI của Aiven. Khi xuất Neon, dùng direct connection thay cho endpoint pooling nếu có. Tải CA từ Overview của dịch vụ Aiven vào `.secrets/aiven-ca.pem`, khớp `targetCaFile`. Không gửi URI, mật khẩu hoặc khóa backup vào chat/Git.
+3. `npm run db:aiven:check-target` chỉ kiểm tra đọc đích, dùng được khi nguồn đang hết quota. `npm run db:aiven:check` kiểm tra cả hai bên: PostgreSQL đích không thấp hơn nguồn, schema public, dung lượng nguồn tối đa 512 MiB để còn khoảng trống trong gói Free 1 GB, đích không có bảng/view/sequence/function/type ứng dụng.
+4. Các lệnh kiểm tra dùng client read-only, không gọi migration/bootstrap API và không khởi tạo schema production. Lỗi không in URI hoặc thông điệp PostgreSQL có thể chứa dữ liệu riêng.
+
+Gói Aiven Free công bố 1 CPU, RAM/disk 1 GB, tối đa 20 kết nối và không có pooling được quản lý. Pool `pg` phía ứng dụng vẫn dùng được: API mặc định `DATABASE_POOL_MAX=5`, job backup dùng 2; nếu chạy worker local thì dùng 3 và tính tổng các tiến trình/deploy chồng nhau để dành chỗ kết nối quản trị. Không cần bật worker cloud để chuyển DB. Xem [Free tier](https://aiven.io/docs/products/postgresql/concepts/pg-free-tier).
+
+### Chuyển đủ dữ liệu khi Neon đọc lại được
+
+1. Giữ lại Neon và cấu hình cũ. Dừng lịch backup/reminder đang ghi, dừng API Render và mọi worker; đợi upload, thao tác account deletion và lease đang chạy kết thúc. Cờ `--source-stopped` là xác nhận người vận hành đã dừng các nguồn ghi, không tự dừng được Render/GitHub.
+2. Chạy `npm run db:aiven:transfer -- --source-stopped`. Cần Docker Desktop/Docker Engine; công cụ dùng PostgreSQL client cùng major version nguồn. Credential chỉ truyền qua môi trường của container client tạm, không nằm trong argv hoặc log. Dump/list/báo cáo nằm trong `backups/aiven-migration/`, không được commit; đây là bản chứa dữ liệu riêng tư, cần lưu trên máy tin cậy.
+3. Công cụ xuất schema public bằng `pg_dump`, giữ các bảng và tham chiếu media; không tải lại/ghi/xóa ảnh Cloudinary. `pg_restore` bỏ owner/ACL nguồn, chạy một transaction vào đích trống. Không xóa schema dữ liệu hoặc dùng `--clean` để ép ghi đè. Kiểm tra hoạt động nguồn và fingerprint trước/sau dump; nếu nguồn đổi thì dừng trước restore.
+4. Đối soát mọi dòng bảng ứng dụng bằng SHA-256 theo từng dòng kết hợp count/sum/XOR, và đối chiếu định nghĩa cột/index/function/trigger/constraint. Nguồn và đích chưa khớp thì không cutover. Giữ cả tombstone, quota, lịch sử, session, receipt và trạng thái job; không reset job đang chạy để làm migration xanh. Chạy `npm run db:aiven:verify` để kiểm tra lại khi nguồn vẫn dừng ghi.
+5. Sau khi code TLS đã được kiểm thử/deploy đúng phiên bản, cập nhật Render `DATABASE_URL` sang Aiven, `DATABASE_POOL_MAX=5` và **một** trong `DATABASE_CA_CERT` (PEM đầy đủ) hoặc `DATABASE_CA_CERT_FILE` (file CA có mount trên host). Helper bật `rejectUnauthorized: true`; SSL options trong URI được loại khỏi bản config có CA để không ghi đè việc xác minh CA/hostname. [Kết nối Node chính thức](https://aiven.io/docs/products/postgresql/howto/connect-node).
+6. Cập nhật GitHub `BACKUP_DATABASE_URL` và `BACKUP_DATABASE_CA_CERT` (cùng PEM). Giữ Cloudinary cloud/folder/credential như trước để fingerprint media khớp. Chỉ bật lại backup khi đã kiểm tra API, tài khoản, lịch/timeline, ảnh, lịch sử và link chia sẻ với dữ liệu chuyển. FE Vercel không nhận database URL hoặc CA.
+
+Dump được giữ để đối soát. Quay lại Neon chỉ đơn giản trước khi có ghi mới ở Aiven; sau khi đã có ghi mới phải đối soát, không đổi URL ngược lại rồi bỏ các thay đổi đó. Không tự xóa Neon sau cutover. Dữ liệu cũ không tự hợp nhất nếu chọn bắt đầu bằng Aiven trống rồi tạo tài khoản/kỉ niệm mới.
+
+### Khi Neon hết quota
+
+Neon xác nhận hết compute/network allowance có thể chặn cả `pg_dump` với `53000`; dữ liệu vẫn được giữ. Phương án miễn phí bảo toàn dữ liệu là chờ kỳ quota mở lại hoặc chủ tài khoản làm việc với Neon để có quyền xuất. Không tự nâng gói trả phí. [Quy định quota và xuất dữ liệu Neon](https://neon.com/docs/introduction/plans#how-do-i-restore-or-export-a-free-plan-project-that-hit-its-limits).
+
+Nếu không có backup và cần bắt đầu ngay bằng database trống, cần chủ dự án chọn rõ phương án này: dữ liệu/tài khoản cũ chưa có trong app mới, giữ nguyên Neon và namespace media cũ. Dùng Cloudinary folder mới để API/cleanup của database trống không đụng đến ảnh cũ; không ghi đè dữ liệu Aiven mới bằng dump cũ về sau.
+
+### Kiểm chứng
+
+`tests/postgres-config.test.ts` kiểm tra giới hạn pool, CA/file CA, lỗi cấu hình và giữ tham số không liên quan TLS. `tests/postgres-transfer.test.ts` dùng hai database QA độc lập, dump/restore thực, so khớp dữ liệu/schema/tombstone/trigger, đích có dữ liệu, nguồn thay đổi trong khi dump và kiểm tra riêng đích khi nguồn không kết nối được. Integration chỉ chạy khi `TEST_DATABASE_URL` loopback và `QA_PG_CLIENT_CONTAINER` được cấu hình; `test:postgres`/CI cung cấp đúng container QA. Không phục hồi vào Aiven thật để chạy QA.
+
 ## Bắt đầu ở đây: chỉ dùng Render + Neon + Cloudinary
 
 Chưa cần Vercel hoặc VPS. Render đã phục vụ cả giao diện và API. Các file được tách theo môi trường; không phải điền tất cả:
 
-| File/chỗ cấu hình | Việc cần làm lúc này |
-| --- | --- |
-| `.env` | Giữ nguyên, chỉ dành cho chạy development local |
-| `.env.cloud` | Điền để máy bạn chạy worker xuất video cho app cloud |
+| File/chỗ cấu hình    | Việc cần làm lúc này                                                   |
+| -------------------- | ---------------------------------------------------------------------- |
+| `.env`               | Giữ nguyên, chỉ dành cho chạy development local                        |
+| `.env.cloud`         | Điền để máy bạn chạy worker xuất video cho app cloud                   |
 | Render → Environment | Điền biến của API trên Render; Render không đọc `.env.cloud` ở máy bạn |
-| `.env.staging` | Bỏ qua, dành cho VPS/Docker Compose |
-| Các file `*.example` | Chỉ là mẫu, không cần chỉnh |
+| `.env.staging`       | Bỏ qua, dành cho VPS/Docker Compose                                    |
+| Các file `*.example` | Chỉ là mẫu, không cần chỉnh                                            |
 
 Thứ tự thực hiện:
 
@@ -31,13 +65,13 @@ Máy bạn tắt thì web cloud vẫn dùng được, còn video chờ worker. �
 
 Backup theo lịch không cần thêm host: cấu hình GitHub Actions theo [SCHEDULED_BACKUP.md](SCHEDULED_BACKUP.md). Chỉ nhập secrets/variables trên GitHub, không thêm file `.env`. Cập nhật API và worker local trước khi bật; lịch chưa tự kích hoạt.
 
-| Thành phần | Chạy ở đâu |
-| --- | --- |
-| Frontend + API | Một Render Free Web Service, build từ Dockerfile hiện có |
-| Database bền vững | Neon Free PostgreSQL riêng |
-| Ảnh/nhạc/video | Cloudinary hiện có, dùng folder riêng cho môi trường cloud |
-| Worker xuất MP4 | Máy của bạn: `npm run worker:cloud` |
-| Frontend tách riêng, tùy chọn | Vercel Hobby, proxy `/api` về Render |
+| Thành phần                    | Chạy ở đâu                                                 |
+| ----------------------------- | ---------------------------------------------------------- |
+| Frontend + API                | Một Render Free Web Service, build từ Dockerfile hiện có   |
+| Database bền vững             | Neon Free PostgreSQL riêng                                 |
+| Ảnh/nhạc/video                | Cloudinary hiện có, dùng folder riêng cho môi trường cloud |
+| Worker xuất MP4               | Máy của bạn: `npm run worker:cloud`                        |
+| Frontend tách riêng, tùy chọn | Vercel Hobby, proxy `/api` về Render                       |
 
 Web/API hoạt động trên cloud. Worker chỉ cần kết nối ra PostgreSQL và Cloudinary; không mở cổng/router máy bạn. Tắt máy/worker thì video xếp hàng chờ; giao diện có thông báo khi chưa có bộ xuất sẵn sàng. Album/media vẫn trên cloud. Không thể hứa có worker render luôn trực tuyến miễn phí chỉ bằng Vercel.
 
